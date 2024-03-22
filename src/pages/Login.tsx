@@ -1,10 +1,12 @@
+import Container from '@/components/shared/Container';
+import LoginForm from '@/components/shared/Forms/LoginForm';
 
 const Login = () => {
   return (
-    <div>
-      Loginpage
-    </div>
+    <Container>
+      <LoginForm />
+    </Container>
   );
-}
+};
 
 export default Login;
