@@ -1,9 +1,11 @@
+import Container from "@/components/shared/Container";
+import RegisterForm from "@/components/shared/Forms/RegisterForm";
 
 const Register = () => {
   return (
-    <div>
-      Registerpage
-    </div>
+    <Container>
+      <RegisterForm/>
+    </Container>
   );
 }
 
