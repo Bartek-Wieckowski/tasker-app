@@ -14,7 +14,6 @@ import { useLoginWithGoogle } from '@/api/mutations/users/useLoginWithGoogle';
 const LoginForm = () => {
   const { isPending: isLoginUser, loginUser } = useLoginAccount();
   const { isLoadingUseFromGoogle, loginUserWithGoogle } = useLoginWithGoogle();
-  console.log(isLoadingUseFromGoogle);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),

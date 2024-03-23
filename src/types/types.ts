@@ -8,7 +8,7 @@ export type User = {
   username: string;
   email: string;
   imageUrl: string;
-  providerId?:string
+  providerId?: string;
 };
 export type LoginUser = {
   email: string;
@@ -19,4 +19,12 @@ export type AuthContextType = {
   setCurrentUser: React.Dispatch<React.SetStateAction<User>>;
   isLoading: boolean;
   isAuth: boolean;
+};
+export type UpdateUser = {
+  username: string;
+  email: string;
+  imageUrl: File;
+};
+export type UpdateUserPassword = {
+  password: string;
 };
