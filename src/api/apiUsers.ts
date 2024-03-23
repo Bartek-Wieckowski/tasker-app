@@ -1,8 +1,19 @@
 import { STARTER_USER_AVATAR_URL } from '@/lib/constants';
-import { auth, db, provider } from '@/lib/firebase.config';
-import { LoginUser, NewUser, User } from '@/types/types';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, deleteUser, signOut, updateProfile, UserCredential, signInWithPopup } from 'firebase/auth';
+import { auth, db, provider, storage } from '@/lib/firebase.config';
+import { LoginUser, NewUser, UpdateUser, UpdateUserPassword, User } from '@/types/types';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  deleteUser,
+  signOut,
+  updateProfile,
+  UserCredential,
+  signInWithPopup,
+  updatePassword,
+  updateEmail,
+} from 'firebase/auth';
 import { deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 
 export async function createUserAccount(user: NewUser): Promise<User> {
   const res = await createUserWithEmailAndPassword(auth, user.email, user.password);
@@ -79,23 +90,81 @@ export async function loginAccountWithGoogle(): Promise<User | null> {
 }
 
 export async function logoutAccount() {
-  try {
-    const res = await signOut(auth);
-    return res;
-  } catch (error) {
-    throw new Error('Something went wrong');
-  }
+  const res = await signOut(auth);
+  return res;
 }
 
 export async function deleteAccount() {
-  try {
-    const currentUser = auth.currentUser;
+  const currentUser = auth.currentUser;
 
-    if (currentUser) {
-      await removeUserToDB(currentUser.uid);
-      await deleteUser(currentUser);
+  if (currentUser) {
+    const storageRef = ref(storage, `${currentUser.uid}`);
+    const storageSnapshot = await getDownloadURL(storageRef).catch(() => null);
+
+    if (storageSnapshot) {
+      await deleteObject(storageRef);
     }
-  } catch (error) {
-    throw new Error('Something went wrong');
+
+    await deleteUser(currentUser);
+    await removeUserToDB(currentUser.uid);
+  }
+}
+
+export async function updateUserSettings(user: UpdateUser): Promise<User> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('Something went wrong');
+
+  if (user.imageUrl) {
+    const storageRef = ref(storage, currentUser.uid);
+    const uploadTask = uploadBytesResumable(storageRef, user.imageUrl);
+
+    await uploadTask;
+
+    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+    const updateUser: User = {
+      accountId: currentUser.uid,
+      username: user.username,
+      email: user.email,
+      imageUrl: downloadURL,
+    };
+
+    await updateProfile(currentUser, {
+      displayName: user.username,
+      photoURL: downloadURL,
+    });
+
+    await updateEmail(currentUser, user.email);
+
+    await setDoc(doc(db, 'userTasker', currentUser.uid), updateUser);
+
+    return updateUser;
+  } else {
+    const updateUser: User = {
+      accountId: currentUser.uid,
+      username: user.username,
+      email: user.email,
+      imageUrl: currentUser.photoURL || '',
+    };
+
+    await updateProfile(currentUser, {
+      displayName: user.username,
+    });
+
+    await updateEmail(currentUser, user.email);
+
+    await setDoc(doc(db, 'userTasker', currentUser.uid), updateUser);
+
+    return updateUser;
+  }
+}
+
+export async function updateUserPassword(user: UpdateUserPassword) {
+  const currentUser = auth.currentUser;
+
+  if (!currentUser) throw new Error('Something went wrong');
+
+  if (user.password) {
+    await updatePassword(currentUser, user.password);
   }
 }
