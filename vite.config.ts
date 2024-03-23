@@ -9,7 +9,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  optimizeDeps: {
-    include: ['esm-dep > cjs-dep'],
-  },
+  // optimizeDeps: {
+  //   include: ['esm-dep > cjs-dep'],
+  // },
 })
