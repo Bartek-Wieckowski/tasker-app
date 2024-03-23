@@ -2,10 +2,10 @@ import { Outlet } from 'react-router-dom';
 import Container from './Container';
 import Logo from './Logo';
 import Header from './Header';
-import UserNavigation from './UserNavigation';
+import UserNavigation from './User/UserNavigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Loader from './Loader';
-import UserPanel from './UserPanel';
+import UserPanel from './User/UserPanel';
 
 const AppLayout = () => {
   const { isLoading: isLoadingAuth, isAuth } = useAuth();
