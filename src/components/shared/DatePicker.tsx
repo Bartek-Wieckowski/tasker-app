@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
@@ -6,9 +6,22 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { dateCustomFormatting } from '@/lib/helpers';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function DatePicker() {
-  const [date, setDate] = React.useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
+  const { setSelectedDate } = useAuth();
+
+  useEffect(() => {
+    if (date) {
+      setSelectedDate(dateCustomFormatting(date));
+    }
+  }, [date, setSelectedDate]);
+
+  const handleDateSelect = (selectedDate: Date) => {
+    setDate(selectedDate);
+  };
 
   return (
     <Popover>
@@ -19,7 +32,7 @@ export function DatePicker() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+        <Calendar mode="single" selected={date} onDayClick={handleDateSelect} initialFocus />
       </PopoverContent>
     </Popover>
   );
