@@ -43,7 +43,7 @@ export async function saveUserToDB(user: { accountId: string; email: string; use
       imageUrl: user.imageUrl,
     };
 
-    await setDoc(doc(db, 'userTasker', user.accountId), userData);
+    await setDoc(doc(db, 'taskerUsers', user.accountId), userData);
 
     return userData;
   } catch (error) {
@@ -136,7 +136,7 @@ export async function updateUserSettings(user: UpdateUser): Promise<User> {
 
     await updateEmail(currentUser, user.email);
 
-    await setDoc(doc(db, 'userTasker', currentUser.uid), updateUser);
+    await setDoc(doc(db, 'taskerUsers', currentUser.uid), updateUser);
 
     return updateUser;
   } else {
@@ -153,7 +153,7 @@ export async function updateUserSettings(user: UpdateUser): Promise<User> {
 
     await updateEmail(currentUser, user.email);
 
-    await setDoc(doc(db, 'userTasker', currentUser.uid), updateUser);
+    await setDoc(doc(db, 'taskerUsers', currentUser.uid), updateUser);
 
     return updateUser;
   }
