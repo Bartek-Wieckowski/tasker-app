@@ -19,6 +19,8 @@ export type AuthContextType = {
   setCurrentUser: React.Dispatch<React.SetStateAction<User>>;
   isLoading: boolean;
   isAuth: boolean;
+  selectedDate: string;
+  setSelectedDate: React.Dispatch<React.SetStateAction<string>>;
 };
 export type UpdateUser = {
   username: string;
