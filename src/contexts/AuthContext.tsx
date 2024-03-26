@@ -16,6 +16,8 @@ const initialState = {
   setCurrentUser: () => {},
   isLoading: false,
   isAuth: false,
+  selectedDate: '',
+  setSelectedDate: () => {},
 };
 
 const AuthContext = createContext<AuthContextType>(initialState);
@@ -24,6 +26,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   useEffect(() => {
     setIsLoading(true);
@@ -49,7 +52,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
-  return <AuthContext.Provider value={{ currentUser, setCurrentUser, isLoading, isAuth }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ currentUser, setCurrentUser, isLoading, isAuth, selectedDate, setSelectedDate }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
