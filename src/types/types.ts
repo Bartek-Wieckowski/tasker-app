@@ -30,3 +30,17 @@ export type UpdateUser = {
 export type UpdateUserPassword = {
   password: string;
 };
+export type TodoItem = {
+  todo: string;
+  todoMoreContent?: string;
+  imageUrl?: File;
+};
+export type TodoItemDetails = {
+  todo: string;
+  todoMoreContent?: string;
+  imageUrl: string | File;
+  id: string;
+  isCompleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
