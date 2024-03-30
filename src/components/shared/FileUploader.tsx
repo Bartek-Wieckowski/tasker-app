@@ -31,11 +31,11 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
       {fileUrl ? (
         <>
           <div className="flex flex-1 justify-center w-full p-2 lg:p-10">
-            <img src={fileUrl} alt="Uploaded Avatar" className="h-[30px] w-[30px] rounded-[24px]" />
+            <img src={fileUrl} alt="Uploaded Image" className="h-[30px] w-[30px] rounded-[24px]" />
           </div>
         </>
       ) : (
-        <div className="flex-center flex-col p-7 min-h-20">
+        <div className="flex justify-center items-center flex-col p-7 min-h-20">
           <ImagePlus width={96} height={77} />
           <h3 className="text-light-2 text-sm mb-2 mt-6">Drag photo here</h3>
           <p className="text-light-4 text-sm mb-6">SVG, PNG, JPG</p>
