@@ -35,7 +35,7 @@ export type TodoItem = {
   todoMoreContent?: string;
   imageUrl?: File;
 };
-export type TodoItemDetails = {
+export type TodoItemBase = {
   todo: string;
   todoMoreContent?: string;
   imageUrl: string | File;
@@ -43,4 +43,17 @@ export type TodoItemDetails = {
   isCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+};
+export type TodoItemDetails = TodoItemBase;
+export type TodoItemDetailsGlobalSearch = TodoItemBase & { 
+  todoDate?: string; 
+  todoSearchValue?: string 
+};
+export type SearchGlobalContextType = {
+  searchValueGlobal: string;
+  setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;
+  isGlobalSearch: boolean;
+  setIsGlobalSearch:React.Dispatch<React.SetStateAction<boolean>>;
+  globalSearchResult: TodoItemDetailsGlobalSearch[];
+  setGlobalSearchResult: React.Dispatch<React.SetStateAction<TodoItemDetailsGlobalSearch[]>>;
 };
