@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
-
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { dateCustomFormatting } from '@/lib/helpers';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 
 export function DatePicker() {
   const [date, setDate] = useState<Date>(new Date());
   const { setSelectedDate } = useAuth();
+  const { setIsGlobalSearch, setSearchValueGlobal, setGlobalSearchResult } = useGlobalSearch();
 
   useEffect(() => {
     if (date) {
@@ -21,6 +22,9 @@ export function DatePicker() {
 
   const handleDateSelect = (selectedDate: Date) => {
     setDate(selectedDate);
+    setIsGlobalSearch(false);
+    setSearchValueGlobal('');
+    setGlobalSearchResult([]);
   };
 
   return (
