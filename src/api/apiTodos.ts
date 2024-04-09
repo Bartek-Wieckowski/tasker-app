@@ -1,5 +1,5 @@
 import { db, storage } from '@/lib/firebase.config';
-import { TodoItem, TodoItemDetails, User } from '@/types/types';
+import { TodoItem, TodoItemDetails, TodoItemDetailsGlobalSearch, User } from '@/types/types';
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 
@@ -185,5 +185,35 @@ export async function deleteTodo(todoId: string, selectedDate: string, currentUs
         await deleteObject(imageRef);
       }
     }
+  }
+}
+
+export async function searchInDatabase(searchValue: string, currentUser: User) {
+  try {
+    const docRef = doc(db, 'taskerUserTodos', currentUser.accountId);
+    const docSnapshot = await getDoc(docRef);
+
+    const userData = docSnapshot.data();
+    const searchResults: TodoItemDetailsGlobalSearch[] = [];
+
+    if (userData) {
+      for (const dateKey in userData) {
+        const todos = userData[dateKey]?.userTodosOfDay;
+        if (todos) {
+          todos.forEach((todo: TodoItemDetailsGlobalSearch) => {
+            if (todo.todo.toLowerCase().includes(searchValue.toLowerCase())) {
+              todo.todoDate = dateKey;
+              todo.todoSearchValue = searchValue;
+              searchResults.push(todo);
+            }
+          });
+        }
+      }
+    }
+
+    return searchResults;
+  } catch (error) {
+    console.error('Error during database search:', error);
+    throw error;
   }
 }
