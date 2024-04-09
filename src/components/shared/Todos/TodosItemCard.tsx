@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { TodoItemDetailsGlobalSearch } from '@/types/types';
 import { useUpdateTodoStatus } from '@/api/mutations/todos/useUpdateTodoStatus';
 import { useAuth } from '@/contexts/AuthContext';
-import { multiFormatDateString } from '@/lib/helpers';
+import { dateCustomFormatting, multiFormatDateString } from '@/lib/helpers';
 import { useDeleteTodo } from '@/api/mutations/todos/useDeleteTodo';
 import { searchInDatabase } from '@/api/apiTodos';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
@@ -87,8 +87,25 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
     setOpenLightBoxImage(false);
   };
 
+  const shortTimeToFinishTask = (selectedDate: string, isCompleted: boolean) => {
+    const currentDate = new Date();
+    const currentDateFormat = dateCustomFormatting(currentDate);
+    const isToday = currentDateFormat === selectedDate;
+    const hoursUntilMidnight = 24 - currentDate.getHours();
+    const lessThanThreeHoursToMidnight = hoursUntilMidnight < 3;
+    const lessThanFiveHoursToEvening = hoursUntilMidnight < 5;
+
+    if (lessThanThreeHoursToMidnight) {
+      return isToday && !isCompleted && lessThanThreeHoursToMidnight && !isGlobalSearch ? 'bg-rose-200 animate-pulse' : '';
+    } else if (lessThanFiveHoursToEvening) {
+      return isToday && !isCompleted && lessThanFiveHoursToEvening && !isGlobalSearch ? 'bg-yellow-100 animate-pulse' : '';
+    } else {
+      return '';
+    }
+  };
+
   return (
-    <div className="flex justify-between border border-stone-200 rounded-lg mb-3 p-3">
+    <div className={`flex justify-between border border-stone-200 rounded-lg mb-3 p-3 ${shortTimeToFinishTask(selectedDate, data.isCompleted)}`}>
       <div className="flex flex-col gap-1 relative">
         <div className="flex items-center space-x-2 w-full">
           <Checkbox id={data.id} checked={data.isCompleted} onClick={handleCheckboxClick} className={`${data.isCompleted && '!bg-green-500 important !border-green-500'}`} />
