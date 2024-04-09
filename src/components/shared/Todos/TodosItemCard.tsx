@@ -15,6 +15,7 @@ import { searchInDatabase } from '@/api/apiTodos';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import Loader from '../Loader';
 import TodoForm from './TodoForm';
+import LightboxImage from '../LightboxImage';
 
 type TodosItemCardProps = {
   data: TodoItemDetailsGlobalSearch;
@@ -27,6 +28,9 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
   const { isDeletingItemTodo, removeTodo } = useDeleteTodo();
   const { selectedDate, currentUser } = useAuth();
   const { setGlobalSearchResult } = useGlobalSearch();
+  const [openLightBoxImage, setOpenLightBoxImage] = useState(false);
+
+  const dataImgToLightBoxImage = [{ src: data.imageUrl as string }];
 
   const handleCheckboxClick = async () => {
     if (isGlobalSearch) {
@@ -79,7 +83,9 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
     setGlobalSearchResult(updatedTodos);
   };
 
- 
+  const handleCloseLightbox = () => {
+    setOpenLightBoxImage(false);
+  };
 
   return (
     <div className="flex justify-between border border-stone-200 rounded-lg mb-3 p-3">
@@ -98,7 +104,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
           </label>
         </div>
         <small className="text-slate-400">{multiFormatDateString(data.createdAt)}</small>
-        {data.imageUrl && <Image className="absolute -right-6 -top-1 text-slate-400 w-[12px] h-[12px]" />}
+        {data.imageUrl && <Image className="absolute -right-6 -top-1 text-slate-400 w-[12px] h-[12px] cursor-zoom-in" onClick={() => setOpenLightBoxImage(true)} />}
       </div>
       <Popover>
         <div className="flex items-center justify-between space-x-4 px-4">
@@ -106,7 +112,6 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
             <EllipsisVertical className="cursor-pointer" />
           </PopoverTrigger>
         </div>
-
         <PopoverContent className="space-y-2">
           <div className="flex flex-col items-center">
             <div className="flex justify-end gap-2">
@@ -138,6 +143,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
           </div>
         </PopoverContent>
       </Popover>
+      <LightboxImage open={openLightBoxImage} onClose={handleCloseLightbox} slides={dataImgToLightBoxImage} />
     </div>
   );
 };

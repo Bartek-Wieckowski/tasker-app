@@ -17,6 +17,7 @@ import { useUpdateTodo } from '@/api/mutations/todos/useUpdateTodo';
 import { Pencil, Trash2, ImagePlus } from 'lucide-react';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import { searchInDatabase } from '@/api/apiTodos';
+import LightboxImage from '../LightboxImage';
 
 type TodoFormProps = {
   singleTodoId?: string;
@@ -28,11 +29,13 @@ type TodoFormProps = {
 const TodoForm = ({ singleTodoId, action, onCloseDialog, globalSearchItemDate }: TodoFormProps) => {
   const [isOpenCollapsible, setIsOpenCollapsible] = useState(false);
   const [deleteImage, setDeleteImage] = useState(false);
+  const [openLightBoxImage, setOpenLightBoxImage] = useState(false);
   const { currentUser, selectedDate } = useAuth();
   const { isAddingNewItemTodo, createTodo } = useCreateTodo();
   const { todo: singleTodoData } = useTodoById(singleTodoId as string, globalSearchItemDate ? globalSearchItemDate : selectedDate, currentUser);
   const { isTodoChanging, updateTodo } = useUpdateTodo();
   const { isGlobalSearch, searchValueGlobal, setGlobalSearchResult } = useGlobalSearch();
+  const dataImgToLightBoxImage = [{ src: singleTodoData ? (singleTodoData.imageUrl as string) : '' }];
 
   const form = useForm<TodoFormValues>({
     resolver: zodResolver(todoFormSchema),
@@ -48,6 +51,12 @@ const TodoForm = ({ singleTodoId, action, onCloseDialog, globalSearchItemDate }:
       form.setValue('todoMoreContent', singleTodoData.todoMoreContent);
     }
   }, [singleTodoData, form]);
+
+  useEffect(() => {
+    if (openLightBoxImage) {
+      document.body.style.pointerEvents = 'auto';
+    }
+  }, [openLightBoxImage]);
 
   async function onSubmit(values: TodoFormValues) {
     if (singleTodoData && action === 'Update') {
@@ -85,6 +94,10 @@ const TodoForm = ({ singleTodoId, action, onCloseDialog, globalSearchItemDate }:
     setGlobalSearchResult(updatedTodos);
   };
 
+  const handleCloseLightbox = () => {
+    setOpenLightBoxImage(false);
+  };
+
   if (!singleTodoData && action === 'Update') {
     return (
       <>
@@ -95,91 +108,99 @@ const TodoForm = ({ singleTodoId, action, onCloseDialog, globalSearchItemDate }:
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="todo"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Todo content</FormLabel>
-              <FormControl>
-                <Input placeholder="Add your text" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="todoMoreContent"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Todo more content if you need</FormLabel>
-              <FormControl>
-                <Textarea className="custom-scrollbar" placeholder="If you need more content of you todo write here!" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {action === 'Update' && singleTodoData?.imageUrl !== '' && !isOpenCollapsible && (
-          <div>
-            <p className="text-sm font-medium leading-none">Todo image:</p>
-            <img src={singleTodoData?.imageUrl as string} alt="" className="w-full h-[125px] object-contain rounded-sm block mx-auto my-4" />
-            <p className="text-sm font-medium leading-none mb-4">Image actions allowed:</p>
-            <div className="flex items-center gap-2">
-              <label htmlFor="todoPhotoRemove" className="text-sm font-medium leading-none">
-                <Trash2 className="text-rose-600 cursor-pointer" />
-              </label>
-              <Checkbox id="todoPhotoRemove" onClick={() => setDeleteImage(!deleteImage)} />
-            </div>
-          </div>
-        )}
-        <Collapsible open={isOpenCollapsible} onOpenChange={setIsOpenCollapsible}>
-          <div className="flex items-center gap-2">
-            <label htmlFor="todoPhoto" className="text-sm font-medium leading-none">
-              {action === 'Create' && <ImagePlus className="text-indigo-600" />}
-              {action === 'Update' && singleTodoData?.imageUrl === '' && <ImagePlus className="text-indigo-600 cursor-pointer" />}
-              {action === 'Update' && singleTodoData?.imageUrl !== '' && !deleteImage && <Pencil className="text-orange-300 cursor-pointer" />}
-            </label>
-            {(action === 'Create' || (!deleteImage && action === 'Update')) && (
-              <CollapsibleTrigger asChild>
-                <Checkbox id="todoPhoto" checked={isOpenCollapsible} />
-              </CollapsibleTrigger>
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="todo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Todo content</FormLabel>
+                <FormControl>
+                  <Input placeholder="Add your text" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-          <CollapsibleContent className="space-y-2">
-            {(action === 'Create' || (!deleteImage && action === 'Update')) && (
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <FileUploader fieldChange={field.onChange} mediaUrl={singleTodoData?.imageUrl as string} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+          />
+          <FormField
+            control={form.control}
+            name="todoMoreContent"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Todo more content if you need</FormLabel>
+                <FormControl>
+                  <Textarea className="custom-scrollbar" placeholder="If you need more content of you todo write here!" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {action === 'Update' && singleTodoData?.imageUrl !== '' && !isOpenCollapsible && (
+            <div>
+              <p className="text-sm font-medium leading-none">Todo image:</p>
+              <img
+                src={singleTodoData?.imageUrl as string}
+                alt=""
+                className="h-[125px] object-contain rounded-sm block mx-auto my-4 cursor-zoom-in"
+                onClick={() => setOpenLightBoxImage(true)}
               />
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-
-        <Button type="submit">
-          {isAddingNewItemTodo || isTodoChanging ? (
-            <div className="flex gap-2">
-              <Loader />
-              {action === 'Create' && 'Creating...'}
-              {action === 'Update' && 'Updating...'}
+              <p className="text-sm font-medium leading-none mb-4">Image actions allowed:</p>
+              <div className="flex items-center gap-2">
+                <label htmlFor="todoPhotoRemove" className="text-sm font-medium leading-none">
+                  <Trash2 className="text-rose-600 cursor-pointer" />
+                </label>
+                <Checkbox id="todoPhotoRemove" onClick={() => setDeleteImage(!deleteImage)} />
+              </div>
             </div>
-          ) : (
-            `${action} Todo Item`
           )}
-        </Button>
-      </form>
-    </Form>
+          <Collapsible open={isOpenCollapsible} onOpenChange={setIsOpenCollapsible}>
+            <div className="flex items-center gap-2">
+              <label htmlFor="todoPhoto" className="text-sm font-medium leading-none">
+                {action === 'Create' && <ImagePlus className="text-indigo-600" />}
+                {action === 'Update' && singleTodoData?.imageUrl === '' && <ImagePlus className="text-indigo-600 cursor-pointer" />}
+                {action === 'Update' && singleTodoData?.imageUrl !== '' && !deleteImage && <Pencil className="text-orange-300 cursor-pointer" />}
+              </label>
+              {(action === 'Create' || (!deleteImage && action === 'Update')) && (
+                <CollapsibleTrigger asChild>
+                  <Checkbox id="todoPhoto" checked={isOpenCollapsible} />
+                </CollapsibleTrigger>
+              )}
+            </div>
+            <CollapsibleContent className="space-y-2">
+              {(action === 'Create' || (!deleteImage && action === 'Update')) && (
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <FileUploader fieldChange={field.onChange} mediaUrl={singleTodoData?.imageUrl as string} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+
+          <Button type="submit">
+            {isAddingNewItemTodo || isTodoChanging ? (
+              <div className="flex gap-2">
+                <Loader />
+                {action === 'Create' && 'Creating...'}
+                {action === 'Update' && 'Updating...'}
+              </div>
+            ) : (
+              `${action} Todo Item`
+            )}
+          </Button>
+        </form>
+      </Form>
+      {action === 'Update' && <LightboxImage open={openLightBoxImage} onClose={handleCloseLightbox} slides={dataImgToLightBoxImage} />}
+    </>
   );
 };
 
