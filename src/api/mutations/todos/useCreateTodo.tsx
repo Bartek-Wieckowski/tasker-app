@@ -15,7 +15,6 @@ export function useCreateTodo() {
     mutationFn: ({ todoDetails, selectedDate, currentUser }: { todoDetails: TodoItem; selectedDate: string; currentUser: User }) => addTodo(todoDetails, selectedDate, currentUser),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos]});
-      console.log('Dokument został pomyślnie dodany.');
     },
     onError: () => {
       toast({ title: 'Adding todos failed. Please try again.', variant: 'destructive' });

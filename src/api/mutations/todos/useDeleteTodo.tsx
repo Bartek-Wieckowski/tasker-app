@@ -15,7 +15,6 @@ export function useDeleteTodo() {
     mutationFn: ({ todoId, selectedDate, currentUser }: { todoId: string; selectedDate: string; currentUser: User }) => deleteTodo(todoId, selectedDate, currentUser),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
-      console.log('Dokument został pomyślnie usunięty.');
     },
     onError: () => {
       toast({ title: 'Deleting todos failed. Please try again.', variant: 'destructive' });

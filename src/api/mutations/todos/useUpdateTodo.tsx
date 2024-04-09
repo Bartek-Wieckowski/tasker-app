@@ -27,7 +27,6 @@ export function useUpdateTodo() {
     }) => editTodo(todoId, newTodoDetails, selectedDate, currentUser, deleteImage),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
-      console.log('Dokument został pomyślnie zmieniony.');
     },
     onError: () => {
       toast({ title: 'Updating todos failed. Please try again.', variant: 'destructive' });

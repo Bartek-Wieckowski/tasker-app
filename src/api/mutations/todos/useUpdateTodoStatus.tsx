@@ -16,7 +16,6 @@ export function useUpdateTodoStatus() {
       updateTodoCompletionStatus(todoId, selectedDate, currentUser, isCompleted),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
-      console.log('Dokument został pomyślnie zmieniony-status.');
     },
     onError: () => {
       toast({ title: 'Updating status todos failed. Please try again.', variant: 'destructive' });
