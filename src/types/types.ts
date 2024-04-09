@@ -41,7 +41,7 @@ export type TodoItemBase = {
   imageUrl: string | File;
   id: string;
   isCompleted: boolean;
-  createdAt: Date;
+  createdAt: Date | { seconds: number; nanoseconds: number };
   updatedAt: Date;
 };
 export type TodoItemDetails = TodoItemBase;
