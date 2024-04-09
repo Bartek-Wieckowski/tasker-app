@@ -1,4 +1,5 @@
 import { db, storage } from '@/lib/firebase.config';
+import { convertTimestampToDate, multiFormatDateString } from '@/lib/helpers';
 import { TodoItem, TodoItemDetails, TodoItemDetailsGlobalSearch, User } from '@/types/types';
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
@@ -210,6 +211,13 @@ export async function searchInDatabase(searchValue: string, currentUser: User) {
         }
       }
     }
+
+    searchResults.sort((a, b) => {
+      const dateA = a.createdAt instanceof Date ? a.createdAt : convertTimestampToDate(a.createdAt);
+      const dateB = b.createdAt instanceof Date ? b.createdAt : convertTimestampToDate(b.createdAt);
+
+      return dateB.getTime() - dateA.getTime();
+    });
 
     return searchResults;
   } catch (error) {
