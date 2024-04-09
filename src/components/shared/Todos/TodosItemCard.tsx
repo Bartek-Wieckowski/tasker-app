@@ -5,41 +5,81 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EllipsisVertical, Image } from 'lucide-react';
 import { ROUTES } from '@/routes/constants';
-import TodoForm from './TodoForm';
 import { useState } from 'react';
-import { TodoItemDetails } from '@/types/types';
+import { TodoItemDetailsGlobalSearch } from '@/types/types';
 import { useUpdateTodoStatus } from '@/api/mutations/todos/useUpdateTodoStatus';
 import { useAuth } from '@/contexts/AuthContext';
 import { multiFormatDateString } from '@/lib/helpers';
 import { useDeleteTodo } from '@/api/mutations/todos/useDeleteTodo';
+import { searchInDatabase } from '@/api/apiTodos';
+import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import Loader from '../Loader';
+import TodoForm from './TodoForm';
 
 type TodosItemCardProps = {
-  data: TodoItemDetails;
+  data: TodoItemDetailsGlobalSearch;
+  isGlobalSearch?: boolean;
 };
 
-const TodosItemCard = ({ data }: TodosItemCardProps) => {
+const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { isStatusChanging, updateStatusTodo } = useUpdateTodoStatus();
   const { isDeletingItemTodo, removeTodo } = useDeleteTodo();
   const { selectedDate, currentUser } = useAuth();
+  const { setGlobalSearchResult } = useGlobalSearch();
 
-  const handleCheckboxClick = () => {
-    updateStatusTodo({
-      todoId: data.id,
-      selectedDate,
-      currentUser,
-      isCompleted: !data.isCompleted,
-    });
+  const handleCheckboxClick = async () => {
+    if (isGlobalSearch) {
+      try {
+        await updateStatusTodo({
+          todoId: data.id,
+          selectedDate: data.todoDate as string,
+          currentUser,
+          isCompleted: !data.isCompleted,
+        });
+      } catch (error) {
+        console.error('Error during todo status update:', error);
+      } finally {
+        await updateClickedTodoItem();
+      }
+    } else {
+      updateStatusTodo({
+        todoId: data.id,
+        selectedDate,
+        currentUser,
+        isCompleted: !data.isCompleted,
+      });
+    }
   };
 
-  const handleDeleteClick = () => {
-    removeTodo({
-      todoId: data.id,
-      selectedDate,
-      currentUser,
-    });
+  const handleDeleteClick = async () => {
+    if (isGlobalSearch) {
+      try {
+        await removeTodo({
+          todoId: data.id,
+          selectedDate: data.todoDate as string,
+          currentUser,
+        });
+      } catch (error) {
+        console.error('Error while removing todo:', error);
+      } finally {
+        await updateClickedTodoItem();
+      }
+    } else {
+      removeTodo({
+        todoId: data.id,
+        selectedDate,
+        currentUser,
+      });
+    }
   };
+
+  const updateClickedTodoItem = async () => {
+    const updatedTodos = await searchInDatabase(data.todoSearchValue as string, currentUser);
+    setGlobalSearchResult(updatedTodos);
+  };
+
+ 
 
   return (
     <div className="flex justify-between border border-stone-200 rounded-lg mb-3 p-3">
@@ -58,7 +98,7 @@ const TodosItemCard = ({ data }: TodosItemCardProps) => {
           </label>
         </div>
         <small className="text-slate-400">{multiFormatDateString(data.createdAt)}</small>
-          {data.imageUrl && <Image className="absolute -right-6 -top-1 text-slate-400 w-[12px] h-[12px]" />}
+        {data.imageUrl && <Image className="absolute -right-6 -top-1 text-slate-400 w-[12px] h-[12px]" />}
       </div>
       <Popover>
         <div className="flex items-center justify-between space-x-4 px-4">
@@ -81,7 +121,7 @@ const TodosItemCard = ({ data }: TodosItemCardProps) => {
                   <DialogHeader>
                     <DialogTitle>Edit Todo Item</DialogTitle>
                   </DialogHeader>
-                  <TodoForm action="Update" singleTodoId={data.id} onCloseDialog={() => setDialogOpen(false)} />
+                  <TodoForm action="Update" singleTodoId={data.id} onCloseDialog={() => setDialogOpen(false)} globalSearchItemDate={data.todoDate} />
                 </DialogContent>
               </Dialog>
               <Button variant="destructive" onClick={handleDeleteClick}>

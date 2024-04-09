@@ -15,20 +15,24 @@ import { TodoFormValues, todoFormSchema } from '@/validators/validators';
 import Loader from '../Loader';
 import { useUpdateTodo } from '@/api/mutations/todos/useUpdateTodo';
 import { Pencil, Trash2, ImagePlus } from 'lucide-react';
+import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
+import { searchInDatabase } from '@/api/apiTodos';
 
 type TodoFormProps = {
   singleTodoId?: string;
   action: 'Create' | 'Update';
   onCloseDialog: () => void;
+  globalSearchItemDate?: string;
 };
 
-const TodoForm = ({ singleTodoId, action, onCloseDialog }: TodoFormProps) => {
+const TodoForm = ({ singleTodoId, action, onCloseDialog, globalSearchItemDate }: TodoFormProps) => {
   const [isOpenCollapsible, setIsOpenCollapsible] = useState(false);
   const [deleteImage, setDeleteImage] = useState(false);
   const { currentUser, selectedDate } = useAuth();
   const { isAddingNewItemTodo, createTodo } = useCreateTodo();
-  const { todo: singleTodoData } = useTodoById(singleTodoId as string, selectedDate, currentUser);
+  const { todo: singleTodoData } = useTodoById(singleTodoId as string, globalSearchItemDate ? globalSearchItemDate : selectedDate, currentUser);
   const { isTodoChanging, updateTodo } = useUpdateTodo();
+  const { isGlobalSearch, searchValueGlobal, setGlobalSearchResult } = useGlobalSearch();
 
   const form = useForm<TodoFormValues>({
     resolver: zodResolver(todoFormSchema),
@@ -47,18 +51,39 @@ const TodoForm = ({ singleTodoId, action, onCloseDialog }: TodoFormProps) => {
 
   async function onSubmit(values: TodoFormValues) {
     if (singleTodoData && action === 'Update') {
-      await updateTodo({
-        todoId: singleTodoId as string,
-        newTodoDetails: { todo: values.todo, todoMoreContent: values.todoMoreContent, imageUrl: values.imageUrl },
-        selectedDate,
-        currentUser,
-        deleteImage,
-      });
+      if (isGlobalSearch) {
+        try {
+          await updateTodo({
+            todoId: singleTodoId as string,
+            newTodoDetails: { todo: values.todo, todoMoreContent: values.todoMoreContent, imageUrl: values.imageUrl },
+            selectedDate: globalSearchItemDate as string,
+            currentUser,
+            deleteImage,
+          });
+        } catch (error) {
+          console.error('Błąd podczas aktualizacji todo:', error);
+        } finally {
+          updateClickedTodoItem();
+        }
+      } else {
+        await updateTodo({
+          todoId: singleTodoId as string,
+          newTodoDetails: { todo: values.todo, todoMoreContent: values.todoMoreContent, imageUrl: values.imageUrl },
+          selectedDate,
+          currentUser,
+          deleteImage,
+        });
+      }
     } else {
       await createTodo({ todoDetails: values, selectedDate, currentUser });
     }
     onCloseDialog();
   }
+
+  const updateClickedTodoItem = async () => {
+    const updatedTodos = await searchInDatabase(searchValueGlobal, currentUser);
+    setGlobalSearchResult(updatedTodos);
+  };
 
   if (!singleTodoData && action === 'Update') {
     return (

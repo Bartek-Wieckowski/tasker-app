@@ -1,68 +1,84 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Tabs } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useTodosByDate } from '@/api/queries/todos/useTodosByDate';
 import { useAuth } from '@/contexts/AuthContext';
-import { TodoItemDetails } from '@/types/types';
-import { List, ListChecks, ListX, Loader } from 'lucide-react';
-import TodosItemCard from './TodosItemCard';
+import { TABS_TEXT_1, TABS_TEXT_2, TABS_TEXT_3 } from '@/lib/constants';
+import Loader from '../Loader';
+import TodosTabsList from './TodosTabsList';
+import TodosGlobalSearch from './TodosGlobalSearch';
+import TodosSearchToggler from './TodosSearchToggler';
+import TodosResultsTab from './TodosResultsTab';
+import TodosResultsGlobally from './TodosResultsGlobally';
+import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 
 const TodosTabs = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [categoryTab, setCategoryTab] = useState(TABS_TEXT_1);
+  const [searchValue, setSearchValue] = useState('');
   const { selectedDate, currentUser } = useAuth();
-  const { isLoading, isError, todos } = useTodosByDate(selectedDate, currentUser);
+  const { isLoading, todos } = useTodosByDate(selectedDate, currentUser);
+  const { isGlobalSearch, setIsGlobalSearch, globalSearchResult, setGlobalSearchResult, setSearchValueGlobal } = useGlobalSearch();
 
   const todosChecked = todos?.filter((todo) => todo.isCompleted === true);
   const todosNotChecked = todos?.filter((todo) => todo.isCompleted !== true);
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 574) {
-        setIsMobile(true);
-      } else {
-        setIsMobile(false);
-      }
-    };
+  const filteredTodos = useMemo(() => {
+    if (categoryTab === TABS_TEXT_1) {
+      if (!searchValue) return todos;
+      return todos?.filter((todo) => todo.todo.toLowerCase().includes(searchValue.toLowerCase()));
+    }
+    if (categoryTab === TABS_TEXT_2) {
+      if (!searchValue) return todosChecked;
+      return todosChecked?.filter((todo) => todo.todo.toLowerCase().includes(searchValue.toLowerCase()));
+    }
+    if (categoryTab === TABS_TEXT_3) {
+      if (!searchValue) return todosNotChecked;
+      return todosNotChecked?.filter((todo) => todo.todo.toLowerCase().includes(searchValue.toLowerCase()));
+    }
+  }, [searchValue, categoryTab, todos, todosChecked, todosNotChecked]);
 
-    handleResize();
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(event.target.value);
+  };
 
-    window.addEventListener('resize', handleResize);
+  const categorySetHandler = (value: string) => {
+    setCategoryTab(value);
+  };
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  const toggleGlobalSearch = () => {
+    setIsGlobalSearch((prevState) => !prevState);
+    setGlobalSearchResult([]);
+    setSearchValueGlobal('');
+  };
 
-  if (isLoading) {
+  if (isLoading || !todos) {
     return <Loader />;
   }
 
   return (
-    <Tabs defaultValue="all" className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="all">{isMobile ? <List /> : 'All'}</TabsTrigger>
-        <TabsTrigger value="completed">{isMobile ? <ListChecks /> : 'Completed'}</TabsTrigger>
-        <TabsTrigger value="uncompleted">{isMobile ? <ListX /> : 'Uncompleted'}</TabsTrigger>
-      </TabsList>
-      <Input type="text" placeholder="Search task :)" className="my-2" />
-      {/* //TODO: ZROBIĆ TO LEPIEJ */}
-      {todos?.length === 0 && 'Add your first task!'}
-      <TabsContent value="all">
-        {todos?.map((data: TodoItemDetails) => (
-          <TodosItemCard key={data.id} data={data} />
-        ))}
-      </TabsContent>
-      <TabsContent value="completed">
-        {todosChecked?.map((data: TodoItemDetails) => (
-          <TodosItemCard key={data.id} data={data} />
-        ))}
-      </TabsContent>
-      <TabsContent value="uncompleted">
-        {todosNotChecked?.map((data: TodoItemDetails) => (
-          <TodosItemCard key={data.id} data={data} />
-        ))}
-      </TabsContent>
+    <Tabs defaultValue={TABS_TEXT_1} className="w-full">
+      {!isGlobalSearch && <TodosTabsList categorySetHandler={categorySetHandler} />}
+      <TodosSearchToggler isGlobalSearch={isGlobalSearch} toggleGlobalSearch={toggleGlobalSearch} />
+
+      {!isGlobalSearch ? (
+        todos?.length === 0 ? (
+          'Add your first task!'
+        ) : (
+          <Input type="text" placeholder="Search for a task on a selected day :)" className="my-2" onChange={handleChange} />
+        )
+      ) : (
+        <TodosGlobalSearch isGlobalSearch={isGlobalSearch} currentUser={currentUser} />
+      )}
+      {!isGlobalSearch ? (
+        <>
+          <TodosResultsTab todos={filteredTodos} tabValue={TABS_TEXT_1} />
+          <TodosResultsTab todos={filteredTodos} tabValue={TABS_TEXT_2} />
+          <TodosResultsTab todos={filteredTodos} tabValue={TABS_TEXT_3} />
+        </>
+      ) : (
+        <TodosResultsGlobally todos={globalSearchResult} />
+      )}
+      {!isGlobalSearch && filteredTodos && filteredTodos.length === 0 && searchValue !== '' && <p className="text-rose-400">The task you searched for is not on the list.</p>}
     </Tabs>
   );
 };
