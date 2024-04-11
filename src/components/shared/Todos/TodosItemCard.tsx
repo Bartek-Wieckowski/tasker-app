@@ -26,7 +26,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { isStatusChanging, updateStatusTodo } = useUpdateTodoStatus();
   const { isDeletingItemTodo, removeTodo } = useDeleteTodo();
-  const { selectedDate, currentUser } = useAuth();
+  const { selectedDate, currentUser, setSelectedDate } = useAuth();
   const { setGlobalSearchResult } = useGlobalSearch();
   const [openLightBoxImage, setOpenLightBoxImage] = useState(false);
 
@@ -87,6 +87,12 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
     setOpenLightBoxImage(false);
   };
 
+  const setGlobalDateIfItemSearchGlobally = () => {
+    if (isGlobalSearch) {
+      setSelectedDate(data.todoDate as string);
+    }
+  };
+
   const shortTimeToFinishTask = (selectedDate: string, isCompleted: boolean) => {
     const currentDate = new Date();
     const currentDateFormat = dateCustomFormatting(currentDate);
@@ -132,7 +138,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
         <PopoverContent className="space-y-2">
           <div className="flex flex-col items-center">
             <div className="flex justify-end gap-2">
-              <Button asChild>
+              <Button asChild onClick={setGlobalDateIfItemSearchGlobally}>
                 <Link to={ROUTES.todoDetails(data.id)}>Details</Link>
               </Button>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
