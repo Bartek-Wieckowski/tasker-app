@@ -42,7 +42,7 @@ export type TodoItemBase = {
   id: string;
   isCompleted: boolean;
   createdAt: Date | { seconds: number; nanoseconds: number };
-  updatedAt: Date;
+  updatedAt: Date | { seconds: number; nanoseconds: number };
 };
 export type TodoItemDetails = TodoItemBase;
 export type TodoItemDetailsGlobalSearch = TodoItemBase & { 

@@ -20,7 +20,7 @@ export async function getTodosFromDay(selectedDate: string, currentUser: User): 
   }
 }
 
-export async function getTodoById(todoId: string, selectedDate: string, currentUser: User): Promise<TodoItemDetails | undefined> {
+export async function getTodoById(todoId: string, selectedDate: string, currentUser: User): Promise<TodoItemDetailsGlobalSearch | undefined> {
   const docRef = doc(db, 'taskerUserTodos', currentUser.accountId);
   const docSnapshot = await getDoc(docRef);
 
@@ -28,7 +28,7 @@ export async function getTodoById(todoId: string, selectedDate: string, currentU
     const userData = docSnapshot.data();
     if (userData[selectedDate]?.userTodosOfDay) {
       const todosOfDay = userData[selectedDate].userTodosOfDay;
-      const todo = todosOfDay.find((todo: TodoItemDetails) => todo.id === todoId);
+      const todo = todosOfDay.find((todo: TodoItemDetailsGlobalSearch) => todo.id === todoId);
       return todo;
     } else {
       return undefined;
