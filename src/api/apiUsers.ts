@@ -53,7 +53,7 @@ export async function saveUserToDB(user: { accountId: string; email: string; use
 
 export async function removeUserToDB(userId: string) {
   try {
-    const res = await deleteDoc(doc(db, 'userTasker', userId));
+    const res = await deleteDoc(doc(db, 'taskerUsers', userId));
 
     return res;
   } catch (error) {
@@ -105,8 +105,8 @@ export async function deleteAccount() {
       await deleteObject(storageRef);
     }
 
-    await deleteUser(currentUser);
     await removeUserToDB(currentUser.uid);
+    await deleteUser(currentUser);
   }
 }
 
