@@ -14,6 +14,10 @@ const Todopage = () => {
   const { isLoading, isError, todo } = useTodoById(id as string, selectedDate, currentUser);
   const [openLightBoxImage, setOpenLightBoxImage] = useState(false);
 
+  const handleCloseLightbox = () => {
+    setOpenLightBoxImage(false);
+  };
+
   if (isLoading || !todo) {
     return <Loader />;
   }
@@ -23,11 +27,7 @@ const Todopage = () => {
 
   const createAtDate = convertTimestampToDate(todo?.createdAt);
   const updateAtDate = convertTimestampToDate(todo?.updatedAt);
-  const dataImgToLightBoxImage = [{ src: todo.imageUrl as string }];
-
-  const handleCloseLightbox = () => {
-    setOpenLightBoxImage(false);
-  };
+  const dataImgToLightBoxImage = [{ src: todo?.imageUrl as string }];
 
   return (
     <div className="flex flex-col gap-4">
