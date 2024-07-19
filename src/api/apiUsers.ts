@@ -12,8 +12,8 @@ import {
   updatePassword,
   updateEmail,
 } from 'firebase/auth';
-import { deleteDoc, doc, setDoc } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import { deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { deleteObject, getDownloadURL, listAll, ref, uploadBytesResumable } from 'firebase/storage';
 
 export async function createUserAccount(user: NewUser): Promise<User> {
   const res = await createUserWithEmailAndPassword(auth, user.email, user.password);
@@ -98,15 +98,28 @@ export async function deleteAccount() {
   const currentUser = auth.currentUser;
 
   if (currentUser) {
-    const storageRef = ref(storage, `${currentUser.uid}`);
-    const storageSnapshot = await getDownloadURL(storageRef).catch(() => null);
+    try {
+      const storageRef = ref(storage, `${currentUser.uid}`);
+      const storageSnapshot = await getDownloadURL(storageRef).catch(() => null);
 
-    if (storageSnapshot) {
-      await deleteObject(storageRef);
+      const allCurrentUserDocRef = doc(db, 'taskerUserTodos', currentUser.uid);
+      await deleteDoc(allCurrentUserDocRef);
+
+      const allCurrentUserImagesRef = ref(storage, `todoImages/${currentUser.uid}`);
+      const { items } = await listAll(allCurrentUserImagesRef);
+
+      const deleteAllImages = items.map((itemRef) => deleteObject(itemRef));
+      await Promise.all(deleteAllImages);
+
+      if (storageSnapshot) {
+        await deleteObject(storageRef);
+      }
+
+      await removeUserToDB(currentUser.uid);
+      await deleteUser(currentUser);
+    } catch (error) {
+      throw new Error('Something went wrong');
     }
-
-    await removeUserToDB(currentUser.uid);
-    await deleteUser(currentUser);
   }
 }
 
@@ -154,6 +167,11 @@ export async function updateUserSettings(user: UpdateUser): Promise<User> {
     await updateEmail(currentUser, user.email);
 
     await setDoc(doc(db, 'taskerUsers', currentUser.uid), updateUser);
+
+    const docRef = doc(db, 'taskerUserTodos', currentUser.uid);
+    await updateDoc(docRef, {
+      userInfo: updateUser,
+    });
 
     return updateUser;
   }
