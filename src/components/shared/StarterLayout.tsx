@@ -2,15 +2,15 @@ import { Outlet } from 'react-router-dom';
 import Container from './Container';
 import Logo from './Logo';
 import Header from './Header';
-import UserPanel from './User/UserPanel';
+import UserNavigation from './User/UserNavigation';
 
-const AppLayout = () => {
+const StarterLayout = () => {
   return (
     <section className="flex flex-col justify-center max-w-7xl w-full mx-auto p-2">
       <Container>
         <Header>
           <Logo />
-          <UserPanel />
+          <UserNavigation />
         </Header>
       </Container>
       <Container>
@@ -20,4 +20,4 @@ const AppLayout = () => {
   );
 };
 
-export default AppLayout;
+export default StarterLayout;
