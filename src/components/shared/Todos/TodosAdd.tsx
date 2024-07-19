@@ -14,7 +14,7 @@ const TodosAdd = () => {
           <PlusCircle className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
         <DialogHeader>
           <DialogTitle>Add new todo item</DialogTitle>
         </DialogHeader>

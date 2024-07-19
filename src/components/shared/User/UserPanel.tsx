@@ -41,7 +41,7 @@ const UserPanel = () => {
                   </span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
                 <DialogHeader>
                   <DialogTitle>Edit profile</DialogTitle>
                 </DialogHeader>

@@ -145,7 +145,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 <DialogTrigger asChild>
                   <Button variant="outline">Edit</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
                   <DialogHeader>
                     <DialogTitle>Edit Todo Item</DialogTitle>
                   </DialogHeader>
