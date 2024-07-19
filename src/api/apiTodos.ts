@@ -1,5 +1,5 @@
 import { db, storage } from '@/lib/firebase.config';
-import { convertTimestampToDate, multiFormatDateString } from '@/lib/helpers';
+import { convertTimestampToDate } from '@/lib/helpers';
 import { TodoItem, TodoItemDetails, TodoItemDetailsGlobalSearch, User } from '@/types/types';
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
