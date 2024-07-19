@@ -8,9 +8,9 @@ export default function ProtectedWrapper() {
   const { isAuth } = useAuth();
 
   useEffect(() => {
-    if (isAuth) {
-      navigate(ROUTES.home);
+    if (!isAuth) {
+      navigate(ROUTES.login);
     }
   }, [isAuth, navigate]);
-  if (!isAuth) return <Outlet />;
+  if (isAuth) return <Outlet />;
 }
