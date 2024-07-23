@@ -7,14 +7,16 @@ import AppLayout from './components/shared/AppLayout';
 import StarterLayout from './components/shared/StarterLayout';
 import AuthProvider from './contexts/AuthContext';
 import Loader from './components/shared/Loader';
+import AuthRedirect from './components/shared/AuthRedirect';
+import ProtectedWrapper from './components/shared/ProtectedWrapper';
 
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const TodosList = lazy(() => import('./components/shared/Todos/TodosList'));
 const Todopage = lazy(() => import('./pages/Todopage'));
-const ProtectedWrapper = lazy(() => import('./components/shared/ProtectedWrapper'));
-const AuthRedirect = lazy(() => import('./components/shared/AuthRedirect'));
+// const ProtectedWrapper = lazy(() => import('./components/shared/ProtectedWrapper'));
+// const AuthRedirect = lazy(() => import('./components/shared/AuthRedirect'));
 
 const App = () => {
   return (
