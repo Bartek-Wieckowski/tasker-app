@@ -4,3 +4,7 @@ export const GOOGLE_IMG_URL = "https://cdn-icons-png.flaticon.com/256/1199/11994
 export const TABS_TEXT_1 = "All"
 export const TABS_TEXT_2 = "Completed"
 export const TABS_TEXT_3 = "Uncompleted"
+
+
+export const TABLE_NAME_taskerUsers = "taskerUsers"
+export const TABLE_NAME_taskerUserTodos = "taskerUserTodos"
