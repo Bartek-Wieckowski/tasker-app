@@ -1,5 +1,3 @@
-import { NewUser } from '@/types/types';
-
 export function dateCustomFormatting(date: Date): string {
   const padStart = (value: number): string => value.toString().padStart(2, '0');
   return `${padStart(date.getDate())}-${padStart(date.getMonth() + 1)}-${date.getFullYear()}`;
@@ -58,12 +56,4 @@ export function convertTimestampToDate(timestamp: Date | { seconds: number; nano
     const milliseconds = seconds + nanoseconds;
     return new Date(milliseconds);
   }
-}
-
-export function isNotValidateUserCredentials(user: NewUser) {
-  return !user.email || !user.password || !user.username;
-}
-
-export function isNotValidateUserProfileCredentials(username: string, avatarUrl: string) {
-  return !username.trim() || !avatarUrl.trim()
 }
