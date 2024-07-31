@@ -1,6 +1,13 @@
 import { it, expect, describe } from 'vitest';
-import { isNotValidateUserAuthOrUsername, isNotValidateUserCredentials, isNotValidateUserProfileCredentials } from '@/lib/validators';
-import { User as UserFromFirebaseAuth } from 'firebase/auth';
+import {
+  isNotValidateGoogleResponse,
+  isNotValidateUserAuthOrUsername,
+  isNotValidateUserCredentials,
+  isNotValidateUserEmailOrPassword,
+  isNotValidateUserId,
+  isNotValidateUserProfileCredentials,
+} from '@/lib/validators';
+import { UserCredential, User as UserFromFirebaseAuth } from 'firebase/auth';
 
 describe('isNotValidateUserCredentials()', () => {
   it('should return true when user has all fields empty', () => {
@@ -70,5 +77,53 @@ describe('isNotValidateUserAuthOrUsername()', () => {
 
   it('should return false if all required fields are valid and username is valid', () => {
     expect(isNotValidateUserAuthOrUsername(mockUserAuth, 'validUsername')).toBe(false);
+  });
+});
+
+describe('isNotValidateUserId()', () => {
+  it('should return true when userId was empty', () => {
+    const userId = '';
+    const result = isNotValidateUserId(userId);
+    expect(result).toBe(true);
+  });
+
+  it('should return false when userId are filled', () => {
+    const userId = '12345';
+    const result = isNotValidateUserId(userId);
+    expect(result).toBe(false);
+  });
+});
+
+describe('isNotValidateUserEmailOrPassword()', () => {
+  it('should return true when email is empty', () => {
+    const user = { email: '', password: 'password123' };
+    const result = isNotValidateUserEmailOrPassword(user);
+    expect(result).toBe(true);
+  });
+
+  it('should return true when password is empty', () => {
+    const user = { email: 'test@example.com', password: '' };
+    const result = isNotValidateUserEmailOrPassword(user);
+    expect(result).toBe(true);
+  });
+
+  it('should return false when both email and password are provided', () => {
+    const user = { email: 'test@example.com', password: 'password123' };
+    const result = isNotValidateUserEmailOrPassword(user);
+    expect(result).toBe(false);
+  });
+});
+
+describe('isNotValidateGoogleResponse()', () => {
+  it('should return false when response has a valid user', () => {
+    const response = { user: { uid: '12345' } } as UserCredential;
+    const result = isNotValidateGoogleResponse(response);
+    expect(result).toBe(false);
+  });
+
+  it('should return true when response is null', () => {
+    const response = null;
+    const result = isNotValidateGoogleResponse(response);
+    expect(result).toBe(true);
   });
 });
