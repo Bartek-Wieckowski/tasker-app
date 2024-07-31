@@ -27,6 +27,10 @@ export type UpdateUser = {
   email: string;
   imageUrl: File;
 };
+export type UserProfileUpdates = {
+  displayName?: string;
+  photoURL?: string;
+};
 export type UpdateUserPassword = {
   password: string;
 };
