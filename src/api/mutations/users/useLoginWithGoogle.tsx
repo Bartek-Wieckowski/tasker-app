@@ -13,11 +13,8 @@ export function useLoginWithGoogle() {
     mutateAsync: loginUserWithGoogle,
   } = useMutation({
     mutationFn: () => loginAccountWithGoogle(),
-    onSuccess: (data) => {
-      if (!data) return;
-      if (data.accountId.length > 0) {
-        navigate(ROUTES.home);
-      }
+    onSuccess: () => {
+      navigate(ROUTES.home);
     },
     onError: () => {
       toast({ title: 'Login failed. Please try again.', variant: 'destructive' });
