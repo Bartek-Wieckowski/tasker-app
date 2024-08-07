@@ -229,7 +229,7 @@ export async function searchInDatabase(searchValue: string, currentUser: User) {
   return sortedResults;
 }
 
-function getSearchResultsFromUserData(userData: DocumentData, searchValue: string): TodoItemDetailsGlobalSearch[] {
+export function getSearchResultsFromUserData(userData: DocumentData, searchValue: string): TodoItemDetailsGlobalSearch[] {
   const searchResults: TodoItemDetailsGlobalSearch[] = [];
   if (!userData) return searchResults;
 
