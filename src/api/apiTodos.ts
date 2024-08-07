@@ -1,19 +1,30 @@
 import { FILES_FOLDER_todoImages, TABLE_NAME_taskerUserTodos } from '@/lib/constants';
-import { db, storage } from '@/lib/firebase.config';
+import { storage } from '@/lib/firebase.config';
 import { getFirestoreDocRef } from '@/lib/firebaseHelpers';
 import { convertTimestampToDate } from '@/lib/helpers';
 import { TodoItem, TodoItemBase, TodoItemDetails, TodoItemDetailsGlobalSearch, User } from '@/types/types';
-import { doc, getDoc, updateDoc, setDoc, DocumentSnapshot, DocumentReference, DocumentData } from 'firebase/firestore';
+import { getDoc, updateDoc, DocumentSnapshot, DocumentReference, DocumentData, deleteField } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 
-export async function getTodosFromDay(selectedDate: string, currentUser: User) {
-  const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
-  return getTodosForDate(selectedDate, docSnapshot);
+export async function getUserTodos(accountId: string, selectedDate: string) {
+  const docSnapshot = await getUserTodosDocSnapshot(accountId);
+  if (!docSnapshot.exists()) return null;
+
+  const userData = docSnapshot.data();
+  if (!userData[selectedDate]?.userTodosOfDay) return null;
+
+  const docRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, accountId);
+  return { docRef, userData, todosOfDay: userData[selectedDate].userTodosOfDay };
 }
 
 export async function getUserTodosDocSnapshot(accountId: string) {
   const userTodosDocRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, accountId);
   return await getDoc(userTodosDocRef);
+}
+
+export async function getTodosFromDay(selectedDate: string, currentUser: User) {
+  const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
+  return getTodosForDate(selectedDate, docSnapshot);
 }
 
 export function getTodosForDate(selectedDate: string, docSnapshot: DocumentSnapshot) {
@@ -25,9 +36,10 @@ export function getTodosForDate(selectedDate: string, docSnapshot: DocumentSnaps
 }
 
 export async function getTodoById(todoId: string, selectedDate: string, currentUser: User) {
-  const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
-  const todosOfDay = getTodosForDate(selectedDate, docSnapshot);
+  const result = await getUserTodos(currentUser.accountId, selectedDate);
+  if (!result) return;
 
+  const { todosOfDay } = result;
   const todo = todosOfDay.find((todo: TodoItemBase) => todo.id === todoId);
   return todo;
 }
@@ -51,7 +63,7 @@ export function createTodoItem(todoDetails: TodoItem, todoId: string, imageUrl: 
   };
 }
 
-export async function updateOrCreateTodos(docRef: DocumentReference, selectedDate: string, todoItem: TodoItemBase, userData: DocumentData) {
+export async function updateOrCreateTodos(docRef: DocumentReference, selectedDate: string, todoItem: TodoItemBase, userData: DocumentData, currentUser: User) {
   if (userData[selectedDate]?.userTodosOfDay) {
     await updateDoc(docRef, {
       [selectedDate]: {
@@ -63,6 +75,7 @@ export async function updateOrCreateTodos(docRef: DocumentReference, selectedDat
       [selectedDate]: {
         userTodosOfDay: [todoItem],
       },
+      userInfo: currentUser,
     });
   }
 }
@@ -80,150 +93,167 @@ export async function addTodo(todoDetails: TodoItem, selectedDate: string, curre
 
   const todoItem = createTodoItem(todoDetails, todoId, imageUrl);
 
-  if (docSnapshot.exists()) {
-    const userData = docSnapshot.data();
-    await updateOrCreateTodos(docRef, selectedDate, todoItem, userData);
-  } else {
-    await setDoc(docRef, {
-      [selectedDate]: {
-        userTodosOfDay: [todoItem],
-      },
-      userInfo: currentUser,
-    });
-  }
+  const userData = docSnapshot.data();
+  await updateOrCreateTodos(docRef, selectedDate, todoItem, userData!, currentUser);
 }
 
 export async function editTodo(todoId: string, newTodoDetails: Partial<TodoItemDetails>, selectedDate: string, currentUser: User, deleteImage: boolean) {
-  const docRef = doc(db, TABLE_NAME_taskerUserTodos, currentUser.accountId);
-  const docSnapshot = await getDoc(docRef);
+  const result = await getUserTodos(currentUser.accountId, selectedDate);
+  if (!result) return;
 
-  let newImageUrl = '';
+  const { docRef, todosOfDay } = result;
 
-  if (docSnapshot.exists()) {
-    const userData = docSnapshot.data();
-    if (userData[selectedDate]?.userTodosOfDay) {
-      const updatedUserTodos = userData[selectedDate].userTodosOfDay.map((todo: TodoItemDetails) => {
-        if (todo.id === todoId) {
-          const updatedTodo: TodoItemDetails = {
-            ...todo,
-            todo: newTodoDetails.todo || todo.todo,
-            todoMoreContent: newTodoDetails.todoMoreContent,
-            imageUrl: deleteImage ? '' : newImageUrl || todo.imageUrl,
-            updatedAt: new Date(),
-          };
-          return updatedTodo;
-        }
-        return todo;
-      });
+  const updatedUserTodos = updateTodosList(todoId, newTodoDetails, todosOfDay, deleteImage);
 
-      await updateDoc(docRef, {
-        [selectedDate]: {
-          userTodosOfDay: updatedUserTodos,
-        },
-      });
+  await updateTodosInDatabase(docRef, selectedDate, updatedUserTodos);
 
-      if (deleteImage) {
-        const todoToDelete = userData[selectedDate].userTodosOfDay.find((todo: TodoItemDetails) => todo.id === todoId);
-        if (todoToDelete && todoToDelete.imageUrl) {
-          const imageRef = ref(storage, `todoImages/${currentUser.accountId}/${selectedDate}_${todoId}`);
-          await deleteObject(imageRef);
-        }
-      } else if (newTodoDetails.imageUrl) {
-        const imageRef = ref(storage, `todoImages/${currentUser.accountId}/${selectedDate}_${todoId}`);
-        const uploadTask = uploadBytesResumable(imageRef, newTodoDetails.imageUrl as File);
-        await uploadTask;
-        newImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-
-        await updateDoc(docRef, {
-          [selectedDate]: {
-            userTodosOfDay: updatedUserTodos.map((todo: TodoItemDetails) => (todo.id === todoId ? { ...todo, imageUrl: newImageUrl } : todo)),
-          },
-        });
-      }
-    }
+  if (deleteImage) {
+    await handleTodoImageDelete(currentUser.accountId, selectedDate, todoId, todosOfDay);
+  } else if (newTodoDetails.imageUrl) {
+    await handleTodoImageUploadAndUpdate(docRef, todoId, newTodoDetails.imageUrl as File, selectedDate, updatedUserTodos, currentUser.accountId);
   }
+}
+
+export function updateTodosList(todoId: string, newTodoDetails: Partial<TodoItemDetails>, todosOfDay: TodoItemDetails[], deleteImage: boolean) {
+  return todosOfDay.map((todo) => {
+    if (todo.id === todoId) {
+      return {
+        ...todo,
+        todo: newTodoDetails.todo || todo.todo,
+        todoMoreContent: newTodoDetails.todoMoreContent || todo.todoMoreContent,
+        imageUrl: deleteImage ? '' : todo.imageUrl,
+        updatedAt: new Date(),
+      };
+    }
+    return todo;
+  });
+}
+
+export async function updateTodosInDatabase(docRef: DocumentReference, selectedDate: string, updatedUserTodos: TodoItemDetails[]) {
+  await updateDoc(docRef, {
+    [selectedDate]: {
+      userTodosOfDay: updatedUserTodos,
+    },
+  });
+}
+
+export async function handleTodoImageDelete(accountId: string, selectedDate: string, todoId: string, todosOfDay: TodoItemDetails[]) {
+  const todoToDelete = todosOfDay.find((todo) => todo.id === todoId);
+  if (todoToDelete?.imageUrl) {
+    const imageRef = ref(storage, `${FILES_FOLDER_todoImages}/${accountId}/${selectedDate}_${todoId}`);
+    await deleteObject(imageRef);
+  }
+}
+
+export async function handleTodoImageUploadAndUpdate(
+  docRef: DocumentReference,
+  todoId: string,
+  imageFile: File,
+  selectedDate: string,
+  updatedUserTodos: TodoItemDetails[],
+  accountId: string
+) {
+  const newImageUrl = await uploadImageAndGetUrl(accountId, selectedDate, todoId, imageFile);
+  const newUpdatedUserTodos = updatedUserTodos.map((todo) => (todo.id === todoId ? { ...todo, imageUrl: newImageUrl } : todo));
+  await updateDoc(docRef, { [selectedDate]: { userTodosOfDay: newUpdatedUserTodos } });
 }
 
 export async function updateTodoCompletionStatus(todoId: string, selectedDate: string, currentUser: User, isCompleted: boolean) {
-  const docRef = doc(db, TABLE_NAME_taskerUserTodos, currentUser.accountId);
-  const docSnapshot = await getDoc(docRef);
+  const result = await getUserTodos(currentUser.accountId, selectedDate);
+  if (!result) return;
 
-  if (docSnapshot.exists()) {
-    const userData = docSnapshot.data();
-    if (userData[selectedDate]?.userTodosOfDay) {
-      const updatedTodos = userData[selectedDate].userTodosOfDay.map((todo: TodoItemDetails) => {
-        if (todo.id === todoId) {
-          return { ...todo, isCompleted, updatedAt: new Date() };
-        }
-        return todo;
-      });
+  const { docRef, todosOfDay } = result;
 
-      await updateDoc(docRef, {
-        [selectedDate]: {
-          userTodosOfDay: updatedTodos,
-        },
-      });
+  const updatedUserTodos = updateTodoStatusInList(todoId, todosOfDay, isCompleted);
+
+  await updateTodosInDatabase(docRef, selectedDate, updatedUserTodos);
+}
+
+export function updateTodoStatusInList(todoId: string, todosOfDay: TodoItemDetails[], isCompleted: boolean) {
+  return todosOfDay.map((todo) => {
+    if (todo.id === todoId) {
+      return { ...todo, isCompleted, updatedAt: new Date() };
     }
-  }
+    return todo;
+  });
 }
 
 export async function deleteTodo(todoId: string, selectedDate: string, currentUser: User) {
-  const docRef = doc(db, TABLE_NAME_taskerUserTodos, currentUser.accountId);
-  const docSnapshot = await getDoc(docRef);
+  const result = await getUserTodos(currentUser.accountId, selectedDate);
+  if (!result) return;
 
-  if (docSnapshot.exists()) {
-    const userData = docSnapshot.data();
-    if (userData[selectedDate]?.userTodosOfDay) {
-      const updatedUserTodos = userData[selectedDate].userTodosOfDay.filter((todo: TodoItemDetails) => todo.id !== todoId);
+  const { docRef, todosOfDay } = result;
 
-      await updateDoc(docRef, {
-        [selectedDate]: {
-          userTodosOfDay: updatedUserTodos,
-        },
-      });
+  const updatedUserTodos = filterOutTodoById(todosOfDay, todoId);
 
-      const todoToDelete = userData[selectedDate].userTodosOfDay.find((todo: TodoItemDetails) => todo.id === todoId);
-      if (todoToDelete && todoToDelete.imageUrl) {
-        const imageRef = ref(storage, `todoImages/${currentUser.accountId}/${selectedDate}_${todoId}`);
-        await deleteObject(imageRef);
-      }
-    }
+  if (updatedUserTodos.length === 0) {
+    await removeExistingDateIfNoTodo(docRef, selectedDate);
+  } else {
+    await updateTodosInDatabase(docRef, selectedDate, updatedUserTodos);
+  }
+
+  const todoToDelete = findTodoById(todosOfDay, todoId);
+  if (todoToDelete?.imageUrl) {
+    await deleteTodoImage(currentUser.accountId, selectedDate, todoId);
   }
 }
 
+export async function removeExistingDateIfNoTodo(docRef: DocumentReference, selectedDate: string) {
+  await updateDoc(docRef, {
+    [selectedDate]: deleteField(),
+  });
+}
+export function filterOutTodoById(todosOfDay: TodoItemDetails[], todoId: string) {
+  return todosOfDay.filter((todo) => todo.id !== todoId);
+}
+
+export function findTodoById(todosOfDay: TodoItemDetails[], todoId: string) {
+  return todosOfDay.find((todo) => todo.id === todoId);
+}
+
+export async function deleteTodoImage(accountId: string, selectedDate: string, todoId: string) {
+  const imageRef = ref(storage, `${FILES_FOLDER_todoImages}/${accountId}/${selectedDate}_${todoId}`);
+  await deleteObject(imageRef);
+}
+
 export async function searchInDatabase(searchValue: string, currentUser: User) {
-  try {
-    const docRef = doc(db, TABLE_NAME_taskerUserTodos, currentUser.accountId);
-    const docSnapshot = await getDoc(docRef);
+  const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
+  if (!docSnapshot.exists()) return;
 
-    const userData = docSnapshot.data();
-    const searchResults: TodoItemDetailsGlobalSearch[] = [];
+  const userData = docSnapshot.data();
 
-    if (userData) {
-      for (const dateKey in userData) {
-        const todos = userData[dateKey]?.userTodosOfDay;
-        if (todos) {
-          todos.forEach((todo: TodoItemDetailsGlobalSearch) => {
-            if (todo.todo.toLowerCase().includes(searchValue.toLowerCase())) {
-              todo.todoDate = dateKey;
-              todo.todoSearchValue = searchValue;
-              searchResults.push(todo);
-            }
-          });
+  const searchResults = getSearchResultsFromUserData(userData, searchValue);
+
+  const sortedResults = sortSearchResultsByDate(searchResults);
+
+  return sortedResults;
+}
+
+function getSearchResultsFromUserData(userData: DocumentData, searchValue: string): TodoItemDetailsGlobalSearch[] {
+  const searchResults: TodoItemDetailsGlobalSearch[] = [];
+  if (!userData) return searchResults;
+
+  for (const dateKey in userData) {
+    const todos = userData[dateKey]?.userTodosOfDay;
+    if (todos) {
+      todos.forEach((todo: TodoItemDetailsGlobalSearch) => {
+        if (todo.todo.toLowerCase().includes(searchValue.toLowerCase())) {
+          todo.todoDate = dateKey;
+          todo.todoSearchValue = searchValue;
+          searchResults.push(todo);
         }
-      }
+      });
     }
-
-    searchResults.sort((a, b) => {
-      const dateA = a.createdAt instanceof Date ? a.createdAt : convertTimestampToDate(a.createdAt);
-      const dateB = b.createdAt instanceof Date ? b.createdAt : convertTimestampToDate(b.createdAt);
-
-      return dateB.getTime() - dateA.getTime();
-    });
-
-    return searchResults;
-  } catch (error) {
-    console.error('Error during database search:', error);
-    throw error;
   }
+
+  return searchResults;
+}
+
+export function sortSearchResultsByDate(searchResults: TodoItemDetailsGlobalSearch[]): TodoItemDetailsGlobalSearch[] {
+  return searchResults.sort((a, b) => {
+    const dateA = a.createdAt instanceof Date ? a.createdAt : convertTimestampToDate(a.createdAt);
+    const dateB = b.createdAt instanceof Date ? b.createdAt : convertTimestampToDate(b.createdAt);
+
+    return dateB.getTime() - dateA.getTime();
+  });
 }
