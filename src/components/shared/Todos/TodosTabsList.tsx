@@ -31,13 +31,13 @@ const TodosTabsList = ({ categorySetHandler }: TodosTabsListProps) => {
   return (
     <TabsList className="grid w-full grid-cols-3">
       <TabsTrigger value={TABS_TEXT_1} onClick={() => categorySetHandler(TABS_TEXT_1)}>
-        {isMobile ? <List /> : TABS_TEXT_1}
+        {isMobile ? <List data-testid="icon-list" /> : TABS_TEXT_1}
       </TabsTrigger>
       <TabsTrigger value={TABS_TEXT_2} onClick={() => categorySetHandler(TABS_TEXT_2)}>
-        {isMobile ? <ListChecks /> : TABS_TEXT_2}
+        {isMobile ? <ListChecks data-testid="icon-list-checks" /> : TABS_TEXT_2}
       </TabsTrigger>
       <TabsTrigger value={TABS_TEXT_3} onClick={() => categorySetHandler(TABS_TEXT_3)}>
-        {isMobile ? <ListX /> : TABS_TEXT_3}
+        {isMobile ? <ListX data-testid="icon-list-x" /> : TABS_TEXT_3}
       </TabsTrigger>
     </TabsList>
   );
