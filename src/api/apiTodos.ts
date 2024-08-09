@@ -27,7 +27,7 @@ export async function getTodosFromDay(selectedDate: string, currentUser: User) {
   return getTodosForDate(selectedDate, docSnapshot);
 }
 
-export function getTodosForDate(selectedDate: string, docSnapshot: DocumentSnapshot) {
+export async function getTodosForDate(selectedDate: string, docSnapshot: DocumentSnapshot): Promise<TodoItemDetails[]> {
   if (!docSnapshot.exists()) return [];
 
   const userData = docSnapshot.data();
@@ -216,9 +216,9 @@ export async function deleteTodoImage(accountId: string, selectedDate: string, t
   await deleteObject(imageRef);
 }
 
-export async function searchInDatabase(searchValue: string, currentUser: User) {
+export async function searchInDatabase(searchValue: string, currentUser: User): Promise<TodoItemDetailsGlobalSearch[]> {
   const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
-  if (!docSnapshot.exists()) return;
+  if (!docSnapshot.exists()) return [];
 
   const userData = docSnapshot.data();
 
@@ -229,7 +229,7 @@ export async function searchInDatabase(searchValue: string, currentUser: User) {
   return sortedResults;
 }
 
-export function getSearchResultsFromUserData(userData: DocumentData, searchValue: string): TodoItemDetailsGlobalSearch[] {
+export function getSearchResultsFromUserData(userData: DocumentData, searchValue: string) {
   const searchResults: TodoItemDetailsGlobalSearch[] = [];
   if (!userData) return searchResults;
 
@@ -249,7 +249,7 @@ export function getSearchResultsFromUserData(userData: DocumentData, searchValue
   return searchResults;
 }
 
-export function sortSearchResultsByDate(searchResults: TodoItemDetailsGlobalSearch[]): TodoItemDetailsGlobalSearch[] {
+export function sortSearchResultsByDate(searchResults: TodoItemDetailsGlobalSearch[]) {
   return searchResults.sort((a, b) => {
     const dateA = a.createdAt instanceof Date ? a.createdAt : convertTimestampToDate(a.createdAt);
     const dateB = b.createdAt instanceof Date ? b.createdAt : convertTimestampToDate(b.createdAt);
