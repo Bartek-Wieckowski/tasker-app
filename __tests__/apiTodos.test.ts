@@ -108,7 +108,7 @@ describe('getUserTodosDocSnapshot()', () => {
 });
 
 describe('getTodosForDate()', () => {
-  it('should return todos for a given date when data exists', () => {
+  it('should return todos for a given date when data exists', async () => {
     const mockDocSnapshot = {
       exists: () => true,
       data: () => ({
@@ -118,11 +118,11 @@ describe('getTodosForDate()', () => {
       }),
     } as unknown as DocumentSnapshot;
 
-    const result = getTodosForDate('2023-10-10', mockDocSnapshot);
+    const result = await getTodosForDate('2023-10-10', mockDocSnapshot);
     expect(result).toEqual([{ id: 1, task: 'Test Task' }]);
   });
 
-  it('should return an empty array when there are no todos for the given date', () => {
+  it('should return an empty array when there are no todos for the given date', async () => {
     const mockDocSnapshot = {
       exists: () => true,
       data: () => ({
@@ -132,7 +132,7 @@ describe('getTodosForDate()', () => {
       }),
     } as unknown as DocumentSnapshot;
 
-    const result = getTodosForDate('2023-10-10', mockDocSnapshot);
+    const result = await getTodosForDate('2023-10-10', mockDocSnapshot);
     expect(result).toEqual([]);
   });
 });
