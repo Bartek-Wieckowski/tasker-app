@@ -3,10 +3,17 @@ import '@testing-library/jest-dom/vitest';
 import "@testing-library/jest-dom";
 import { ReactElement } from "react";
 import { render, RenderOptions } from "@testing-library/react";
-import { afterEach } from "vitest";
+import { afterEach, beforeAll } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 // runs a cleanup after each test case (e.g. clearing jsdom)
+beforeAll(() => {
+    global.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  });
 afterEach(() => {
     cleanup();
 });

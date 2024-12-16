@@ -140,13 +140,15 @@ describe('getTodosForDate()', () => {
 describe('getTodoById()', () => {
   it('should retrieve the correct todo item by ID for a given date and user', async () => {
     const mockUser = { accountId: '12345' } as User;
+    const mockCreatedAt = new Date();
+    const mockUpdatedAt = new Date();
     const mockDocSnapshot = {
       exists: () => true,
       data: () => ({
         '2023-10-10': {
           userTodosOfDay: [
-            { id: 'todo1', todo: 'Test Todo 1', isCompleted: false, createdAt: new Date(), updatedAt: new Date() },
-            { id: 'todo2', todo: 'Test Todo 2', isCompleted: true, createdAt: new Date(), updatedAt: new Date() },
+            { id: 'todo1', todo: 'Test Todo 1', isCompleted: false, createdAt: mockCreatedAt, updatedAt: mockUpdatedAt },
+            { id: 'todo2', todo: 'Test Todo 2', isCompleted: true, createdAt: mockCreatedAt, updatedAt: mockUpdatedAt },
           ],
         },
       }),
@@ -160,7 +162,7 @@ describe('getTodoById()', () => {
 
     const result = await getTodoById('todo1', '2023-10-10', mockUser);
 
-    expect(result).toEqual({ id: 'todo1', todo: 'Test Todo 1', isCompleted: false, createdAt: new Date(), updatedAt: new Date() });
+    expect(result).toEqual({ id: 'todo1', todo: 'Test Todo 1', isCompleted: false, createdAt: mockCreatedAt, updatedAt: mockUpdatedAt });
   });
 
   it('should return an empty array if the document snapshot does not exist', async () => {

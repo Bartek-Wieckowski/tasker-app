@@ -15,7 +15,7 @@ const TodosSearchToggler = ({ isGlobalSearch, toggleGlobalSearch }: TodosSearchT
         <Tooltip>
           <TooltipTrigger>
             <label htmlFor="globalSearch">
-              <Globe className="cursor-pointer" />
+              <Globe className="cursor-pointer" data-testid="globe-icon" />
             </label>
           </TooltipTrigger>
           <TooltipContent>

@@ -93,7 +93,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
     }
   };
 
-  const shortTimeToFinishTask = (selectedDate: string, isCompleted: boolean) => {
+  const shortTimeToFinishTask = async (selectedDate: string, isCompleted: boolean) => {
     const currentDate = new Date();
     const currentDateFormat = dateCustomFormatting(currentDate);
     const isToday = currentDateFormat === selectedDate;
@@ -131,7 +131,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
       </div>
       <Popover>
         <div className="flex items-center justify-between space-x-4 px-4">
-          <PopoverTrigger asChild>
+          <PopoverTrigger asChild data-testid="popover-trigger">
             <EllipsisVertical className="cursor-pointer" />
           </PopoverTrigger>
         </div>

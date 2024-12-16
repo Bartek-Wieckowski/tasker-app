@@ -51,7 +51,7 @@ const TodosTabs = () => {
     setSearchValueGlobal('');
   };
 
-  if (isLoading || !todos) {
+  if (isLoading || !todos || !filteredTodos) {
     return <Loader />;
   }
 
@@ -62,7 +62,7 @@ const TodosTabs = () => {
 
       {!isGlobalSearch ? (
         todos?.length === 0 ? (
-          'Add your first task!'
+          <p>Add your first task!</p>
         ) : (
           <Input type="text" placeholder="Search for a task on a selected day :)" className="my-2" onChange={handleChange} />
         )
