@@ -11,7 +11,11 @@ import { Link, useParams } from 'react-router-dom';
 const Todopage = () => {
   const { id } = useParams();
   const { selectedDate, currentUser } = useAuth();
-  const { isLoading, isError, todo } = useTodoById(id as string, selectedDate, currentUser);
+  const { isLoading, isError, todo } = useTodoById(
+    id as string,
+    selectedDate,
+    currentUser
+  );
   const [openLightBoxImage, setOpenLightBoxImage] = useState(false);
 
   const handleCloseLightbox = () => {
@@ -26,7 +30,8 @@ const Todopage = () => {
   }
 
   const createAtDate = convertTimestampToDate(todo?.createdAt);
-  const updateAtDate = convertTimestampToDate(todo?.updatedAt);
+  const updateAtDate =
+    todo.updatedAt && convertTimestampToDate(todo?.updatedAt);
   const dataImgToLightBoxImage = [{ src: todo?.imageUrl as string }];
 
   return (
@@ -37,22 +42,36 @@ const Todopage = () => {
         </Link>
       </nav>
       <div className="max-5xl w-full border border-slate-200 p-3 rounded-md shadow">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row  items-start sm:items-center justify-between mb-4">
           <div className="text-sm text-slate-700">
             <span>Create todo: </span>
-            <span className="font-semibold italic">{dateCustomFormatting(createAtDate)}</span>
+            <span className="font-semibold italic">
+              {dateCustomFormatting(createAtDate)}
+            </span>
+          </div>
+          <div className="text-sm text-slate-700">
+            <span>Current date todo: </span>
+            <span className="font-semibold italic">{selectedDate}</span>
           </div>
           {todo.updatedAt && (
             <div className="text-sm text-slate-700">
               <span>Last update todo: </span>
-              <span className="font-semibold italic">{dateCustomFormatting(updateAtDate)}</span>
+              <span className="font-semibold italic">
+                {dateCustomFormatting(updateAtDate)}
+              </span>
             </div>
           )}
         </div>
         <div className="flex flex-col gap-4">
           <div className="text-sm text-slate-700 flex item-center gap-3">
             <span>Todo status: </span>
-            <span>{todo.isCompleted ? <CopyCheck className="text-teal-400" /> : <CopyX className="text-rose-400" />}</span>
+            <span>
+              {todo.isCompleted ? (
+                <CopyCheck className="text-teal-400" />
+              ) : (
+                <CopyX className="text-rose-400" />
+              )}
+            </span>
           </div>
           <div className="text-sm text-slate-700">
             <span>Todo title: </span>
@@ -61,12 +80,27 @@ const Todopage = () => {
           {todo.todoMoreContent && (
             <div className="text-sm text-slate-700">
               <span>Todo more content: </span>
-              <span className="font-semibold italic">{todo.todoMoreContent}</span>
+              <span className="font-semibold italic">
+                {todo.todoMoreContent}
+              </span>
             </div>
           )}
           <div className="mx-auto">
-            {todo.imageUrl && <img src={todo.imageUrl as string} alt={todo.todo} onClick={() => setOpenLightBoxImage(true)} className="block cursor-zoom-in" />}
-            {todo.imageUrl && <LightboxImage open={openLightBoxImage} onClose={handleCloseLightbox} slides={dataImgToLightBoxImage} />}
+            {todo.imageUrl && (
+              <img
+                src={todo.imageUrl as string}
+                alt={todo.todo}
+                onClick={() => setOpenLightBoxImage(true)}
+                className="block cursor-zoom-in"
+              />
+            )}
+            {todo.imageUrl && (
+              <LightboxImage
+                open={openLightBoxImage}
+                onClose={handleCloseLightbox}
+                slides={dataImgToLightBoxImage}
+              />
+            )}
           </div>
         </div>
       </div>
