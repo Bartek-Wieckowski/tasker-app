@@ -36,7 +36,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           accountId: user.uid,
           email: user.email || '',
           username: user.displayName || '',
-          imageUrl: user.photoURL || '',
+          imageUrl: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`,
           providerId: user.providerData[0].providerId,
         });
         setIsAuth(true);

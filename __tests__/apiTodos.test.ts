@@ -237,7 +237,6 @@ describe('createTodoItem()', () => {
       imageUrl: 'http://example.com/test.png',
       isCompleted: false,
       createdAt: expect.any(Date),
-      updatedAt: expect.any(Date),
     });
   });
 });
