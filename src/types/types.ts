@@ -46,18 +46,20 @@ export type TodoItemBase = {
   id: string;
   isCompleted: boolean;
   createdAt: Date | { seconds: number; nanoseconds: number };
-  updatedAt: Date | { seconds: number; nanoseconds: number };
+  updatedAt?: Date | { seconds: number; nanoseconds: number };
 };
 export type TodoItemDetails = TodoItemBase;
-export type TodoItemDetailsGlobalSearch = TodoItemBase & { 
-  todoDate?: string; 
-  todoSearchValue?: string 
+export type TodoItemDetailsGlobalSearch = TodoItemBase & {
+  todoDate?: string;
+  todoSearchValue?: string;
 };
 export type SearchGlobalContextType = {
   searchValueGlobal: string;
   setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;
   isGlobalSearch: boolean;
-  setIsGlobalSearch:React.Dispatch<React.SetStateAction<boolean>>;
+  setIsGlobalSearch: React.Dispatch<React.SetStateAction<boolean>>;
   globalSearchResult: TodoItemDetailsGlobalSearch[];
-  setGlobalSearchResult: React.Dispatch<React.SetStateAction<TodoItemDetailsGlobalSearch[]>>;
+  setGlobalSearchResult: React.Dispatch<
+    React.SetStateAction<TodoItemDetailsGlobalSearch[]>
+  >;
 };
