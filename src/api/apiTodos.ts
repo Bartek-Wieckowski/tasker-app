@@ -19,6 +19,7 @@ import {
   DocumentReference,
   DocumentData,
   deleteField,
+  setDoc
 } from 'firebase/firestore';
 import {
   deleteObject,
@@ -113,22 +114,22 @@ export async function updateOrCreateTodos(
   docRef: DocumentReference,
   selectedDate: string,
   todoItem: TodoItemBase,
-  userData: DocumentData,
+  userData: DocumentData | undefined,
   currentUser: User
 ) {
-  if (userData[selectedDate]?.userTodosOfDay) {
+  if (userData && userData[selectedDate]?.userTodosOfDay) {
     await updateDoc(docRef, {
       [selectedDate]: {
         userTodosOfDay: [...userData[selectedDate].userTodosOfDay, todoItem],
       },
     });
   } else {
-    await updateDoc(docRef, {
+    await setDoc(docRef, {
       [selectedDate]: {
         userTodosOfDay: [todoItem],
       },
       userInfo: currentUser,
-    });
+    }, { merge: true });
   }
 }
 
@@ -157,12 +158,12 @@ export async function addTodo(
 
   const todoItem = createTodoItem(todoDetails, todoId, imageUrl);
 
-  const userData = docSnapshot.data();
+  const userData = docSnapshot.exists() ? docSnapshot.data() : undefined;
   await updateOrCreateTodos(
     docRef,
     selectedDate,
     todoItem,
-    userData!,
+    userData,
     currentUser
   );
 }
