@@ -3,9 +3,13 @@ import { DatePicker } from '../DatePicker';
 import TodosAdd from './TodosAdd';
 import TodosTabs from './TodosTabs';
 import GlobalSearchProvider from '@/contexts/GlobalSearchContext';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const TodosList = () => {
-  const { isAuth } = useAuth();
+  const { isAuth} = useAuth();
+
+  useNotifications();
+
   return (
     isAuth && (
       <GlobalSearchProvider>
