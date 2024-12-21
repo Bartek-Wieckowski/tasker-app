@@ -29,6 +29,7 @@ import LightboxImage from '../LightboxImage';
 import { Calendar } from '@/components/ui/calendar';
 import { useRepeatTodo } from '@/api/mutations/todos/useRepeatTodo';
 import { useMoveTodo } from '@/api/mutations/todos/useMoveTodo';
+import { toast } from '@/components/ui/use-toast';
 
 type TodosItemCardProps = {
   data: TodoItemDetailsGlobalSearch;
@@ -157,7 +158,11 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
       setRepeatDialogOpen(false);
       setSelectedRepeatDate(undefined);
     } catch (error) {
-      console.error('Error repeating todo:', error);
+      toast({
+        title: 'Failed to repeat todo',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -171,7 +176,10 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
 
     try {
       await moveTodoItem({
-        todoDetails: data,
+        todoDetails: {
+          ...data,
+          originalDate: data.originalDate || originalDate,
+        },
         newDate: formattedDate,
         currentUser,
         originalDate,
@@ -179,7 +187,11 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
       setMoveDialogOpen(false);
       setSelectedMoveDate(undefined);
     } catch (error) {
-      console.error('Error moving todo:', error);
+      toast({
+        title: 'Failed to moving todo',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
