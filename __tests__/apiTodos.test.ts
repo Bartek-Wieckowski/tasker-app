@@ -1,6 +1,7 @@
 import {
   createTodoItem,
-  deleteTodoImage,
+  deleteTodo,
+  editTodo,
   filterOutTodoById,
   findTodoById,
   getSearchResultsFromUserData,
@@ -17,14 +18,37 @@ import {
   updateTodosList,
   updateTodoStatusInList,
   uploadImageAndGetUrl,
+  moveTodo,
 } from '@/api/apiTodos';
-import { FILES_FOLDER_todoImages, TABLE_NAME_taskerUserTodos } from '@/lib/constants';
+import {
+  FILES_FOLDER_todoImages,
+  TABLE_NAME_taskerUserTodos,
+} from '@/lib/constants';
 import { storage } from '@/lib/firebase.config';
 import { getFirestoreDocRef } from '@/lib/firebaseHelpers';
-import { TodoItemBase, TodoItemDetailsGlobalSearch, User } from '@/types/types';
-import { DocumentSnapshot, DocumentReference, getDoc, DocumentData, updateDoc, deleteField } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, ref, StorageReference, uploadBytesResumable, UploadTask } from 'firebase/storage';
-import { it, expect, describe, vi } from 'vitest';
+import {
+  TodoItemBase,
+  TodoItemDetails,
+  TodoItemDetailsGlobalSearch,
+  User,
+} from '@/types/types';
+import {
+  DocumentSnapshot,
+  DocumentReference,
+  getDoc,
+  DocumentData,
+  updateDoc,
+  deleteField,
+} from 'firebase/firestore';
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  StorageReference,
+  uploadBytesResumable,
+  UploadTask,
+} from 'firebase/storage';
+import { it, expect, describe, vi, beforeEach } from 'vitest';
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
@@ -91,7 +115,10 @@ describe('getTodosFromDay()', () => {
 describe('getUserTodosDocSnapshot()', () => {
   it('should retrieve document snapshot for valid accountId', async () => {
     const mockAccountId = '12345';
-    const mockDocSnapshot = { exists: () => true, data: () => ({}) } as unknown as DocumentSnapshot;
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({}),
+    } as unknown as DocumentSnapshot;
 
     const getDocMocked = vi.mocked(getDoc);
     const getFirestoreDocRefMocked = vi.mocked(getFirestoreDocRef);
@@ -102,7 +129,10 @@ describe('getUserTodosDocSnapshot()', () => {
     const result = await getUserTodosDocSnapshot(mockAccountId);
 
     expect(result).toBe(mockDocSnapshot);
-    expect(getFirestoreDocRefMocked).toHaveBeenCalledWith(TABLE_NAME_taskerUserTodos, mockAccountId);
+    expect(getFirestoreDocRefMocked).toHaveBeenCalledWith(
+      TABLE_NAME_taskerUserTodos,
+      mockAccountId
+    );
     expect(getDocMocked).toHaveBeenCalledWith({});
   });
 });
@@ -147,8 +177,20 @@ describe('getTodoById()', () => {
       data: () => ({
         '2023-10-10': {
           userTodosOfDay: [
-            { id: 'todo1', todo: 'Test Todo 1', isCompleted: false, createdAt: mockCreatedAt, updatedAt: mockUpdatedAt },
-            { id: 'todo2', todo: 'Test Todo 2', isCompleted: true, createdAt: mockCreatedAt, updatedAt: mockUpdatedAt },
+            {
+              id: 'todo1',
+              todo: 'Test Todo 1',
+              isCompleted: false,
+              createdAt: mockCreatedAt,
+              updatedAt: mockUpdatedAt,
+            },
+            {
+              id: 'todo2',
+              todo: 'Test Todo 2',
+              isCompleted: true,
+              createdAt: mockCreatedAt,
+              updatedAt: mockUpdatedAt,
+            },
           ],
         },
       }),
@@ -162,7 +204,13 @@ describe('getTodoById()', () => {
 
     const result = await getTodoById('todo1', '2023-10-10', mockUser);
 
-    expect(result).toEqual({ id: 'todo1', todo: 'Test Todo 1', isCompleted: false, createdAt: mockCreatedAt, updatedAt: mockUpdatedAt });
+    expect(result).toEqual({
+      id: 'todo1',
+      todo: 'Test Todo 1',
+      isCompleted: false,
+      createdAt: mockCreatedAt,
+      updatedAt: mockUpdatedAt,
+    });
   });
 
   it('should return an empty array if the document snapshot does not exist', async () => {
@@ -206,12 +254,22 @@ describe('uploadImageAndGetUrl', () => {
     const getDownloadURLMocked = vi.mocked(getDownloadURL);
 
     refMocked.mockReturnValue({} as StorageReference);
-    uploadBytesResumableMocked.mockReturnValue(mockUploadTask as unknown as UploadTask);
+    uploadBytesResumableMocked.mockReturnValue(
+      mockUploadTask as unknown as UploadTask
+    );
     getDownloadURLMocked.mockResolvedValue(mockImageUrl);
 
-    const result = await uploadImageAndGetUrl(mockAccountId, mockSelectedDate, mockTodoId, mockFile);
+    const result = await uploadImageAndGetUrl(
+      mockAccountId,
+      mockSelectedDate,
+      mockTodoId,
+      mockFile
+    );
 
-    expect(refMocked).toHaveBeenCalledWith(storage, `${FILES_FOLDER_todoImages}/${mockAccountId}/${mockSelectedDate}_${mockTodoId}`);
+    expect(refMocked).toHaveBeenCalledWith(
+      storage,
+      `${FILES_FOLDER_todoImages}/${mockAccountId}/${mockSelectedDate}_${mockTodoId}`
+    );
     expect(uploadBytesResumableMocked).toHaveBeenCalledWith({}, mockFile);
     expect(getDownloadURLMocked).toHaveBeenCalledWith(mockSnapshot.ref);
     expect(result).toBe(mockImageUrl);
@@ -246,7 +304,10 @@ describe('updateOrCreateTodos()', () => {
     const mockCurrentUser = { accountId: '12345' } as User;
     const mockDocRef = {} as DocumentReference;
     const mockSelectedDate = '2023-10-10';
-    const mockTodoItem = { id: '1', task: 'Test Task' } as unknown as TodoItemBase;
+    const mockTodoItem = {
+      id: '1',
+      task: 'Test Task',
+    } as unknown as TodoItemBase;
     const mockUserData = {
       [mockSelectedDate]: {
         userTodosOfDay: [{ id: '0', task: 'Existing Task' }],
@@ -255,11 +316,20 @@ describe('updateOrCreateTodos()', () => {
 
     const updateDocMocked = vi.mocked(updateDoc);
 
-    await updateOrCreateTodos(mockDocRef, mockSelectedDate, mockTodoItem, mockUserData, mockCurrentUser);
+    await updateOrCreateTodos(
+      mockDocRef,
+      mockSelectedDate,
+      mockTodoItem,
+      mockUserData,
+      mockCurrentUser
+    );
 
     expect(updateDocMocked).toHaveBeenCalledWith(mockDocRef, {
       [mockSelectedDate]: {
-        userTodosOfDay: [...mockUserData[mockSelectedDate].userTodosOfDay, mockTodoItem],
+        userTodosOfDay: [
+          ...mockUserData[mockSelectedDate].userTodosOfDay,
+          mockTodoItem,
+        ],
       },
     });
   });
@@ -268,12 +338,21 @@ describe('updateOrCreateTodos()', () => {
     const mockCurrentUser = { accountId: '12345' } as User;
     const mockDocRef = {} as DocumentReference;
     const mockSelectedDate = '2023-10-10';
-    const mockTodoItem = { id: '1', task: 'Test Task' } as unknown as TodoItemBase;
+    const mockTodoItem = {
+      id: '1',
+      task: 'Test Task',
+    } as unknown as TodoItemBase;
     const mockUserData = {} as DocumentData;
 
     const updateDocMocked = vi.mocked(updateDoc);
 
-    await updateOrCreateTodos(mockDocRef, mockSelectedDate, mockTodoItem, mockUserData, mockCurrentUser);
+    await updateOrCreateTodos(
+      mockDocRef,
+      mockSelectedDate,
+      mockTodoItem,
+      mockUserData,
+      mockCurrentUser
+    );
 
     expect(updateDocMocked).toHaveBeenCalledWith(mockDocRef, {
       [mockSelectedDate]: {
@@ -292,12 +371,29 @@ describe('updateTodosList()', () => {
       todoMoreContent: 'Updated Content',
     };
     const mockTodosOfDay = [
-      { id: '1', todo: 'Old Task', todoMoreContent: 'Old Content', imageUrl: 'oldImageUrl', updatedAt: new Date() },
-      { id: '2', todo: 'Task 2', todoMoreContent: 'Content 2', imageUrl: 'imageUrl2', updatedAt: new Date() },
+      {
+        id: '1',
+        todo: 'Old Task',
+        todoMoreContent: 'Old Content',
+        imageUrl: 'oldImageUrl',
+        updatedAt: new Date(),
+      },
+      {
+        id: '2',
+        todo: 'Task 2',
+        todoMoreContent: 'Content 2',
+        imageUrl: 'imageUrl2',
+        updatedAt: new Date(),
+      },
     ] as TodoItemBase[];
     const mockDeleteImage = false;
 
-    const result = updateTodosList(mockTodoId, mockNewTodoDetails, mockTodosOfDay, mockDeleteImage);
+    const result = updateTodosList(
+      mockTodoId,
+      mockNewTodoDetails,
+      mockTodosOfDay,
+      mockDeleteImage
+    );
 
     expect(result[0].todo).toBe('Updated Task');
     expect(result[0].todoMoreContent).toBe('Updated Content');
@@ -313,12 +409,29 @@ describe('updateTodosList()', () => {
       todoMoreContent: 'Updated Content',
     };
     const mockTodosOfDay = [
-      { id: '1', todo: 'Old Task', todoMoreContent: 'Old Content', imageUrl: 'oldImageUrl', updatedAt: new Date() },
-      { id: '2', todo: 'Task 2', todoMoreContent: 'Content 2', imageUrl: 'imageUrl2', updatedAt: new Date() },
+      {
+        id: '1',
+        todo: 'Old Task',
+        todoMoreContent: 'Old Content',
+        imageUrl: 'oldImageUrl',
+        updatedAt: new Date(),
+      },
+      {
+        id: '2',
+        todo: 'Task 2',
+        todoMoreContent: 'Content 2',
+        imageUrl: 'imageUrl2',
+        updatedAt: new Date(),
+      },
     ] as TodoItemBase[];
     const mockDeleteImage = true;
 
-    const result = updateTodosList(mockTodoId, mockNewTodoDetails, mockTodosOfDay, mockDeleteImage);
+    const result = updateTodosList(
+      mockTodoId,
+      mockNewTodoDetails,
+      mockTodosOfDay,
+      mockDeleteImage
+    );
 
     expect(result[0].todo).toBe('Updated Task');
     expect(result[0].todoMoreContent).toBe('Updated Content');
@@ -334,12 +447,29 @@ describe('updateTodosList()', () => {
       todoMoreContent: 'Updated Content',
     };
     const mockTodosOfDay = [
-      { id: '1', todo: 'Old Task', todoMoreContent: 'Old Content', imageUrl: 'oldImageUrl', updatedAt: new Date() },
-      { id: '2', todo: 'Task 2', todoMoreContent: 'Content 2', imageUrl: 'imageUrl2', updatedAt: new Date() },
+      {
+        id: '1',
+        todo: 'Old Task',
+        todoMoreContent: 'Old Content',
+        imageUrl: 'oldImageUrl',
+        updatedAt: new Date(),
+      },
+      {
+        id: '2',
+        todo: 'Task 2',
+        todoMoreContent: 'Content 2',
+        imageUrl: 'imageUrl2',
+        updatedAt: new Date(),
+      },
     ] as TodoItemBase[];
     const mockDeleteImage = false;
 
-    const result = updateTodosList(mockTodoId, mockNewTodoDetails, mockTodosOfDay, mockDeleteImage);
+    const result = updateTodosList(
+      mockTodoId,
+      mockNewTodoDetails,
+      mockTodosOfDay,
+      mockDeleteImage
+    );
 
     expect(result).toEqual(mockTodosOfDay);
   });
@@ -350,11 +480,27 @@ describe('updateTodosInDatabase()', () => {
     const mockDocRef = {} as DocumentReference;
     const mockSelectedDate = '2023-10-10';
     const mockUpdatedUserTodos = [
-      { id: '1', todo: 'Test Task 1', todoMoreContent: 'Content 1', imageUrl: 'url1', updatedAt: new Date() },
-      { id: '2', todo: 'Test Task 2', todoMoreContent: 'Content 2', imageUrl: 'url2', updatedAt: new Date() },
+      {
+        id: '1',
+        todo: 'Test Task 1',
+        todoMoreContent: 'Content 1',
+        imageUrl: 'url1',
+        updatedAt: new Date(),
+      },
+      {
+        id: '2',
+        todo: 'Test Task 2',
+        todoMoreContent: 'Content 2',
+        imageUrl: 'url2',
+        updatedAt: new Date(),
+      },
     ] as TodoItemBase[];
 
-    await updateTodosInDatabase(mockDocRef, mockSelectedDate, mockUpdatedUserTodos);
+    await updateTodosInDatabase(
+      mockDocRef,
+      mockSelectedDate,
+      mockUpdatedUserTodos
+    );
 
     expect(updateDoc).toHaveBeenCalledWith(mockDocRef, {
       [mockSelectedDate]: {
@@ -365,27 +511,64 @@ describe('updateTodosInDatabase()', () => {
 });
 
 describe('handleTodoImageDelete()', () => {
-  it('should delete the image if it exists for the todo item', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should delete the image for the given todo', async () => {
     const mockAccountId = '12345';
     const mockSelectedDate = '2023-10-10';
     const mockTodoId = 'todo1';
     const mockTodosOfDay = [
-      { id: 'todo1', todo: 'Test Task', todoMoreContent: 'Content', imageUrl: 'http://example.com/image1.jpg', updatedAt: new Date() },
-      { id: 'todo2', todo: 'Another Task', todoMoreContent: 'More Content', imageUrl: 'http://example.com/image2.jpg', updatedAt: new Date() },
-    ] as TodoItemBase[];
+      {
+        id: 'todo1',
+        imageUrl: 'http://example.com/image.jpg',
+      },
+    ] as TodoItemDetails[];
 
-    const expectedImageRef = {} as StorageReference;
     const refMocked = vi.mocked(ref);
     const deleteObjectMocked = vi.mocked(deleteObject);
+    const mockStorageRef = {} as StorageReference;
 
-    refMocked.mockReturnValue(expectedImageRef);
+    refMocked.mockReturnValue(mockStorageRef);
     deleteObjectMocked.mockResolvedValue(undefined);
 
-    await handleTodoImageDelete(mockAccountId, mockSelectedDate, mockTodoId, mockTodosOfDay);
+    await handleTodoImageDelete(
+      mockAccountId,
+      mockSelectedDate,
+      mockTodoId,
+      mockTodosOfDay
+    );
 
-    expect(ref).toHaveBeenCalledWith(storage, `${FILES_FOLDER_todoImages}/${mockAccountId}/${mockSelectedDate}_${mockTodoId}`);
+    expect(ref).toHaveBeenCalledWith(
+      storage,
+      `${FILES_FOLDER_todoImages}/${mockAccountId}/${mockSelectedDate}_${mockTodoId}`
+    );
+    expect(deleteObject).toHaveBeenCalledWith(mockStorageRef);
+  });
 
-    expect(deleteObject).toHaveBeenCalledWith(expectedImageRef);
+  it('should not delete storage file if todo has no image url', async () => {
+    const mockAccountId = '12345';
+    const mockSelectedDate = '2023-10-10';
+    const mockTodoId = 'todo1';
+    const mockTodosOfDay = [
+      {
+        id: 'todo1',
+        imageUrl: '',
+      },
+    ] as TodoItemDetails[];
+
+    vi.clearAllMocks();
+
+    await handleTodoImageDelete(
+      mockAccountId,
+      mockSelectedDate,
+      mockTodoId,
+      mockTodosOfDay
+    );
+
+    expect(deleteObject).not.toHaveBeenCalled();
+    expect(ref).not.toHaveBeenCalled();
   });
 });
 
@@ -396,8 +579,20 @@ describe('handleTodoImageUploadAndUpdate()', () => {
     const mockImageFile = new File([''], 'image.jpg');
     const mockSelectedDate = '2023-10-10';
     const mockUpdatedUserTodos = [
-      { id: 'todo1', todo: 'Test Task', todoMoreContent: 'Content', imageUrl: '', updatedAt: new Date() },
-      { id: 'todo2', todo: 'Another Task', todoMoreContent: 'More Content', imageUrl: 'http://example.com/image2.jpg', updatedAt: new Date() },
+      {
+        id: 'todo1',
+        todo: 'Test Task',
+        todoMoreContent: 'Content',
+        imageUrl: '',
+        updatedAt: new Date(),
+      },
+      {
+        id: 'todo2',
+        todo: 'Another Task',
+        todoMoreContent: 'More Content',
+        imageUrl: 'http://example.com/image2.jpg',
+        updatedAt: new Date(),
+      },
     ] as TodoItemBase[];
     const mockNewImageUrl = 'http://example.com/new-image.jpg';
     const mockUploadTask = { snapshot: { ref: {} } } as UploadTask;
@@ -410,15 +605,40 @@ describe('handleTodoImageUploadAndUpdate()', () => {
     getDownloadURLMock.mockResolvedValue(mockNewImageUrl);
     updateDocMock.mockResolvedValue(undefined);
 
-    await handleTodoImageUploadAndUpdate(mockDocRef, mockTodoId, mockImageFile, mockSelectedDate, mockUpdatedUserTodos, '12345');
+    await handleTodoImageUploadAndUpdate(
+      mockDocRef,
+      mockTodoId,
+      mockImageFile,
+      mockSelectedDate,
+      mockUpdatedUserTodos,
+      '12345'
+    );
 
-    expect(uploadBytesResumable).toHaveBeenCalledWith(ref(storage, `${FILES_FOLDER_todoImages}/12345/${mockSelectedDate}_${mockTodoId}`), mockImageFile);
+    expect(uploadBytesResumable).toHaveBeenCalledWith(
+      ref(
+        storage,
+        `${FILES_FOLDER_todoImages}/12345/${mockSelectedDate}_${mockTodoId}`
+      ),
+      mockImageFile
+    );
     expect(getDownloadURL).toHaveBeenCalledWith(mockUploadTask.snapshot.ref);
     expect(updateDoc).toHaveBeenCalledWith(mockDocRef, {
       [mockSelectedDate]: {
         userTodosOfDay: [
-          { id: 'todo1', todo: 'Test Task', todoMoreContent: 'Content', imageUrl: mockNewImageUrl, updatedAt: expect.any(Date) },
-          { id: 'todo2', todo: 'Another Task', todoMoreContent: 'More Content', imageUrl: 'http://example.com/image2.jpg', updatedAt: expect.any(Date) },
+          {
+            id: 'todo1',
+            todo: 'Test Task',
+            todoMoreContent: 'Content',
+            imageUrl: mockNewImageUrl,
+            updatedAt: expect.any(Date),
+          },
+          {
+            id: 'todo2',
+            todo: 'Another Task',
+            todoMoreContent: 'More Content',
+            imageUrl: 'http://example.com/image2.jpg',
+            updatedAt: expect.any(Date),
+          },
         ],
       },
     });
@@ -436,9 +656,15 @@ describe('updateTodoStatusInList()', () => {
     const mockTodoIdToUpdate = 'todo1';
     const mockIsCompleted = true;
 
-    const updatedTodos = updateTodoStatusInList(mockTodoIdToUpdate, mockTodosOfDay, mockIsCompleted);
+    const updatedTodos = updateTodoStatusInList(
+      mockTodoIdToUpdate,
+      mockTodosOfDay,
+      mockIsCompleted
+    );
 
-    const updatedTodo = updatedTodos.find((todo) => todo.id === mockTodoIdToUpdate);
+    const updatedTodo = updatedTodos.find(
+      (todo) => todo.id === mockTodoIdToUpdate
+    );
     expect(updatedTodo).toBeDefined();
     expect(updatedTodo?.isCompleted).toBe(true);
     expect(updatedTodo?.updatedAt).toBeInstanceOf(Date);
@@ -448,9 +674,15 @@ describe('updateTodoStatusInList()', () => {
     const mockTodoIdToUpdate = 'todo1';
     const mockIsCompleted = true;
 
-    const updatedTodos = updateTodoStatusInList(mockTodoIdToUpdate, mockTodosOfDay, mockIsCompleted);
+    const updatedTodos = updateTodoStatusInList(
+      mockTodoIdToUpdate,
+      mockTodosOfDay,
+      mockIsCompleted
+    );
 
-    const otherTodos = updatedTodos.filter((todo) => todo.id !== mockTodoIdToUpdate);
+    const otherTodos = updatedTodos.filter(
+      (todo) => todo.id !== mockTodoIdToUpdate
+    );
     otherTodos.forEach((todo) => {
       const originalTodo = mockTodosOfDay.find((t) => t.id === todo.id);
       expect(todo.isCompleted).toBe(originalTodo?.isCompleted);
@@ -498,18 +730,6 @@ describe('findTodoById()', () => {
   });
 });
 
-describe('deleteTodoImage()', () => {
-  it('should delete the image for the given todo', async () => {
-    const mockAccountId = '12345';
-    const mockSelectedDate = '2023-10-10';
-    const mockTodoId = 'todo1';
-
-    await deleteTodoImage(mockAccountId, mockSelectedDate, mockTodoId);
-
-    expect(deleteObject).toHaveBeenCalled();
-  });
-});
-
 describe('getSearchResultsFromUserData()', () => {
   it('should return filtered search results from user data', () => {
     const mockUserData = {
@@ -520,14 +740,28 @@ describe('getSearchResultsFromUserData()', () => {
         ],
       },
       '2023-10-11': {
-        userTodosOfDay: [{ id: '3', todo: 'Test Task 2', createdAt: new Date('2023-10-11') }],
+        userTodosOfDay: [
+          { id: '3', todo: 'Test Task 2', createdAt: new Date('2023-10-11') },
+        ],
       },
     };
 
     const mockSearchValue = 'Test';
     const expectedResults = [
-      { id: '1', todo: 'Test Task 1', createdAt: new Date('2023-10-09'), todoDate: '2023-10-10', todoSearchValue: 'Test' },
-      { id: '3', todo: 'Test Task 2', createdAt: new Date('2023-10-11'), todoDate: '2023-10-11', todoSearchValue: 'Test' },
+      {
+        id: '1',
+        todo: 'Test Task 1',
+        createdAt: new Date('2023-10-09'),
+        todoDate: '2023-10-10',
+        todoSearchValue: 'Test',
+      },
+      {
+        id: '3',
+        todo: 'Test Task 2',
+        createdAt: new Date('2023-10-11'),
+        todoDate: '2023-10-11',
+        todoSearchValue: 'Test',
+      },
     ];
 
     const result = getSearchResultsFromUserData(mockUserData, mockSearchValue);
@@ -551,5 +785,429 @@ describe('sortSearchResultsByDate()', () => {
 
     const result = sortSearchResultsByDate(mockSearchResults);
     expect(result).toEqual(expectedResults);
+  });
+});
+
+describe('handleTodoImageDelete() with repeated todos', () => {
+  it('should clear imageUrl and set isIndependentEdit when deleting image from repeated todo', async () => {
+    const mockAccountId = '12345';
+    const mockSelectedDate = '2023-10-10';
+    const mockTodoId = 'todo1';
+    const mockOriginalTodoId = 'originalTodo1';
+    const mockTodosOfDay = [
+      {
+        id: 'todo1',
+        todo: 'Test Task',
+        imageUrl: 'http://example.com/image1.jpg',
+        originalTodoId: mockOriginalTodoId,
+      },
+    ] as TodoItemBase[];
+
+    const docRef = {} as DocumentReference;
+    const getFirestoreDocRefMocked = vi.mocked(getFirestoreDocRef);
+    getFirestoreDocRefMocked.mockReturnValue(docRef);
+
+    await handleTodoImageDelete(
+      mockAccountId,
+      mockSelectedDate,
+      mockTodoId,
+      mockTodosOfDay,
+      mockOriginalTodoId
+    );
+
+    expect(updateDoc).toHaveBeenCalledWith(docRef, {
+      [mockSelectedDate]: {
+        userTodosOfDay: [
+          {
+            ...mockTodosOfDay[0],
+            imageUrl: '',
+            isIndependentEdit: true,
+          },
+        ],
+      },
+    });
+  });
+
+  it('should delete image file when independent repeated todo has its own image', async () => {
+    const mockAccountId = '12345';
+    const mockSelectedDate = '2023-10-10';
+    const mockTodoId = 'todo1';
+    const mockOriginalTodoId = 'originalTodo1';
+    const mockTodosOfDay = [
+      {
+        id: 'todo1',
+        todo: 'Test Task',
+        imageUrl: 'http://example.com/todo1.jpg',
+        originalTodoId: mockOriginalTodoId,
+        isIndependentEdit: true,
+      },
+    ] as TodoItemBase[];
+
+    await handleTodoImageDelete(
+      mockAccountId,
+      mockSelectedDate,
+      mockTodoId,
+      mockTodosOfDay,
+      mockOriginalTodoId
+    );
+
+    expect(deleteObject).toHaveBeenCalled();
+  });
+});
+
+describe('editTodo() with repeated todos', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should update original todo and all dependent repeated todos', async () => {
+    const mockTodoId = 'originalTodo1';
+    const mockNewTodoDetails = {
+      todo: 'Updated Task',
+      todoMoreContent: 'Updated Content',
+    };
+    const mockSelectedDate = '2023-10-10';
+    const mockCurrentUser = { accountId: '12345' } as User;
+
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({
+        '2023-10-10': {
+          userTodosOfDay: [{ id: 'originalTodo1', todo: 'Original Task' }],
+        },
+        '2023-10-11': {
+          userTodosOfDay: [
+            {
+              id: 'repeatedTodo1',
+              todo: 'Original Task',
+              originalTodoId: 'originalTodo1',
+            },
+          ],
+        },
+      }),
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    const updateDocMocked = vi.mocked(updateDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    await editTodo(
+      mockTodoId,
+      mockNewTodoDetails,
+      mockSelectedDate,
+      mockCurrentUser,
+      false
+    );
+
+    expect(updateDocMocked).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        '2023-10-11': {
+          userTodosOfDay: [
+            expect.objectContaining({
+              todo: 'Updated Task',
+              todoMoreContent: 'Updated Content',
+            }),
+          ],
+        },
+      })
+    );
+  });
+
+  it('should not update independent repeated todos when editing original todo', async () => {
+    const mockTodoId = 'originalTodo1';
+    const mockNewTodoDetails = {
+      todo: 'Updated Task',
+    };
+    const mockSelectedDate = '2023-10-10';
+    const mockCurrentUser = { accountId: '12345' } as User;
+
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({
+        '2023-10-10': {
+          userTodosOfDay: [{ id: 'originalTodo1', todo: 'Original Task' }],
+        },
+      }),
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    await editTodo(
+      mockTodoId,
+      mockNewTodoDetails,
+      mockSelectedDate,
+      mockCurrentUser,
+      false
+    );
+
+    const updateDocCalls = vi.mocked(updateDoc).mock.calls;
+    const hasUnwantedUpdate = updateDocCalls.some((call) => {
+      const data = call[1] as unknown as Record<string, unknown>;
+      return Object.keys(data).includes('2023-10-11');
+    });
+
+    expect(hasUnwantedUpdate).toBe(false);
+  });
+});
+
+describe('deleteTodo() with repeated todos', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should clear imageUrl in all dependent repeated todos when deleting original todo', async () => {
+    const mockTodoId = 'originalTodo1';
+    const mockSelectedDate = '2023-10-10';
+    const mockCurrentUser = { accountId: '12345' } as User;
+
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({
+        '2023-10-10': {
+          userTodosOfDay: [
+            {
+              id: 'originalTodo1',
+              todo: 'Original Task',
+              imageUrl: 'http://example.com/original.jpg',
+            },
+          ],
+        },
+        '2023-10-11': {
+          userTodosOfDay: [
+            {
+              id: 'repeatedTodo1',
+              todo: 'Repeated Task',
+              imageUrl: 'http://example.com/original.jpg',
+              originalTodoId: 'originalTodo1',
+            },
+          ],
+        },
+      }),
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    const updateDocMocked = vi.mocked(updateDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    await deleteTodo(mockTodoId, mockSelectedDate, mockCurrentUser);
+
+    expect(updateDocMocked).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        '2023-10-11': {
+          userTodosOfDay: [
+            expect.objectContaining({
+              imageUrl: '',
+            }),
+          ],
+        },
+      })
+    );
+  });
+
+  it('should not affect independent repeated todos with different images when deleting original todo', async () => {
+    const mockTodoId = 'originalTodo1';
+    const mockSelectedDate = '2023-10-10';
+    const mockCurrentUser = { accountId: '12345' } as User;
+
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({
+        '2023-10-10': {
+          userTodosOfDay: [
+            {
+              id: 'originalTodo1',
+              todo: 'Original Task',
+              imageUrl: 'http://example.com/original.jpg',
+            },
+          ],
+        },
+        '2023-10-11': {
+          userTodosOfDay: [
+            {
+              id: 'repeatedTodo1',
+              todo: 'Independent Task',
+              imageUrl: 'http://example.com/different.jpg',
+              originalTodoId: 'originalTodo1',
+              isIndependentEdit: true,
+            },
+          ],
+        },
+      }),
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    const updateDocMocked = vi.mocked(updateDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    await deleteTodo(mockTodoId, mockSelectedDate, mockCurrentUser);
+
+    expect(updateDocMocked).not.toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        '2023-10-11': expect.any(Object),
+      })
+    );
+  });
+});
+
+describe('moveTodo()', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should move todo to new date and set originalDate', async () => {
+    const mockTodoDetails = {
+      id: 'todo1',
+      todo: 'Test Todo',
+      imageUrl: 'http://example.com/image.jpg',
+      isCompleted: false,
+    } as TodoItemDetails;
+    const mockNewDate = '11-10-2023';
+    const mockOriginalDate = '10-10-2023';
+    const mockCurrentUser = { accountId: '12345' } as User;
+
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({
+        [mockOriginalDate]: {
+          userTodosOfDay: [mockTodoDetails],
+        },
+      }),
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    const updateDocMocked = vi.mocked(updateDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    await moveTodo(mockTodoDetails, mockNewDate, mockCurrentUser, mockOriginalDate);
+
+    // Sprawdź czy stara data została usunięta
+    expect(updateDocMocked).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        [mockOriginalDate]: deleteField(),
+      })
+    );
+
+    // Sprawdź czy todo zostało dodane do nowej daty z originalDate
+    expect(updateDocMocked).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        [mockNewDate]: {
+          userTodosOfDay: [expect.objectContaining({
+            ...mockTodoDetails,
+            originalDate: mockOriginalDate,
+          })],
+        },
+      })
+    );
+  });
+
+  it('should throw error when trying to move completed todo', async () => {
+    const mockTodoDetails = {
+      id: 'todo1',
+      todo: 'Test Todo',
+      isCompleted: true,
+    } as TodoItemDetails;
+    const mockNewDate = '11-10-2023';
+    const mockOriginalDate = '10-10-2023';
+    const mockCurrentUser = { accountId: '12345' } as User;
+
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({}),
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    await expect(
+      moveTodo(mockTodoDetails, mockNewDate, mockCurrentUser, mockOriginalDate)
+    ).rejects.toThrow('Cannot move completed todo');
+  });
+});
+
+describe('handleTodoImageUploadAndUpdate()', () => {
+  it('should update originalDate when todo has originalDate flag', async () => {
+    const mockDocRef = {} as DocumentReference;
+    const mockTodoId = 'todo1';
+    const mockImageFile = new File([''], 'image.jpg');
+    const mockSelectedDate = '10-10-2023';
+    const mockUpdatedUserTodos = [
+      {
+        id: 'todo1',
+        todo: 'Test Task',
+        imageUrl: '',
+        originalDate: '09-10-2023', // Todo ma originalDate
+      },
+    ] as TodoItemDetails[];
+    const mockNewImageUrl = 'http://example.com/new-image.jpg';
+
+    const uploadBytesResumableMock = vi.mocked(uploadBytesResumable);
+    const getDownloadURLMock = vi.mocked(getDownloadURL);
+    const updateDocMock = vi.mocked(updateDoc);
+
+    uploadBytesResumableMock.mockReturnValue({ snapshot: { ref: {} } } as UploadTask);
+    getDownloadURLMock.mockResolvedValue(mockNewImageUrl);
+
+    await handleTodoImageUploadAndUpdate(
+      mockDocRef,
+      mockTodoId,
+      mockImageFile,
+      mockSelectedDate,
+      mockUpdatedUserTodos,
+      '12345'
+    );
+
+    expect(updateDocMock).toHaveBeenCalledWith(mockDocRef, {
+      [mockSelectedDate]: {
+        userTodosOfDay: [expect.objectContaining({
+          imageUrl: mockNewImageUrl,
+          originalDate: mockSelectedDate,
+        })],
+      },
+    });
+  });
+
+  it('should not update originalDate when todo has no originalDate flag', async () => {
+    const mockDocRef = {} as DocumentReference;
+    const mockTodoId = 'todo1';
+    const mockImageFile = new File([''], 'image.jpg');
+    const mockSelectedDate = '10-10-2023';
+    const mockUpdatedUserTodos = [
+      {
+        id: 'todo1',
+        todo: 'Test Task',
+        imageUrl: '',
+      },
+    ] as TodoItemDetails[];
+    const mockNewImageUrl = 'http://example.com/new-image.jpg';
+
+    const uploadBytesResumableMock = vi.mocked(uploadBytesResumable);
+    const getDownloadURLMock = vi.mocked(getDownloadURL);
+    const updateDocMock = vi.mocked(updateDoc);
+
+    uploadBytesResumableMock.mockReturnValue({ snapshot: { ref: {} } } as UploadTask);
+    getDownloadURLMock.mockResolvedValue(mockNewImageUrl);
+
+    await handleTodoImageUploadAndUpdate(
+      mockDocRef,
+      mockTodoId,
+      mockImageFile,
+      mockSelectedDate,
+      mockUpdatedUserTodos,
+      '12345'
+    );
+
+    expect(updateDocMock).toHaveBeenCalledWith(mockDocRef, {
+      [mockSelectedDate]: {
+        userTodosOfDay: [expect.not.objectContaining({
+          originalDate: expect.any(String),
+        })],
+      },
+    });
   });
 });

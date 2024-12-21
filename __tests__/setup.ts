@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/vitest';
 import "@testing-library/jest-dom";
 import { ReactElement } from "react";
 import { render, RenderOptions } from "@testing-library/react";
-import { afterEach, beforeAll } from "vitest";
+import { afterEach, beforeAll, beforeEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 // runs a cleanup after each test case (e.g. clearing jsdom)
@@ -16,6 +16,11 @@ beforeAll(() => {
   });
 afterEach(() => {
     cleanup();
+    vi.clearAllMocks();
+});
+
+beforeEach(() => {
+    vi.clearAllMocks();
 });
 
 const customRender = (ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) => render(ui, { wrapper: AllTheProviders, ...options });
