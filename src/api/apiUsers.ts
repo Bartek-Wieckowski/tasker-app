@@ -21,7 +21,7 @@ import {
   updateEmail,
   User as UserFromFirebaseAuth,
 } from 'firebase/auth';
-import { deleteDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { deleteDoc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, listAll, ref, uploadBytesResumable } from 'firebase/storage';
 
 export function getAuthenticatedUser() {
@@ -177,9 +177,11 @@ export async function deleteUserItemsFromDatabase(userId: string) {
   }
 
   try {
-    await Promise.all([deleteUserDocuments(userId), deleteUserImages(userId), deleteUserProfileImage(userId), removeUserFromDatabase(userId)]);
+    await deleteUserImages(userId);
+    await deleteUserDocuments(userId);
+    await removeUserFromDatabase(userId);
   } catch (error) {
-    throw new Error(`Failed to delete user items ${error}`);
+    throw new Error(`Failed to delete user items: ${error}`);
   }
 }
 
@@ -190,9 +192,12 @@ export async function deleteUserDocuments(userId: string) {
 
   try {
     const userDocRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, userId);
-    await deleteDoc(userDocRef);
+    const docSnapshot = await getDoc(userDocRef);
+    if (docSnapshot.exists()) {
+      await deleteDoc(userDocRef);
+    }
   } catch (error) {
-    throw new Error(`Error deleting user documents ${error}`);
+    throw new Error(`Error deleting user documents: ${error}`);
   }
 }
 
@@ -299,7 +304,10 @@ export async function saveUserToDatabase(uid: string, updateUser: User) {
 export async function updateUserTodos(uid: string, updateUser: User) {
   try {
     const todosDocRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, uid);
-    await updateDoc(todosDocRef, { userInfo: updateUser });
+    const docSnapshot = await getDoc(todosDocRef);
+    if (docSnapshot.exists()) {
+      await updateDoc(todosDocRef, { userInfo: updateUser });
+    }
   } catch (error) {
     throw new Error(`Failed to update user todos ${error}`);
   }
