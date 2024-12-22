@@ -6,7 +6,7 @@ import UserPanel from './User/UserPanel';
 
 const AppLayout = () => {
   return (
-    <section className="flex flex-col justify-center max-w-7xl w-full mx-auto p-2">
+    <section className="flex flex-col justify-center max-w-7xl w-full mx-auto py-2 px-4">
       <Container data-testid="container">
         <Header>
           <Logo />
