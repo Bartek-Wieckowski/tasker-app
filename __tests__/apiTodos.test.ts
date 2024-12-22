@@ -36,9 +36,9 @@ import {
   DocumentSnapshot,
   DocumentReference,
   getDoc,
-  DocumentData,
   updateDoc,
   deleteField,
+  setDoc,
 } from 'firebase/firestore';
 import {
   deleteObject,
@@ -300,19 +300,51 @@ describe('createTodoItem()', () => {
 });
 
 describe('updateOrCreateTodos()', () => {
-  it('should update the todos for the given date if todos exist', async () => {
+  it('should create new todos for the given date if no todos exist', async () => {
     const mockCurrentUser = { accountId: '12345' } as User;
     const mockDocRef = {} as DocumentReference;
     const mockSelectedDate = '2023-10-10';
     const mockTodoItem = {
       id: '1',
-      task: 'Test Task',
-    } as unknown as TodoItemBase;
+      todo: 'Test Task',
+    } as TodoItemBase;
+    const mockUserData = undefined;
+
+    const setDocMocked = vi.mocked(setDoc);
+
+    await updateOrCreateTodos(
+      mockDocRef,
+      mockSelectedDate,
+      mockTodoItem,
+      mockUserData,
+      mockCurrentUser
+    );
+
+    expect(setDocMocked).toHaveBeenCalledWith(
+      mockDocRef,
+      {
+      [mockSelectedDate]: {
+          userTodosOfDay: [mockTodoItem],
+      },
+        userInfo: mockCurrentUser,
+      },
+      { merge: true }
+    );
+  });
+
+  it('should update existing todos for the given date', async () => {
+    const mockCurrentUser = { accountId: '12345' } as User;
+    const mockDocRef = {} as DocumentReference;
+    const mockSelectedDate = '2023-10-10';
+    const mockTodoItem = {
+      id: '2',
+      todo: 'New Task',
+    } as TodoItemBase;
     const mockUserData = {
       [mockSelectedDate]: {
-        userTodosOfDay: [{ id: '0', task: 'Existing Task' }],
+        userTodosOfDay: [{ id: '1', todo: 'Existing Task' }],
       },
-    } as DocumentData;
+    };
 
     const updateDocMocked = vi.mocked(updateDoc);
 
@@ -327,38 +359,10 @@ describe('updateOrCreateTodos()', () => {
     expect(updateDocMocked).toHaveBeenCalledWith(mockDocRef, {
       [mockSelectedDate]: {
         userTodosOfDay: [
-          ...mockUserData[mockSelectedDate].userTodosOfDay,
+          { id: '1', todo: 'Existing Task' },
           mockTodoItem,
         ],
       },
-    });
-  });
-
-  it('should create new todos for the given date if no todos exist', async () => {
-    const mockCurrentUser = { accountId: '12345' } as User;
-    const mockDocRef = {} as DocumentReference;
-    const mockSelectedDate = '2023-10-10';
-    const mockTodoItem = {
-      id: '1',
-      task: 'Test Task',
-    } as unknown as TodoItemBase;
-    const mockUserData = {} as DocumentData;
-
-    const updateDocMocked = vi.mocked(updateDoc);
-
-    await updateOrCreateTodos(
-      mockDocRef,
-      mockSelectedDate,
-      mockTodoItem,
-      mockUserData,
-      mockCurrentUser
-    );
-
-    expect(updateDocMocked).toHaveBeenCalledWith(mockDocRef, {
-      [mockSelectedDate]: {
-        userTodosOfDay: [mockTodoItem],
-      },
-      userInfo: mockCurrentUser,
     });
   });
 });
@@ -1054,10 +1058,6 @@ describe('deleteTodo() with repeated todos', () => {
 });
 
 describe('moveTodo()', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should move todo to new date and set originalDate', async () => {
     const mockTodoDetails = {
       id: 'todo1',
@@ -1065,44 +1065,53 @@ describe('moveTodo()', () => {
       imageUrl: 'http://example.com/image.jpg',
       isCompleted: false,
     } as TodoItemDetails;
-    const mockNewDate = '11-10-2023';
-    const mockOriginalDate = '10-10-2023';
+    const mockNewDate = '2023-10-11';
+    const mockOriginalDate = '2023-10-10';
     const mockCurrentUser = { accountId: '12345' } as User;
 
+    const mockDocRef = {} as DocumentReference;
     const mockDocSnapshot = {
       exists: () => true,
       data: () => ({
         [mockOriginalDate]: {
           userTodosOfDay: [mockTodoDetails],
         },
+        userInfo: mockCurrentUser,
       }),
     } as unknown as DocumentSnapshot;
 
     const getDocMocked = vi.mocked(getDoc);
     const updateDocMocked = vi.mocked(updateDoc);
+    const getFirestoreDocRefMocked = vi.mocked(getFirestoreDocRef);
+    const setDocMocked = vi.mocked(setDoc);
+
     getDocMocked.mockResolvedValue(mockDocSnapshot);
+    getFirestoreDocRefMocked.mockReturnValue(mockDocRef);
 
     await moveTodo(mockTodoDetails, mockNewDate, mockCurrentUser, mockOriginalDate);
 
-    // Sprawdź czy stara data została usunięta
     expect(updateDocMocked).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({
+      mockDocRef,
+      {
         [mockOriginalDate]: deleteField(),
-      })
+      }
     );
 
-    // Sprawdź czy todo zostało dodane do nowej daty z originalDate
-    expect(updateDocMocked).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.objectContaining({
+    expect(setDocMocked).toHaveBeenCalledWith(
+      mockDocRef,
+      {
         [mockNewDate]: {
-          userTodosOfDay: [expect.objectContaining({
-            ...mockTodoDetails,
-            originalDate: mockOriginalDate,
-          })],
+          userTodosOfDay: [
+            {
+              ...mockTodoDetails,
+              originalDate: mockOriginalDate,
+              updatedAt: expect.any(Date)
+            }
+          ]
         },
-      })
+        userInfo: mockCurrentUser
+      },
+      { merge: true }
     );
   });
 
@@ -1112,8 +1121,8 @@ describe('moveTodo()', () => {
       todo: 'Test Todo',
       isCompleted: true,
     } as TodoItemDetails;
-    const mockNewDate = '11-10-2023';
-    const mockOriginalDate = '10-10-2023';
+    const mockNewDate = '2023-10-11';
+    const mockOriginalDate = '2023-10-10';
     const mockCurrentUser = { accountId: '12345' } as User;
 
     const mockDocSnapshot = {
@@ -1128,6 +1137,28 @@ describe('moveTodo()', () => {
       moveTodo(mockTodoDetails, mockNewDate, mockCurrentUser, mockOriginalDate)
     ).rejects.toThrow('Cannot move completed todo');
   });
+
+  it('should throw error when user document does not exist', async () => {
+    const mockTodoDetails = {
+      id: 'todo1',
+      todo: 'Test Todo',
+      isCompleted: false,
+    } as TodoItemDetails;
+    const mockNewDate = '2023-10-11';
+    const mockOriginalDate = '2023-10-10';
+    const mockCurrentUser = { accountId: '12345' } as User;
+
+    const mockDocSnapshot = {
+      exists: () => false,
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    await expect(
+      moveTodo(mockTodoDetails, mockNewDate, mockCurrentUser, mockOriginalDate)
+    ).rejects.toThrow('User document does not exist');
+  });
 });
 
 describe('handleTodoImageUploadAndUpdate()', () => {
@@ -1141,7 +1172,7 @@ describe('handleTodoImageUploadAndUpdate()', () => {
         id: 'todo1',
         todo: 'Test Task',
         imageUrl: '',
-        originalDate: '09-10-2023', // Todo ma originalDate
+        originalDate: '09-10-2023', 
       },
     ] as TodoItemDetails[];
     const mockNewImageUrl = 'http://example.com/new-image.jpg';

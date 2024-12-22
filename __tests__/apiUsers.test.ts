@@ -20,7 +20,7 @@ import {
 } from '@/api/apiUsers';
 import { describe, it, expect, vi } from 'vitest';
 import { createUserWithEmailAndPassword, updateProfile, User, signInWithEmailAndPassword, UserCredential, signInWithPopup, signOut } from 'firebase/auth';
-import { setDoc, DocumentReference, deleteDoc, updateDoc } from 'firebase/firestore';
+import { setDoc, DocumentReference, deleteDoc, updateDoc, getDoc, DocumentSnapshot } from 'firebase/firestore';
 import { getFirestoreDocRef } from '@/lib/firebaseHelpers';
 import { isNotValidateGoogleResponse, isNotValidateUserId } from '@/lib/validators';
 import { auth, provider, storage } from '@/lib/firebase.config';
@@ -43,6 +43,7 @@ vi.mock('firebase/firestore', () => ({
   setDoc: vi.fn(),
   deleteDoc: vi.fn(),
   updateDoc: vi.fn(),
+  getDoc: vi.fn(),
 }));
 vi.mock('firebase/storage', () => ({
   getStorage: vi.fn(() => ({})),
@@ -296,33 +297,82 @@ describe('deleteUserItemsFromDatabase()', () => {
 
 describe('deleteUserDocuments()', () => {
   const validUserId = '12345';
-  it('should delete documents when valid userId is provided', async () => {
+  
+  it('should delete documents when valid userId is provided and document exists', async () => {
     const mockDocRef = { id: validUserId } as DocumentReference;
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({}),
+      id: validUserId,
+      ref: mockDocRef,
+      metadata: { hasPendingWrites: false, fromCache: false }
+    } as DocumentSnapshot;
+
     const getFirestoreDocRefMock = vi.mocked(getFirestoreDocRef);
     const deleteDocMock = vi.mocked(deleteDoc);
+    const getDocMock = vi.mocked(getDoc);
     const isNotValidateUserIdMock = vi.mocked(isNotValidateUserId);
 
     isNotValidateUserIdMock.mockReturnValue(false);
     getFirestoreDocRefMock.mockReturnValue(mockDocRef);
+    getDocMock.mockResolvedValue(mockDocSnapshot);
     deleteDocMock.mockResolvedValue();
 
     await deleteUserDocuments(validUserId);
 
     expect(getFirestoreDocRefMock).toHaveBeenCalledWith('taskerUserTodos', validUserId);
+    expect(getDocMock).toHaveBeenCalledWith(mockDocRef);
     expect(deleteDocMock).toHaveBeenCalledWith(mockDocRef);
   });
 
-  it('should throw an error if deleteDoc fails', async () => {
+  it('should not delete documents when document does not exist', async () => {
     const mockDocRef = { id: validUserId } as DocumentReference;
+    const mockDocSnapshot = {
+      exists: () => false,
+      data: () => ({}),
+      id: validUserId,
+      ref: mockDocRef,
+      metadata: { hasPendingWrites: false, fromCache: false }
+    } as DocumentSnapshot;
+
     const getFirestoreDocRefMock = vi.mocked(getFirestoreDocRef);
     const deleteDocMock = vi.mocked(deleteDoc);
+    const getDocMock = vi.mocked(getDoc);
     const isNotValidateUserIdMock = vi.mocked(isNotValidateUserId);
 
     isNotValidateUserIdMock.mockReturnValue(false);
     getFirestoreDocRefMock.mockReturnValue(mockDocRef);
+    getDocMock.mockResolvedValue(mockDocSnapshot);
+
+    await deleteUserDocuments(validUserId);
+
+    expect(getDocMock).toHaveBeenCalledWith(mockDocRef);
+    expect(deleteDocMock).not.toHaveBeenCalled();
+  });
+
+  it('should throw an error if deleteDoc fails', async () => {
+    const mockDocRef = { id: validUserId } as DocumentReference;
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({}),
+      id: validUserId,
+      ref: mockDocRef,
+      metadata: { hasPendingWrites: false, fromCache: false }
+    } as DocumentSnapshot;
+
+    const getFirestoreDocRefMock = vi.mocked(getFirestoreDocRef);
+    const deleteDocMock = vi.mocked(deleteDoc);
+    const getDocMock = vi.mocked(getDoc);
+    const isNotValidateUserIdMock = vi.mocked(isNotValidateUserId);
+
+    isNotValidateUserIdMock.mockReturnValue(false);
+    getFirestoreDocRefMock.mockReturnValue(mockDocRef);
+    getDocMock.mockResolvedValue(mockDocSnapshot);
     deleteDocMock.mockRejectedValue(new Error('Deletion failed'));
 
-    await expect(deleteUserDocuments(validUserId)).rejects.toThrow('Error deleting user documents Error: Deletion failed');
+    await expect(deleteUserDocuments(validUserId))
+      .rejects
+      .toThrow('Error deleting user documents: Error: Deletion failed');
   });
 });
 
@@ -500,14 +550,78 @@ describe('saveUserToDatabase()', () => {
 });
 
 describe('updateUserTodos()', () => {
+  const mockUid = '123';
+  const mockUpdateUser = { username: 'newuser', email: 'newuser@example.com' } as unknown as UserMyType;
+  
+  it('should update todos when document exists', async () => {
+    const mockDocRef = {} as DocumentReference;
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({}),
+      id: mockUid,
+      ref: mockDocRef,
+      metadata: { hasPendingWrites: false, fromCache: false }
+    } as DocumentSnapshot;
+
+    const getFirestoreDocRefMock = vi.mocked(getFirestoreDocRef);
+    const updateDocMock = vi.mocked(updateDoc);
+    const getDocMock = vi.mocked(getDoc);
+
+    getFirestoreDocRefMock.mockReturnValue(mockDocRef);
+    getDocMock.mockResolvedValue(mockDocSnapshot);
+    updateDocMock.mockResolvedValue();
+
+    await updateUserTodos(mockUid, mockUpdateUser);
+
+    expect(getDocMock).toHaveBeenCalledWith(mockDocRef);
+    expect(updateDoc).toHaveBeenCalledWith(mockDocRef, { userInfo: mockUpdateUser });
+  });
+
+  it('should not update todos when document does not exist', async () => {
+    const mockDocRef = {} as DocumentReference;
+    const mockDocSnapshot = {
+      exists: () => false,
+      data: () => ({}),
+      id: mockUid,
+      ref: mockDocRef,
+      metadata: { hasPendingWrites: false, fromCache: false }
+    } as DocumentSnapshot;
+
+    const getFirestoreDocRefMock = vi.mocked(getFirestoreDocRef);
+    const updateDocMock = vi.mocked(updateDoc);
+    const getDocMock = vi.mocked(getDoc);
+
+    getFirestoreDocRefMock.mockReturnValue(mockDocRef);
+    getDocMock.mockResolvedValue(mockDocSnapshot);
+
+    await updateUserTodos(mockUid, mockUpdateUser);
+
+    expect(getDocMock).toHaveBeenCalledWith(mockDocRef);
+    expect(updateDocMock).not.toHaveBeenCalled();
+  });
+
   it('throws an error if updating todos fails', async () => {
     const mockUid = '123';
     const mockUpdateUser = { username: 'newuser', email: 'newuser@example.com' } as unknown as UserMyType;
+    const mockDocRef = {} as DocumentReference;
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({}),
+      id: mockUid,
+      ref: mockDocRef,
+      metadata: { hasPendingWrites: false, fromCache: false }
+    } as DocumentSnapshot;
 
-    const updateDoceMock = vi.mocked(updateDoc);
+    const getFirestoreDocRefMock = vi.mocked(getFirestoreDocRef);
+    const updateDocMock = vi.mocked(updateDoc);
+    const getDocMock = vi.mocked(getDoc);
 
-    updateDoceMock.mockRejectedValue(new Error('Todos update failed'));
+    getFirestoreDocRefMock.mockReturnValue(mockDocRef);
+    getDocMock.mockResolvedValue(mockDocSnapshot);
+    updateDocMock.mockRejectedValue(new Error('Update failed'));
 
-    await expect(updateUserTodos(mockUid, mockUpdateUser)).rejects.toThrow('Failed to update user todos Error: Todos update failed');
+    await expect(updateUserTodos(mockUid, mockUpdateUser))
+      .rejects
+      .toThrow('Failed to update user todos Error: Update failed');
   });
 });
