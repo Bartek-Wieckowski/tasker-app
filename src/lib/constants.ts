@@ -8,6 +8,7 @@ export const TABS_TEXT_3 = "Uncompleted"
 
 export const TABLE_NAME_taskerUsers = "taskerUsers"
 export const TABLE_NAME_taskerUserTodos = "taskerUserTodos"
+export const TABLE_NAME_taskerGlobalTodos = "taskerGlobalTodos"
 
 
 export const FILES_FOLDER_todoImages = "todoImages"
