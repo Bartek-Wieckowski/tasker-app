@@ -245,13 +245,13 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
             <EllipsisVertical className="cursor-pointer" />
           </PopoverTrigger>
         </div>
-        <PopoverContent className="space-y-2">
+        <PopoverContent className="space-y-2 w-auto min-w-[250px]">
           <div className="flex flex-col items-center">
             <div className="flex justify-end gap-2">
               <Button asChild onClick={setGlobalDateIfItemSearchGlobally}>
                 <Link to={ROUTES.todoDetails(data.id)}>Details</Link>
               </Button>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 w-full">
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline">Edit</Button>
