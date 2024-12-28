@@ -3,6 +3,7 @@ import Container from './Container';
 import Logo from './Logo';
 import Header from './Header';
 import UserPanel from './User/UserPanel';
+import GlobalTodos from './GlobalTodos/GlobalTodos';
 
 const AppLayout = () => {
   return (
@@ -10,7 +11,10 @@ const AppLayout = () => {
       <Container data-testid="container">
         <Header>
           <Logo />
-          <UserPanel />
+          <div className="flex gap-2 items-center">
+            <GlobalTodos />
+            <UserPanel />
+          </div>
         </Header>
       </Container>
       <Container data-testid="container">
