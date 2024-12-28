@@ -19,6 +19,8 @@ import {
   updateTodoStatusInList,
   uploadImageAndGetUrl,
   moveTodo,
+  updateAllRelatedTodos,
+  repeatTodo,
 } from '@/api/apiTodos';
 import {
   FILES_FOLDER_todoImages,
@@ -1240,5 +1242,128 @@ describe('handleTodoImageUploadAndUpdate()', () => {
         })],
       },
     });
+  });
+});
+
+describe('updateAllRelatedTodos()', () => {
+  it('should update todos based on originalTodoId and imageUrl', async () => {
+    const mockAccountId = '12345';
+    const mockExcludeDate = '2023-10-10';
+    const mockOriginalTodoId = 'originalTodo1';
+    
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({
+        '2023-10-10': {
+          userTodosOfDay: [{
+            id: 'originalTodo1',
+            todo: 'Original Task',
+            imageUrl: 'http://example.com/original.jpg'
+          }]
+        },
+        '2023-10-11': {
+          userTodosOfDay: [
+            {
+              id: 'repeatedTodo1',
+              todo: 'Repeated Task',
+              originalTodoId: 'originalTodo1',
+              imageUrl: 'http://example.com/original.jpg',
+              isIndependentEdit: false
+            },
+            {
+              id: 'repeatedTodo2',
+              todo: 'Independent Task',
+              originalTodoId: 'originalTodo1',
+              imageUrl: 'http://example.com/different.jpg',
+              isIndependentEdit: true
+            },
+            {
+              id: 'repeatedTodo3',
+              todo: 'Using Original Image',
+              originalTodoId: 'originalTodo1',
+              imageUrl: 'http://example.com/original.jpg',
+              isIndependentEdit: true
+            }
+          ]
+        }
+      })
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    const updateFn = (todo: TodoItemDetails) => ({
+      ...todo,
+      imageUrl: ''
+    });
+
+    await updateAllRelatedTodos(
+      mockAccountId,
+      mockExcludeDate,
+      mockOriginalTodoId,
+      updateFn
+    );
+
+    // Sprawdzamy, czy updateDoc został wywołany z odpowiednimi parametrami
+    expect(updateDoc).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        '2023-10-11': {
+          userTodosOfDay: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'repeatedTodo1',
+              imageUrl: '' // non-independent todo should be updated
+            }),
+            expect.objectContaining({
+              id: 'repeatedTodo2',
+              imageUrl: 'http://example.com/different.jpg' // independent todo with different image should not be updated
+            }),
+            expect.objectContaining({
+              id: 'repeatedTodo3',
+              imageUrl: '' // independent todo with original image should be updated
+            })
+          ])
+        }
+      })
+    );
+  });
+});
+
+describe('repeatTodo()', () => {
+  it('should create repeated todo with isIndependentEdit set to false', async () => {
+    const mockTodoDetails = {
+      id: 'originalTodo1',
+      todo: 'Test Todo',
+      imageUrl: 'http://example.com/image.jpg',
+    } as TodoItemDetails;
+    const mockNewDate = '2023-10-11';
+    const mockCurrentUser = { accountId: '12345' } as User;
+
+    const mockDocSnapshot = {
+      exists: () => true,
+      data: () => ({})
+    } as unknown as DocumentSnapshot;
+
+    const getDocMocked = vi.mocked(getDoc);
+    const setDocMocked = vi.mocked(setDoc);
+    getDocMocked.mockResolvedValue(mockDocSnapshot);
+
+    await repeatTodo(mockTodoDetails, mockNewDate, mockCurrentUser);
+
+    expect(setDocMocked).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        [mockNewDate]: {
+          userTodosOfDay: [
+            expect.objectContaining({
+              isIndependentEdit: false,
+              originalTodoId: 'originalTodo1',
+              originalDate: ''
+            })
+          ]
+        }
+      }),
+      { merge: true }
+    );
   });
 });

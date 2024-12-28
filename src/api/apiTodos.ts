@@ -318,10 +318,8 @@ export async function handleTodoImageDelete(
   await deleteStorageFile(accountId, dateForStorage, todoId);
 
   await updateAllRelatedTodos(accountId, selectedDate, todoId, (todo) => {
-    if (!todo.isIndependentEdit) {
-      return { ...todo, imageUrl: '' };
-    }
-    if (todo.isIndependentEdit && todo.imageUrl === originalImageUrl) {
+    if (!todo.isIndependentEdit || 
+        (todo.isIndependentEdit && todo.imageUrl === originalImageUrl)) {
       return { ...todo, imageUrl: '' };
     }
     return todo;
@@ -448,10 +446,8 @@ export async function deleteTodo(
       selectedDate,
       todoId,
       (todo) => {
-        if (!todo.isIndependentEdit) {
-          return { ...todo, imageUrl: '' };
-        }
-        if (todo.imageUrl === originalImageUrl) {
+        if (!todo.isIndependentEdit || 
+            (todo.isIndependentEdit && todo.imageUrl === originalImageUrl)) {
           return { ...todo, imageUrl: '' };
         }
         return todo;
@@ -580,6 +576,7 @@ export async function repeatTodo(
     id: todoId,
     imageUrl,
     isCompleted: false,
+    isIndependentEdit: false,
     createdAt: new Date(),
     originalTodoId: todoDetails.id,
     originalDate: '',
@@ -657,7 +654,7 @@ export async function moveTodo(
   return { success: true, todoId };
 }
 
-async function updateAllRelatedTodos(
+export async function updateAllRelatedTodos(
   accountId: string,
   excludeDate: string,
   originalTodoId: string,
@@ -670,7 +667,7 @@ async function updateAllRelatedTodos(
   let hasUpdates = false;
 
   const originalTodo = await findOriginalTodo(userData, originalTodoId);
-  const originalTodoDate = originalTodo?.originalDate;
+  const originalImageUrl = originalTodo?.imageUrl;
 
   for (const date in userData) {
     if (date === 'userInfo' || date === excludeDate) continue;
@@ -681,7 +678,7 @@ async function updateAllRelatedTodos(
     const updatedTodos = dayTodos.map((todo) => {
       if (todo.originalTodoId === originalTodoId && 
           (!todo.isIndependentEdit || 
-           (todo.isIndependentEdit && todo.originalDate === originalTodoDate))) {
+           (todo.isIndependentEdit && todo.imageUrl === originalImageUrl))) {
         return updateFn(todo);
       }
       return todo;
@@ -701,7 +698,7 @@ async function updateAllRelatedTodos(
   return hasUpdates;
 }
 
-async function findOriginalTodo(userData: DocumentData, todoId: string): Promise<TodoItemDetails | undefined> {
+export async function findOriginalTodo(userData: DocumentData, todoId: string): Promise<TodoItemDetails | undefined> {
   for (const date in userData) {
     if (date === 'userInfo') continue;
     
@@ -714,7 +711,7 @@ async function findOriginalTodo(userData: DocumentData, todoId: string): Promise
   return undefined;
 }
 
-async function deleteStorageFile(
+export async function deleteStorageFile(
   accountId: string,
   selectedDate: string,
   todoId: string
