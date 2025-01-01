@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase.config';
 import { TodoItemBase } from '@/types/types';
 import { getFirestoreDocRef } from '@/lib/firebaseHelpers';
@@ -116,9 +116,13 @@ export async function assignGlobalTodoToDay(
   const updatedGlobalTodos = globalTodos.filter(
     (todo: TodoItemBase) => todo.id !== globalTodoId
   );
-  await setDoc(userGlobalTodosRef, {
-    userGlobalTodos: updatedGlobalTodos,
-  });
+  if (updatedGlobalTodos.length === 0) {
+    await deleteDoc(userGlobalTodosRef);
+  } else {
+    await setDoc(userGlobalTodosRef, {
+      userGlobalTodos: updatedGlobalTodos,
+    });
+  }
 }
 
 export async function editGlobalTodo(
