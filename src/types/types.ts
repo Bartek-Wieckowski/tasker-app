@@ -49,7 +49,7 @@ export type TodoItemBase = {
   updatedAt?: Date | { seconds: number; nanoseconds: number };
   originalTodoId?: string;
   isIndependentEdit?: boolean;
-  originalDate?: string;
+  fromDelegated?: boolean;
 };
 export type TodoItemDetails = TodoItemBase;
 export type TodoItemDetailsGlobalSearch = TodoItemBase & {
