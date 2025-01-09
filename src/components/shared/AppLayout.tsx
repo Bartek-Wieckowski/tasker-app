@@ -4,6 +4,7 @@ import Logo from './Logo';
 import Header from './Header';
 import UserPanel from './User/UserPanel';
 import GlobalTodos from './GlobalTodos/GlobalTodos';
+import DelegatedTodos from './DelegatedTodos/DelegatedTodos';
 
 const AppLayout = () => {
   return (
@@ -12,6 +13,7 @@ const AppLayout = () => {
         <Header>
           <Logo />
           <div className="flex gap-2 items-center">
+            <DelegatedTodos />
             <GlobalTodos />
             <UserPanel />
           </div>
