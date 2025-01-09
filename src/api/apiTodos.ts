@@ -1,5 +1,6 @@
 import {
   FILES_FOLDER_todoImages,
+  TABLE_NAME_taskerDelegatedTodos,
   TABLE_NAME_taskerUserTodos,
 } from '@/lib/constants';
 import { storage } from '@/lib/firebase.config';
@@ -7,7 +8,6 @@ import { getFirestoreDocRef } from '@/lib/firebaseHelpers';
 import { convertTimestampToDate } from '@/lib/helpers';
 import {
   TodoItem,
-  TodoItemBase,
   TodoItemDetails,
   TodoItemDetailsGlobalSearch,
   User,
@@ -76,19 +76,18 @@ export async function getTodoById(
   if (!result) return;
 
   const { todosOfDay } = result;
-  const todo = todosOfDay.find((todo: TodoItemBase) => todo.id === todoId);
+  const todo = todosOfDay.find((todo: TodoItemDetails) => todo.id === todoId);
   return todo;
 }
 
 export async function uploadImageAndGetUrl(
   accountId: string,
-  selectedDate: string,
   todoId: string,
   image: File
 ) {
   const imageRef = ref(
     storage,
-    `${FILES_FOLDER_todoImages}/${accountId}/${selectedDate}_${todoId}`
+    `${FILES_FOLDER_todoImages}/${accountId}/${todoId}`
   );
   const uploadTask = uploadBytesResumable(imageRef, image);
   await uploadTask;
@@ -113,7 +112,7 @@ export function createTodoItem(
 export async function updateOrCreateTodos(
   docRef: DocumentReference,
   selectedDate: string,
-  todoItem: TodoItemBase,
+  todoItem: TodoItemDetails,
   userData: DocumentData | undefined,
   currentUser: User
 ) {
@@ -150,7 +149,6 @@ export async function addTodo(
   if (todoDetails.imageUrl) {
     imageUrl = await uploadImageAndGetUrl(
       currentUser.accountId,
-      selectedDate,
       todoId,
       todoDetails.imageUrl as File
     );
@@ -186,20 +184,14 @@ export async function editTodo(
       todoToEdit?.imageUrl && 
       typeof todoToEdit.imageUrl === 'string' &&
       (!isRepeatedTodo || todoToEdit.isIndependentEdit)) {
-    await deleteStorageFile(
-      currentUser.accountId,
-      todoToEdit.originalDate || selectedDate,
-      todoId
-    );
+    await handleImageDeletion(currentUser.accountId, todoToEdit.imageUrl, todoId);
   }
 
   if (deleteImage && todoToEdit?.imageUrl && typeof todoToEdit.imageUrl === 'string') {
     await handleTodoImageDelete(
       currentUser.accountId,
-      selectedDate,
       todoId,
-      todosOfDay,
-      todoToEdit.originalTodoId
+      todosOfDay
     );
   } else if (newTodoDetails.imageUrl) {
     await handleTodoImageUploadAndUpdate(
@@ -280,50 +272,16 @@ export async function updateTodosInDatabase(
 
 export async function handleTodoImageDelete(
   accountId: string,
-  selectedDate: string,
   todoId: string,
-  todosOfDay: TodoItemDetails[],
-  originalTodoId?: string
+  todosOfDay: TodoItemDetails[]
 ) {
   const todoToDelete = todosOfDay.find(
     (todo: TodoItemDetails) => todo.id === todoId
   );
   
-  const dateForStorage = todoToDelete?.originalDate || selectedDate;
+  if (!todoToDelete?.imageUrl || typeof todoToDelete.imageUrl !== 'string') return;
 
-  if (!todoToDelete?.imageUrl || typeof todoToDelete.imageUrl !== 'string')
-    return;
-
-  if (originalTodoId) {
-    const docRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, accountId);
-    const updatedTodos = todosOfDay.map((todo) =>
-      todo.id === todoId
-        ? { ...todo, imageUrl: '', isIndependentEdit: true }
-        : todo
-    );
-
-    await updateDoc(docRef, {
-      [selectedDate]: {
-        userTodosOfDay: updatedTodos,
-      },
-    });
-
-    if (todoToDelete.isIndependentEdit && !todoToDelete.imageUrl.includes(originalTodoId)) {
-      await deleteStorageFile(accountId, dateForStorage, todoId);
-    }
-    return;
-  }
-
-  const originalImageUrl = todoToDelete.imageUrl;
-  await deleteStorageFile(accountId, dateForStorage, todoId);
-
-  await updateAllRelatedTodos(accountId, selectedDate, todoId, (todo) => {
-    if (!todo.isIndependentEdit || 
-        (todo.isIndependentEdit && todo.imageUrl === originalImageUrl)) {
-      return { ...todo, imageUrl: '' };
-    }
-    return todo;
-  });
+  await handleImageDeletion(accountId, todoToDelete.imageUrl, todoId);
 }
 
 export async function handleTodoImageUploadAndUpdate(
@@ -336,60 +294,35 @@ export async function handleTodoImageUploadAndUpdate(
 ) {
   const todoToUpdate = updatedUserTodos.find((todo) => todo.id === todoId);
   const isRepeatedTodo = todoToUpdate?.originalTodoId;
+  const originalImageUrl = todoToUpdate?.imageUrl;
+  const newImageUrl = await uploadImageAndGetUrl(accountId, todoId, imageFile);
 
-  if (isRepeatedTodo) {
-    const newImageUrl = await uploadImageAndGetUrl(
-      accountId,
-      selectedDate,
-      todoId,
-      imageFile
-    );
-    const newUpdatedUserTodos = updatedUserTodos.map((todo) =>
-      todo.id === todoId
-        ? { 
-            ...todo, 
-            imageUrl: newImageUrl, 
-            isIndependentEdit: true,
-            ...(todo.originalDate && { originalDate: selectedDate })
-          }
-        : todo
-    );
-
-    await updateDoc(docRef, {
-      [selectedDate]: { userTodosOfDay: newUpdatedUserTodos },
-    });
-    return;
+  if (originalImageUrl && originalImageUrl !== newImageUrl) {
+    await handleImageDeletion(accountId, originalImageUrl, todoId);
   }
 
-  const newImageUrl = await uploadImageAndGetUrl(
-    accountId,
-    selectedDate,
-    todoId,
-    imageFile
+  if (!isRepeatedTodo) {
+    await updateAllRelatedTodos(accountId, selectedDate, todoId, (todo) => {
+      if (!todo.isIndependentEdit || 
+          (todo.isIndependentEdit && todo.imageUrl === originalImageUrl)) {
+        return { ...todo, imageUrl: newImageUrl };
+      }
+      return todo;
+    });
+  }
+
+  const updatedTodos = updatedUserTodos.map((todo) =>
+    todo.id === todoId
+      ? {
+          ...todo,
+          imageUrl: newImageUrl,
+          ...(isRepeatedTodo && { isIndependentEdit: true })
+        }
+      : todo
   );
 
   await updateDoc(docRef, {
-    [selectedDate]: {
-      userTodosOfDay: updatedUserTodos.map((todo) =>
-        todo.id === todoId 
-          ? { 
-              ...todo, 
-              imageUrl: newImageUrl,
-              ...(todo.originalDate && { originalDate: selectedDate })
-            } 
-          : todo
-      ),
-    },
-  });
-
-  await updateAllRelatedTodos(accountId, selectedDate, todoId, (todo) => {
-    if (!todo.isIndependentEdit) {
-      return { ...todo, imageUrl: newImageUrl };
-    }
-    if (todo.isIndependentEdit && todo.imageUrl === todoToUpdate?.imageUrl) {
-      return { ...todo, imageUrl: newImageUrl };
-    }
-    return todo;
+    [selectedDate]: { userTodosOfDay: updatedTodos },
   });
 }
 
@@ -439,31 +372,12 @@ export async function deleteTodo(
     (todo: TodoItemDetails) => todo.id === todoId
   );
 
-  if (!todoToDelete?.originalTodoId) {
-    const originalImageUrl = todoToDelete?.imageUrl;
-    await updateAllRelatedTodos(
-      currentUser.accountId,
-      selectedDate,
-      todoId,
-      (todo) => {
-        if (!todo.isIndependentEdit || 
-            (todo.isIndependentEdit && todo.imageUrl === originalImageUrl)) {
-          return { ...todo, imageUrl: '' };
-        }
-        return todo;
-      }
-    );
+  if (!todoToDelete) {
+    return;
   }
 
-  if (
-    (todoToDelete?.originalTodoId && todoToDelete.isIndependentEdit && todoToDelete.imageUrl) ||
-    (!todoToDelete?.originalTodoId && todoToDelete?.imageUrl)
-  ) {
-    await deleteStorageFile(
-      currentUser.accountId, 
-      todoToDelete.originalDate || selectedDate, 
-      todoId
-    );
+  if (todoToDelete.imageUrl) {
+    await handleImageDeletion(currentUser.accountId, todoToDelete.imageUrl, todoId);
   }
 
   const updatedUserTodos = filterOutTodoById(todosOfDay, todoId);
@@ -483,6 +397,7 @@ export async function removeExistingDateIfNoTodo(
     [selectedDate]: deleteField(),
   });
 }
+
 export function filterOutTodoById(
   todosOfDay: TodoItemDetails[],
   todoId: string
@@ -497,7 +412,7 @@ export function findTodoById(todosOfDay: TodoItemDetails[], todoId: string) {
 export async function searchInDatabase(
   searchValue: string,
   currentUser: User
-): Promise<TodoItemDetailsGlobalSearch[]> {
+) {
   const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
   if (!docSnapshot.exists()) return [];
 
@@ -557,7 +472,7 @@ export async function repeatTodo(
 ) {
   const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
   if (!docSnapshot.exists()) {
-    throw new Error('User document does not exist');
+    throw new Error("User doc doesn't exists");
   }
 
   const docRef = getFirestoreDocRef(
@@ -566,20 +481,19 @@ export async function repeatTodo(
   );
 
   const todoId = crypto.randomUUID();
-  const imageUrl = todoDetails.imageUrl || '';
-  //TODO:no needed updatedAt so use eslint comment line
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { updatedAt, ...rest } = todoDetails;
+  
+  const sourceOriginalTodoId = todoDetails.originalTodoId || todoDetails.id;
+  const imageUrl = todoDetails.imageUrl;
 
   const repeatedTodoItem = {
-    ...rest,
+    ...todoDetails,
     id: todoId,
     imageUrl,
     isCompleted: false,
     isIndependentEdit: false,
     createdAt: new Date(),
-    originalTodoId: todoDetails.id,
-    originalDate: '',
+    originalTodoId: sourceOriginalTodoId,
+    fromDelegated: false,
   };
 
   const userData = docSnapshot.data();
@@ -621,7 +535,6 @@ export async function moveTodo(
     ...todoDetails,
     imageUrl,
     updatedAt: new Date(),
-    originalDate,
   };
 
   const userData = docSnapshot.data();
@@ -666,9 +579,6 @@ export async function updateAllRelatedTodos(
   const userData = docSnapshot.data();
   let hasUpdates = false;
 
-  const originalTodo = await findOriginalTodo(userData, originalTodoId);
-  const originalImageUrl = originalTodo?.imageUrl;
-
   for (const date in userData) {
     if (date === 'userInfo' || date === excludeDate) continue;
 
@@ -676,9 +586,7 @@ export async function updateAllRelatedTodos(
     if (!Array.isArray(dayTodos)) continue;
 
     const updatedTodos = dayTodos.map((todo) => {
-      if (todo.originalTodoId === originalTodoId && 
-          (!todo.isIndependentEdit || 
-           (todo.isIndependentEdit && todo.imageUrl === originalImageUrl))) {
+      if (todo.originalTodoId === originalTodoId) {
         return updateFn(todo);
       }
       return todo;
@@ -698,7 +606,7 @@ export async function updateAllRelatedTodos(
   return hasUpdates;
 }
 
-export async function findOriginalTodo(userData: DocumentData, todoId: string): Promise<TodoItemDetails | undefined> {
+export async function findOriginalTodo(userData: DocumentData, todoId: string) {
   for (const date in userData) {
     if (date === 'userInfo') continue;
     
@@ -711,15 +619,214 @@ export async function findOriginalTodo(userData: DocumentData, todoId: string): 
   return undefined;
 }
 
+function getFileIdFromUrl(url: string): string {
+  // Usuń parametry URL (wszystko po ?)
+  const urlWithoutParams = url.split('?')[0];
+  
+  // Zdekoduj URL (zamień %2F na /)
+  const decodedUrl = decodeURIComponent(urlWithoutParams);
+  
+  // Podziel na segmenty
+  const urlParts = decodedUrl.split('/');
+  
+  // Weź ostatni segment
+  const fileId = urlParts[urlParts.length - 1];
+  
+  console.log('Pobrane ID pliku:', fileId);
+  return fileId;
+}
+
 export async function deleteStorageFile(
   accountId: string,
-  selectedDate: string,
-  todoId: string
+  fileId: string
 ) {
-  const imageRef = ref(
-    storage,
-    `${FILES_FOLDER_todoImages}/${accountId}/${selectedDate}_${todoId}`
+  try {
+    if (!fileId) {
+      console.warn('Brak prawidłowego ID pliku');
+      return false;
+    }
+
+    const path = `${FILES_FOLDER_todoImages}/${accountId}/${fileId}`;
+    console.log('Próba usunięcia pliku:', { path });
+    
+    const imageRef = ref(storage, path);
+    await deleteObject(imageRef);
+    console.log(`Pomyślnie usunięto plik: ${path}`);
+    return true;
+  } catch (error) {
+    console.error(`Błąd podczas usuwania pliku: ${fileId}`, error);
+    throw error;
+  }
+}
+
+export async function delegateTodo(
+  todoId: string,
+  selectedDate: string,
+  currentUser: User
+) {
+  const result = await getUserTodos(currentUser.accountId, selectedDate);
+  if (!result) return;
+
+  const { docRef, todosOfDay } = result;
+  const todoToDelegate = todosOfDay.find((todo: TodoItemDetails) => todo.id === todoId);
+
+  if (!todoToDelegate) return;
+
+  const userDelegatedTodosRef = getFirestoreDocRef(
+    TABLE_NAME_taskerDelegatedTodos,
+    currentUser.accountId
   );
-  await deleteObject(imageRef);
+  const delegatedDocSnapshot = await getDoc(userDelegatedTodosRef);
+
+  const delegatedTodo: Omit<TodoItemDetails, 'imageUrl'> & { imageUrl: string } = {
+    id: todoId,
+    todo: todoToDelegate.todo,
+    todoMoreContent: todoToDelegate.todoMoreContent || '',
+    imageUrl: todoToDelegate.imageUrl as string,
+    isCompleted: false,
+    createdAt: new Date(),
+    originalTodoId: todoToDelegate.originalTodoId || todoId,
+    fromDelegated: false
+  };
+
+  if (delegatedDocSnapshot.exists()) {
+    await setDoc(
+      userDelegatedTodosRef,
+      {
+        userDelegatedTodos: [...delegatedDocSnapshot.data().userDelegatedTodos, delegatedTodo],
+      },
+      { merge: true }
+    );
+  } else {
+    await setDoc(userDelegatedTodosRef, {
+      userDelegatedTodos: [delegatedTodo],
+    });
+  }
+
+  const updatedTodos = todosOfDay.filter((todo: TodoItemDetails) => todo.id !== todoId);
+
+  if (updatedTodos.length === 0) {
+    await removeExistingDateIfNoTodo(docRef, selectedDate);
+  } else {
+    await updateTodosInDatabase(docRef, selectedDate, updatedTodos);
+  }
+
+  return delegatedTodo;
+}
+
+export async function isImageUsedElsewhere(accountId: string, imageUrl: string, excludingTodoId: string) {
+  const docSnapshot = await getUserTodosDocSnapshot(accountId);
+  if (!docSnapshot.exists()) return false;
+
+  const userData = docSnapshot.data();
+
+  for (const date in userData) {
+    if (date === 'userInfo') continue;
+
+    const todos = userData[date]?.userTodosOfDay;
+    if (todos) {
+      for (const todo of todos) {
+        if (todo.id !== excludingTodoId && todo.imageUrl === imageUrl) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+export async function isLastImageReference(
+  accountId: string, 
+  imageUrl: string, 
+  excludingTodoId: string
+) {
+  // Sprawdź referencje w taskerUserTodos
+  const userTodosSnapshot = await getUserTodosDocSnapshot(accountId);
+  const userDelegatedTodosRef = getFirestoreDocRef(
+    TABLE_NAME_taskerDelegatedTodos,
+    accountId
+  );
+  const delegatedTodosSnapshot = await getDoc(userDelegatedTodosRef);
+
+  let referenceCount = 0;
+
+  // Sprawdź w taskerUserTodos
+  if (userTodosSnapshot.exists()) {
+    const userData = userTodosSnapshot.data();
+    for (const date in userData) {
+      if (date === 'userInfo') continue;
+
+      const todos = userData[date]?.userTodosOfDay;
+      if (todos) {
+        for (const todo of todos) {
+          if (todo.id !== excludingTodoId && todo.imageUrl === imageUrl) {
+            referenceCount++;
+            if (referenceCount > 0) return false;
+          }
+        }
+      }
+    }
+  }
+
+  // Sprawdź w taskerDelegatedTodos
+  if (delegatedTodosSnapshot.exists()) {
+    const delegatedTodos = delegatedTodosSnapshot.data().userDelegatedTodos;
+    if (delegatedTodos) {
+      for (const todo of delegatedTodos) {
+        if (todo.id !== excludingTodoId && todo.imageUrl === imageUrl) {
+          referenceCount++;
+          if (referenceCount > 0) return false;
+        }
+      }
+    }
+  }
+
   return true;
+}
+
+// export async function getImageReferences(
+//   accountId: string,
+//   imageUrl: string
+// ) {
+//   const docSnapshot = await getUserTodosDocSnapshot(accountId);
+//   if (!docSnapshot.exists()) return;
+
+//   const userData = docSnapshot.data();
+//   const references: { todoId: string; date: string }[] = [];
+
+//   for (const date in userData) {
+//     if (date === 'userInfo') continue;
+
+//     const todos = userData[date]?.userTodosOfDay;
+//     if (todos) {
+//       todos.forEach((todo: TodoItemDetails) => {
+//         if (todo.imageUrl === imageUrl) {
+//           references.push({ todoId: todo.id, date });
+//         }
+//       });
+//     }
+//   }
+
+//   return references;
+// }
+
+export async function handleImageDeletion(
+  accountId: string,
+  imageUrl: string | File,
+  excludingTodoId: string
+) {
+  if (!imageUrl || typeof imageUrl !== 'string') return;
+  
+  const fileId = getFileIdFromUrl(imageUrl);
+  const isLastReference = await isLastImageReference(accountId, imageUrl, excludingTodoId);
+  
+  if (isLastReference) {
+    try {
+      await deleteStorageFile(accountId, fileId);
+      console.log('Usunięto obraz - to była ostatnia referencja');
+    } catch (error) {
+      console.warn('Błąd podczas usuwania pliku:', error);
+    }
+  }
 }
