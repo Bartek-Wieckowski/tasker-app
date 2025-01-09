@@ -24,11 +24,7 @@ export function useMoveTodo() {
       currentUser: User;
       originalDate: string;
     }) => {
-      const todoWithOriginalDate = {
-        ...todoDetails,
-        originalDate: todoDetails.originalDate || originalDate
-      };
-      return moveTodo(todoWithOriginalDate, newDate, currentUser, originalDate);
+      return moveTodo(todoDetails, newDate, currentUser, originalDate);
     },
     onSuccess: (_, { newDate, originalDate }) => {
       queryClient.invalidateQueries({

@@ -27,9 +27,17 @@ export function useUpdateTodo() {
     }) => editTodo(todoId, newTodoDetails, selectedDate, currentUser, deleteImage),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
+      toast({ 
+        title: 'Todo updated successfully',
+        variant: 'default'
+      });
     },
     onError: () => {
-      toast({ title: 'Updating todos failed. Please try again.', variant: 'destructive' });
+      toast({
+        title: 'Updating todos failed',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
     },
   });
   return { isTodoChanging, isError, updateTodo };
