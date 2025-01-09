@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -35,6 +35,7 @@ import { GlobalTodoForm } from './GlobalTodoForm';
 import { UseFormReturn } from "react-hook-form";
 
 export default function GlobalTodos() {
+  const formContainerRef = useRef<HTMLDivElement | null>(null);
   const [selectedTodo, setSelectedTodo] = useState<TodoItemBase | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -56,6 +57,25 @@ export default function GlobalTodos() {
   const { deleteGlobalTodo, isDeletingGlobalTodo } = useDeleteGlobalTodo(
     currentUser?.accountId || ''
   );
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (formContainerRef.current) {
+        formContainerRef.current.style.setProperty('bottom', `env(safe-area-inset-bottom)`);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+      handleResize(); 
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+      }
+    };
+  }, []);
 
   const handleAddSubmit = (data: { todo: string }, form: UseFormReturn<{ todo: string }>) => {
     createGlobalTodo(data.todo, {
@@ -109,7 +129,7 @@ export default function GlobalTodos() {
           data-testid="global-todos-trigger"
         />
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent ref={formContainerRef} className="min-h-[70vh]">
         <div className="mx-auto w-full max-w-sm py-3">
           <div className="mb-6">
             <DrawerHeader className="mb-4 text-lg font-semibold">
