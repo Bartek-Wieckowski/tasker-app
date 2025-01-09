@@ -30,6 +30,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useRepeatTodo } from '@/api/mutations/todos/useRepeatTodo';
 import { useMoveTodo } from '@/api/mutations/todos/useMoveTodo';
 import { toast } from '@/components/ui/use-toast';
+import { useDelegateTodo } from '@/api/mutations/todos/useDelegateTodo';
 
 type TodosItemCardProps = {
   data: TodoItemDetailsGlobalSearch;
@@ -49,6 +50,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
   const [selectedMoveDate, setSelectedMoveDate] = useState<Date>();
   const { repeatTodoItem, isRepeatingTodo } = useRepeatTodo();
   const { moveTodoItem, isMovingTodo } = useMoveTodo();
+  const { delegateTodoItem, isDelegatingTodo } = useDelegateTodo();
 
   const dataImgToLightBoxImage = [{ src: data.imageUrl as string }];
 
@@ -178,7 +180,6 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
       await moveTodoItem({
         todoDetails: {
           ...data,
-          originalDate: data.originalDate || originalDate,
         },
         newDate: formattedDate,
         currentUser,
@@ -246,128 +247,29 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
           </PopoverTrigger>
         </div>
         <PopoverContent className="space-y-2 w-auto min-w-[250px]">
-          <div className="flex flex-col items-center">
-            <div className="flex justify-end gap-2">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex justify-between w-full gap-2">
               <Button asChild onClick={setGlobalDateIfItemSearchGlobally}>
                 <Link to={ROUTES.todoDetails(data.id)}>Details</Link>
               </Button>
-              <div className="flex flex-col gap-2 w-full">
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Edit</Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
-                    <DialogHeader>
-                      <DialogTitle>Edit Todo Item</DialogTitle>
-                    </DialogHeader>
-                    <TodoForm
-                      action="Update"
-                      singleTodoId={data.id}
-                      onCloseDialog={() => setDialogOpen(false)}
-                      globalSearchItemDate={data.todoDate}
-                    />
-                  </DialogContent>
-                </Dialog>
-                <Dialog
-                  open={repeatDialogOpen}
-                  onOpenChange={setRepeatDialogOpen}
-                >
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Repeat</Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Choose Date to Repeat Todo</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-4">
-                      <Calendar
-                        mode="single"
-                        selected={selectedRepeatDate}
-                        onSelect={setSelectedRepeatDate}
-                        disabled={(date) => {
-                          const todoDate = isGlobalSearch
-                            ? new Date(
-                                data.todoDate
-                                  ?.split('-')
-                                  .reverse()
-                                  .join('-') as string
-                              )
-                            : new Date(
-                                selectedDate.split('-').reverse().join('-')
-                              );
-                          return date <= todoDate;
-                        }}
-                        className="flex justify-center"
-                      />
-                      <Button
-                        onClick={handleRepeatTodo}
-                        disabled={!selectedRepeatDate || isRepeatingTodo}
-                      >
-                        {isRepeatingTodo ? (
-                          <div className="flex gap-2">
-                            <Loader />
-                            Repeating...
-                          </div>
-                        ) : (
-                          'Confirm'
-                        )}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      disabled={data.isCompleted}
-                      title={
-                        data.isCompleted ? 'Cannot move completed todo' : ''
-                      }
-                    >
-                      Move
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Choose Date to Move Todo</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-4">
-                      <Calendar
-                        mode="single"
-                        selected={selectedMoveDate}
-                        onSelect={setSelectedMoveDate}
-                        disabled={(date) => {
-                          const todoDate = isGlobalSearch
-                            ? new Date(
-                                data.todoDate
-                                  ?.split('-')
-                                  .reverse()
-                                  .join('-') as string
-                              )
-                            : new Date(
-                                selectedDate.split('-').reverse().join('-')
-                              );
-                          return date <= todoDate;
-                        }}
-                        className="flex justify-center"
-                      />
-                      <Button
-                        onClick={handleMoveTodo}
-                        disabled={!selectedMoveDate || isMovingTodo}
-                      >
-                        {isMovingTodo ? (
-                          <div className="flex gap-2">
-                            <Loader />
-                            Moving...
-                          </div>
-                        ) : (
-                          'Confirm'
-                        )}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">Edit</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
+                  <DialogHeader>
+                    <DialogTitle>Edit Todo Item</DialogTitle>
+                  </DialogHeader>
+                  <TodoForm
+                    action="Update"
+                    singleTodoId={data.id}
+                    onCloseDialog={() => setDialogOpen(false)}
+                    globalSearchItemDate={data.todoDate}
+                  />
+                </DialogContent>
+              </Dialog>
+
               <Button variant="destructive" onClick={handleDeleteClick}>
                 {isDeletingItemTodo ? (
                   <div className="flex gap-2">
@@ -376,6 +278,128 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                   </div>
                 ) : (
                   'Delete'
+                )}
+              </Button>
+            </div>
+            <small>More actions?</small>
+            <div className="flex justify-between w-full gap-2">
+              <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={data.isCompleted}
+                    title={data.isCompleted ? 'Cannot move completed todo' : ''}
+                  >
+                    Move
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Choose Date to Move Todo</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex flex-col gap-4">
+                    <Calendar
+                      mode="single"
+                      selected={selectedMoveDate}
+                      onSelect={setSelectedMoveDate}
+                      disabled={(date) => {
+                        const todoDate = isGlobalSearch
+                          ? new Date(
+                              data.todoDate
+                                ?.split('-')
+                                .reverse()
+                                .join('-') as string
+                            )
+                          : new Date(
+                              selectedDate.split('-').reverse().join('-')
+                            );
+                        return date <= todoDate;
+                      }}
+                      className="flex justify-center"
+                    />
+                    <Button
+                      onClick={handleMoveTodo}
+                      disabled={!selectedMoveDate || isMovingTodo}
+                    >
+                      {isMovingTodo ? (
+                        <div className="flex gap-2">
+                          <Loader />
+                          Moving...
+                        </div>
+                      ) : (
+                        'Confirm'
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Dialog
+                open={repeatDialogOpen}
+                onOpenChange={setRepeatDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="outline">Repeat</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Choose Date to Repeat Todo</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex flex-col gap-4">
+                    <Calendar
+                      mode="single"
+                      selected={selectedRepeatDate}
+                      onSelect={setSelectedRepeatDate}
+                      disabled={(date) => {
+                        const todoDate = isGlobalSearch
+                          ? new Date(
+                              data.todoDate
+                                ?.split('-')
+                                .reverse()
+                                .join('-') as string
+                            )
+                          : new Date(
+                              selectedDate.split('-').reverse().join('-')
+                            );
+                        return date <= todoDate;
+                      }}
+                      className="flex justify-center"
+                    />
+                    <Button
+                      onClick={handleRepeatTodo}
+                      disabled={!selectedRepeatDate || isRepeatingTodo}
+                    >
+                      {isRepeatingTodo ? (
+                        <div className="flex gap-2">
+                          <Loader />
+                          Repeating...
+                        </div>
+                      ) : (
+                        'Confirm'
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  delegateTodoItem({
+                    todoId: data.id,
+                    selectedDate: isGlobalSearch
+                      ? (data.todoDate as string)
+                      : selectedDate,
+                    currentUser,
+                  });
+                }}
+                disabled={isDelegatingTodo}
+              >
+                {isDelegatingTodo ? (
+                  <div className="flex gap-2">
+                    <Loader />
+                    Delegating...
+                  </div>
+                ) : (
+                  'Delegate'
                 )}
               </Button>
             </div>

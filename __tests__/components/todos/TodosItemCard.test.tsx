@@ -60,4 +60,26 @@ describe('TodosItemCard component', () => {
 
     expect(screen.getByText('Todo Details Page')).toBeInTheDocument();
   });
+
+  it('should show delegate button in popover menu', async () => {
+    const mockData = {
+      id: '123',
+      isCompleted: false,
+    } as TodoItemDetailsGlobalSearch;
+
+    render(
+      <AllTheProviders>
+        <MemoryRouter>
+          <TodosItemCard data={mockData} />
+        </MemoryRouter>
+      </AllTheProviders>
+    );
+
+    const popoverTrigger = screen.getByTestId('popover-trigger');
+    fireEvent.click(popoverTrigger);
+
+    const delegateButton = await screen.findByRole('button', { name: /Delegate/i });
+    expect(delegateButton).toBeInTheDocument();
+    expect(delegateButton).not.toBeDisabled();
+  });
 });
