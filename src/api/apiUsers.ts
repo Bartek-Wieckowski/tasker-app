@@ -1,324 +1,496 @@
-import { FILES_FOLDER_todoImages, STARTER_USER_AVATAR_URL, TABLE_NAME_taskerUsers, TABLE_NAME_taskerUserTodos } from '@/lib/constants';
-import { auth, provider, storage } from '@/lib/firebase.config';
-import { getFirestoreDocRef } from '@/lib/firebaseHelpers';
-import {
-  isNotValidateGoogleResponse,
-  isNotValidateUserAuthOrUsername,
-  isNotValidateUserCredentials,
-  isNotValidateUserEmailOrPassword,
-  isNotValidateUserId,
-  isNotValidateUserProfileCredentials,
-} from '@/lib/validators';
-import { LoginUser, NewUser, UpdateUser, UpdateUserPassword, User, UserProfileUpdates } from '@/types/types';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  deleteUser,
-  signOut,
-  updateProfile,
-  signInWithPopup,
-  updatePassword,
-  updateEmail,
-  User as UserFromFirebaseAuth,
-} from 'firebase/auth';
-import { deleteDoc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, listAll, ref, uploadBytesResumable } from 'firebase/storage';
+import { supabase } from "@/lib/supabaseClient";
+import { UpdateUser, UpdateUserPassword } from "@/types/types";
+import { STARTER_USER_AVATAR_URL } from "@/lib/constants";
 
-export function getAuthenticatedUser() {
-  return auth.currentUser;
+export async function registerUser(
+  email: string,
+  password: string,
+  username: string
+) {
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        username: username,
+        avatar_url: STARTER_USER_AVATAR_URL,
+        display_name: username,
+      },
+    },
+  });
+
+  if (signUpError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: signUpError.code,
+        status: signUpError.status,
+        message: signUpError.message,
+      });
+    }
+    throw { code: "REGISTER_ERROR" };
+  }
+
+  const user = signUpData.user;
+
+  if (!user || !user.id || !user.email) {
+    throw { code: "INVALID_USER_DATA" };
+  }
+
+  const { error: syncError } = await supabase.functions.invoke("sync_user", {
+    body: {
+      id: user.id,
+      email: user.email,
+    },
+  });
+
+  if (syncError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: syncError.code,
+        status: syncError.status,
+        message: syncError.message,
+      });
+    }
+    throw { code: "REGISTER_ERROR" };
+  }
+
+  return user;
 }
 
-export async function createUserAccount(user: NewUser) {
-  if (isNotValidateUserCredentials(user)) {
-    throw new Error('Invalid user data: email, password, and username are required');
-  }
+export async function getAuthenticatedUser() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  try {
-    const authUser = await registerUser(user.email, user.password);
-
-    await updateUserProfile(authUser, user.username, STARTER_USER_AVATAR_URL);
-
-    const userToSave = createUserObj(authUser, user.username);
-
-    return await saveUserToFirestoreDatabase(authUser, userToSave);
-  } catch (error) {
-    throw new Error(`Error creating user account:${error}`);
-  }
+  return user;
 }
 
-export async function registerUser(email: string, password: string) {
-  try {
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    return res.user;
-  } catch (error) {
-    throw new Error(`Error registering user: ${error}`);
+export async function deleteAccount() {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    throw { code: "NO_USER_FOUND" };
   }
+
+  const { error } = await supabase.functions.invoke("delete_user", {
+    body: { user_id: user.id },
+  });
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        status: error.status,
+        message: error.message,
+      });
+    }
+    throw { code: "DELETE_USER_ERROR" };
+  }
+
+  await supabase.auth.signOut();
 }
 
-export async function updateUserProfile(userAuth: UserFromFirebaseAuth, username: string, avatarUrl: string) {
-  if (isNotValidateUserProfileCredentials(username, avatarUrl)) {
-    throw new Error('Invalid username or avatar URL');
+export async function loginAccount(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        status: error.status,
+        message: error.message,
+      });
+    }
+    throw { code: "LOGIN_ERROR" };
   }
 
-  try {
-    await updateProfile(userAuth, {
-      displayName: username,
-      photoURL: avatarUrl,
-    });
-  } catch (error) {
-    throw new Error(`Error updating user profile: ${error}`);
-  }
+  return data;
 }
 
-export function createUserObj(userAuth: UserFromFirebaseAuth, username?: string) {
-  if (isNotValidateUserAuthOrUsername(userAuth, username)) {
-    throw new Error('Invalid userAuth data or username');
-  }
-
-  return {
-    accountId: userAuth.uid,
-    imageUrl: userAuth.photoURL || '',
-    email: userAuth.email || '',
-    username: username || userAuth.displayName || '',
-  };
-}
-
-export async function saveUserToFirestoreDatabase(userAuth: UserFromFirebaseAuth, user: User) {
-  if (isNotValidateUserAuthOrUsername(userAuth, user.username)) {
-    throw new Error('Invalid userAuth data or username');
-  }
-
-  try {
-    const userData = createUserObj(userAuth, user.username);
-
-    const userDocRef = getFirestoreDocRef(TABLE_NAME_taskerUsers, userData.accountId);
-
-    await setDoc(userDocRef, userData);
-
-    return userData;
-  } catch (error) {
-    throw new Error('Something went wrong');
-  }
-}
-
-export async function removeUserFromDatabase(userId: string) {
-  if (isNotValidateUserId(userId)) {
-    throw new Error('Invalid userId');
-  }
-
-  try {
-    const userDocRef = getFirestoreDocRef(TABLE_NAME_taskerUsers, userId);
-
-    await deleteDoc(userDocRef);
-  } catch (error) {
-    throw new Error('Something went wrong');
-  }
-}
-
-export async function loginAccount(user: LoginUser) {
-  if (isNotValidateUserEmailOrPassword(user)) {
-    throw new Error('Email and password are required.');
-  }
-
-  try {
-    const userSession = await signInWithEmailAndPassword(auth, user.email, user.password);
-    return userSession;
-  } catch (error) {
-    throw new Error('Login failed. Please check your credentials.');
+export async function logoutAccount() {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        status: error.status,
+        message: error.message,
+      });
+    }
+    throw { code: "LOGOUT_ERROR" };
   }
 }
 
 export async function loginAccountWithGoogle() {
-  try {
-    const userGoogleData = await signInWithGoogle();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/`,
+      queryParams: {
+        prompt: "select_account",
+      },
+    },
+  });
 
-    const newUser = createUserObj(userGoogleData);
-
-    await saveUserToFirestoreDatabase(userGoogleData, newUser);
-  } catch (error) {
-    throw new Error(`Login with Google failed: ${error}`);
-  }
-}
-
-export async function signInWithGoogle() {
-  const res = await signInWithPopup(auth, provider);
-  if (isNotValidateGoogleResponse(res)) {
-    throw new Error('Sign-in with Google failed. No user data returned.');
-  }
-  return res.user;
-}
-
-export async function logoutAccount() {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    throw new Error(`Logout failed: ${error}`);
-  }
-}
-
-export async function deleteAccount() {
-  const currentUser = getAuthenticatedUser();
-
-  if (!currentUser) {
-    throw new Error('No current user found');
-  }
-
-  try {
-    await deleteUserItemsFromDatabase(currentUser.uid);
-    await deleteUser(currentUser);
-  } catch (error) {
-    throw new Error('Something went wrong');
-  }
-}
-
-export async function deleteUserItemsFromDatabase(userId: string) {
-  if (isNotValidateUserId(userId)) {
-    throw new Error('Invalid userId');
-  }
-
-  try {
-    await deleteUserImages(userId);
-    await deleteUserDocuments(userId);
-    await removeUserFromDatabase(userId);
-  } catch (error) {
-    throw new Error(`Failed to delete user items: ${error}`);
-  }
-}
-
-export async function deleteUserDocuments(userId: string) {
-  if (isNotValidateUserId(userId)) {
-    throw new Error('Invalid userId');
-  }
-
-  try {
-    const userDocRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, userId);
-    const docSnapshot = await getDoc(userDocRef);
-    if (docSnapshot.exists()) {
-      await deleteDoc(userDocRef);
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        status: error.status,
+        message: error.message,
+      });
     }
-  } catch (error) {
-    throw new Error(`Error deleting user documents: ${error}`);
+    throw { code: "LOGIN_WITH_GOOGLE_ERROR" };
+  }
+
+  return data;
+}
+
+export async function getUserCustomAvatar(userId: string) {
+  const { data: files, error: listError } = await supabase.storage
+    .from("user-avatars")
+    .list(userId);
+
+  if (listError || !files || files.length === 0) {
+    return null;
+  }
+
+  const avatarFile = files.find((file) => file.name.startsWith("avatar."));
+
+  if (!avatarFile) {
+    return null;
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage
+    .from("user-avatars")
+    .getPublicUrl(`${userId}/${avatarFile.name}`);
+
+  return publicUrl;
+}
+
+async function getCurrentUserAvatar(userId: string, currentAvatarUrl?: string) {
+  const customAvatar = await getUserCustomAvatar(userId);
+  if (customAvatar) {
+    return customAvatar;
+  }
+
+  if (currentAvatarUrl) {
+    return currentAvatarUrl;
+  }
+
+  // Use consistent starter avatar as fallback
+  return STARTER_USER_AVATAR_URL;
+}
+
+export async function uploadUserImage(userId: string, imageFile: File) {
+  const fileExt = imageFile.name.split(".").pop();
+  const fileName = `${userId}/avatar.${fileExt}`;
+
+  const { error } = await supabase.storage
+    .from("user-avatars")
+    .upload(fileName, imageFile, {
+      upsert: true,
+    });
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        message: error.message,
+      });
+    }
+    throw { code: "IMAGE_UPLOAD_ERROR" };
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("user-avatars").getPublicUrl(fileName);
+
+  return publicUrl;
+}
+
+export async function deleteUserImage(userId: string) {
+  const { data: files, error: listError } = await supabase.storage
+    .from("user-avatars")
+    .list(userId);
+
+  if (listError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        message: listError.message,
+      });
+    }
+    throw { code: "IMAGE_DELETE_ERROR" };
+  }
+
+  if (files && files.length > 0) {
+    const filePaths = files.map((file) => `${userId}/${file.name}`);
+
+    const { error: deleteError } = await supabase.storage
+      .from("user-avatars")
+      .remove(filePaths);
+
+    if (deleteError) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: deleteError.message,
+          message: "Failed to delete images",
+        });
+      }
+      throw { code: "IMAGE_DELETE_ERROR" };
+    }
   }
 }
 
-export async function deleteUserImages(userId: string) {
-  if (isNotValidateUserId(userId)) {
-    throw new Error('Invalid userId');
+export async function updateUsername(newUsername: string) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    throw { code: "NO_USER_FOUND" };
   }
 
-  try {
-    const imagesRef = ref(storage, FILES_FOLDER_todoImages + `/${userId}`);
-    const { items } = await listAll(imagesRef);
+  const currentAvatarUrl = user.user_metadata.avatar_url || "";
+  const newAvatarUrl = await getCurrentUserAvatar(user.id, currentAvatarUrl);
 
-    const deleteImagePromises = items.map((itemRef) => deleteObject(itemRef));
-    await Promise.all(deleteImagePromises);
-  } catch (error) {
-    throw new Error(`Error deleting user images ${error}`);
-  }
-}
+  const { error: authError } = await supabase.auth.updateUser({
+    data: {
+      username: newUsername,
+      display_name: newUsername,
+      avatar_url: newAvatarUrl,
+    },
+  });
 
-export async function deleteUserProfileImage(userId: string) {
-  if (isNotValidateUserId(userId)) {
-    throw new Error('Invalid userId');
-  }
-
-  const profileImageRef = ref(storage, `${userId}`);
-  try {
-    await getDownloadURL(profileImageRef);
-    await deleteObject(profileImageRef);
-  } catch (error) {
-    throw new Error(`Profile image not found: ${error}`);
-  }
-}
-
-export async function updateUserSettings(user: UpdateUser) {
-  const currentUser = getAuthenticatedUser();
-  if (!currentUser) {
-    throw new Error('No current user found');
-  }
-
-  try {
-    const updateUser = await prepareUserUpdate(currentUser, user);
-    await applyUserProfileUpdate(currentUser, updateUser, user);
-    await saveUserToDatabase(currentUser.uid, updateUser);
-    await updateUserTodos(currentUser.uid, updateUser);
-
-    return updateUser;
-  } catch (error) {
-    throw new Error(`Failed to update user settings ${error}`);
+  if (authError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: authError.code,
+        message: authError.message,
+      });
+    }
+    throw { code: "UPDATE_USERNAME_ERROR" };
   }
 }
 
-export async function prepareUserUpdate(currentUser: UserFromFirebaseAuth, user: UpdateUser) {
-  const imageUrl = user.imageUrl ? await uploadUserImage(currentUser.uid, user.imageUrl) : currentUser.photoURL || '';
+export async function updateUserEmail(newEmail: string) {
+  const user = await getAuthenticatedUser();
 
-  const preparedUserToUpdate = {
-    accountId: currentUser.uid,
-    username: user.username,
-    email: user.email,
-    imageUrl,
-  };
+  if (!user) {
+    throw { code: "NO_USER_FOUND" };
+  }
 
-  return buildUserToUpdate(preparedUserToUpdate);
+  const { error: authError } = await supabase.auth.updateUser({
+    email: newEmail,
+  });
+
+  if (authError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: authError.code,
+        message: authError.message,
+      });
+    }
+    throw { code: "UPDATE_EMAIL_ERROR" };
+  }
+
+  const { error: dbError } = await supabase
+    .from("db_users")
+    .update({
+      email: newEmail,
+    })
+    .eq("id", user.id)
+    .eq("is_active", true);
+
+  if (dbError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: dbError.code,
+        message: dbError.message,
+      });
+    }
+    throw { code: "UPDATE_EMAIL_DB_ERROR" };
+  }
 }
 
-export async function uploadUserImage(uid: string, imageFile: File) {
-  const storageRef = ref(storage, uid);
-  const uploadTask = uploadBytesResumable(storageRef, imageFile);
-  await uploadTask;
-  return getDownloadURL(uploadTask.snapshot.ref);
+export async function updateUserAvatar(imageFile: File) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    throw { code: "NO_USER_FOUND" };
+  }
+
+  await deleteUserImage(user.id);
+
+  const newAvatarUrl = await uploadUserImage(user.id, imageFile);
+
+  const { error: authError } = await supabase.auth.updateUser({
+    data: { avatar_url: newAvatarUrl },
+  });
+
+  if (authError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: authError.code,
+        message: authError.message,
+      });
+    }
+    throw { code: "UPDATE_AVATAR_ERROR" };
+  }
+
+  return newAvatarUrl;
 }
 
-export function buildUserToUpdate({ accountId, username, email, imageUrl }: Omit<User, 'providerId'>) {
+export async function deleteUserAvatar() {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    throw { code: "NO_USER_FOUND" };
+  }
+
+  await deleteUserImage(user.id);
+
+  const defaultAvatarUrl = STARTER_USER_AVATAR_URL;
+
+  const { error: authError } = await supabase.auth.updateUser({
+    data: { avatar_url: defaultAvatarUrl },
+  });
+
+  if (authError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: authError.code,
+        message: authError.message,
+      });
+    }
+    throw { code: "DELETE_AVATAR_ERROR" };
+  }
+}
+
+export async function updateUserSettings(updateData: UpdateUser) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    throw { code: "NO_USER_FOUND" };
+  }
+
+  const currentEmail = user.email;
+  const currentUsername = user.user_metadata.username;
+  const currentAvatarUrl = user.user_metadata.avatar_url || "";
+
+  const isEmailChanging = updateData.email !== currentEmail;
+  const isUsernameChanging = updateData.username !== currentUsername;
+  const isImageChanging = !!updateData.imageUrl;
+
+  if (!isEmailChanging && !isUsernameChanging && !isImageChanging) {
+    return {
+      accountId: user.id,
+      username: currentUsername,
+      email: currentEmail,
+      imageUrl: currentAvatarUrl,
+    };
+  }
+
+  let newAvatarUrl = currentAvatarUrl;
+
+  if (isImageChanging) {
+    newAvatarUrl = await updateUserAvatar(updateData.imageUrl!);
+  } else {
+    newAvatarUrl = await getCurrentUserAvatar(user.id, currentAvatarUrl);
+  }
+
+  const authUpdates: {
+    email?: string;
+    data?: {
+      username?: string;
+      avatar_url?: string;
+      display_name?: string;
+    };
+  } = {};
+
+  if (isEmailChanging) {
+    authUpdates.email = updateData.email;
+  }
+
+  if (isUsernameChanging || isImageChanging) {
+    authUpdates.data = {};
+
+    if (isUsernameChanging) {
+      authUpdates.data.username = updateData.username;
+      authUpdates.data.display_name = updateData.username;
+    }
+
+    authUpdates.data.avatar_url = newAvatarUrl;
+  }
+
+  if (Object.keys(authUpdates).length > 0) {
+    const { error: authError } = await supabase.auth.updateUser(authUpdates);
+
+    if (authError) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: authError.code,
+          message: authError.message,
+        });
+      }
+      throw { code: "UPDATE_AUTH_ERROR" };
+    }
+  }
+
+  if (isEmailChanging) {
+    const { error: dbError } = await supabase
+      .from("db_users")
+      .update({
+        email: updateData.email,
+      })
+      .eq("id", user.id)
+      .eq("is_active", true);
+
+    if (dbError) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: dbError.code,
+          message: dbError.message,
+        });
+      }
+      throw { code: "UPDATE_USER_DB_ERROR" };
+    }
+  }
+
   return {
-    accountId,
-    username,
-    email,
-    imageUrl,
+    accountId: user.id,
+    username: updateData.username,
+    email: updateData.email,
+    imageUrl: newAvatarUrl,
   };
 }
 
-export async function applyUserProfileUpdate(currentUser: UserFromFirebaseAuth, updateUser: User, user: UpdateUser) {
-  const profileUpdates: UserProfileUpdates = { displayName: user.username };
-  if (user.imageUrl) {
-    profileUpdates.photoURL = updateUser.imageUrl;
+export async function updateUserPassword(passwordData: UpdateUserPassword) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    throw { code: "NO_USER_FOUND" };
   }
 
-  try {
-    await updateProfile(currentUser, profileUpdates);
-    await updateEmail(currentUser, user.email);
-  } catch (error) {
-    throw new Error(`Failed to update user profile ${error}`);
-  }
-}
+  const currentAvatarUrl = user.user_metadata.avatar_url || "";
+  const newAvatarUrl = await getCurrentUserAvatar(user.id, currentAvatarUrl);
 
-export async function saveUserToDatabase(uid: string, updateUser: User) {
-  try {
-    const userDocRef = getFirestoreDocRef(TABLE_NAME_taskerUsers, uid);
-    await setDoc(userDocRef, updateUser);
-  } catch (error) {
-    throw new Error(`Failed to save user to database ${error}`);
-  }
-}
+  const { error } = await supabase.auth.updateUser({
+    password: passwordData.password,
+    data: {
+      avatar_url: newAvatarUrl,
+    },
+  });
 
-export async function updateUserTodos(uid: string, updateUser: User) {
-  try {
-    const todosDocRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, uid);
-    const docSnapshot = await getDoc(todosDocRef);
-    if (docSnapshot.exists()) {
-      await updateDoc(todosDocRef, { userInfo: updateUser });
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
     }
-  } catch (error) {
-    throw new Error(`Failed to update user todos ${error}`);
-  }
-}
-
-export async function updateUserPassword(user: UpdateUserPassword) {
-  const currentUser = getAuthenticatedUser()
-
-  if (!currentUser) throw new Error('No current user found');
-
-  if (user.password) {
-    await updatePassword(currentUser, user.password);
+    throw { code: "UPDATE_PASSWORD_ERROR" };
   }
 }

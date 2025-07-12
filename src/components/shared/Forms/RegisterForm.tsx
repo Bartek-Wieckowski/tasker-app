@@ -1,23 +1,35 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { RegisterFormValues, registerFormSchema } from '@/validators/validators';
-import { Link } from 'react-router-dom';
-import { ROUTES } from '@/routes/constants';
-import { useCreateUserAccount } from '@/api/mutations/users/useCreateUserAccount';
-import Loader from '../Loader';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  RegisterFormValues,
+  registerFormSchema,
+} from "@/validators/validators";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/routes/constants";
+import { useCreateUserAccount } from "@/api/mutations/users/useCreateUserAccount";
+import Loader from "../Loader";
+import { useTranslation } from "react-i18next";
 
 const RegisterForm = () => {
   const { isPending: isCreatingUser, registerUser } = useCreateUserAccount();
+  const { t } = useTranslation();
 
   const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerFormSchema),
+    resolver: zodResolver(registerFormSchema(t)),
     defaultValues: {
-      username: '',
-      email: '',
-      password: '',
+      username: "",
+      email: "",
+      password: "",
     },
   });
 
@@ -37,7 +49,7 @@ const RegisterForm = () => {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>{t("registerPage.username")}</FormLabel>
               <FormControl>
                 <Input type="text" {...field} />
               </FormControl>
@@ -50,7 +62,7 @@ const RegisterForm = () => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t("registerPage.email")}</FormLabel>
               <FormControl>
                 <Input type="email" {...field} />
               </FormControl>
@@ -63,7 +75,7 @@ const RegisterForm = () => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t("registerPage.password")}</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -75,16 +87,16 @@ const RegisterForm = () => {
           {isCreatingUser ? (
             <div className="flex gap-2">
               <Loader />
-              Loading...
+              {t("app.loading")}
             </div>
           ) : (
-            'Register'
+            t("registerPage.register")
           )}
         </Button>
         <p className="text-sm mt-1">
-          Already have an account?
+          {t("registerPage.alreadyHaveAccount")}
           <Link to={ROUTES.login} className="text-sm ml-1">
-            Log in
+            {t("registerPage.login")}
           </Link>
         </p>
       </form>

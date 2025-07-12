@@ -1,0 +1,80 @@
+{
+  "app": {
+    "loading": "Ładowanie...",
+    "navigationLogin": "Logowanie",
+    "navigationRegister": "Rejestracja",
+    "userPanel": {
+      "welcomeText": "Witaj",
+      "settings": "Ustawienia",
+      "logout": "Wyloguj się",
+      "deleteAccount": "Usuń konto"
+    }
+  },
+  "loginPage": {
+    "login": "Zaloguj się",
+    "register": "Zarejestruj się",
+    "email": "Email",
+    "password": "Hasło",
+    "dontHaveAccount": "Nie masz jeszcze konta?",
+    "signUp": "Zarejestruj się",
+    "or": "lub",
+    "loginWithGoogle": "Zaloguj się z",
+    "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków",
+    "emailInvalid": "Wprowadź prawidłowy adres email"
+  },
+  "registerPage": {
+    "register": "Zarejestruj się",
+    "username": "Nazwa użytkownika",
+    "email": "Email",
+    "password": "Hasło",
+    "alreadyHaveAccount": "Masz już konto?",
+    "login": "Zaloguj się",
+    "usernameRequired": "Nazwa użytkownika jest wymagana",
+    "emailRequired": "Email jest wymagany",
+    "passwordRequired": "Hasło jest wymagane",
+    "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków",
+    "usernameMinLength": "Nazwa użytkownika musi mieć co najmniej 2 znaki",
+    "emailInvalid": "Wprowadź prawidłowy adres email"
+  },
+  "userSettingsForm": {
+    "editProfile": "Edytuj profil",
+    "username": "Nazwa użytkownika",
+    "email": "Email",
+    "addAvatar": "Dodaj avatar",
+    "saveNewProfile": "Zapisz nowe ustawienia",
+    "newPassword": "Nowe hasło",
+    "saveNewPassword": "Zapisz nowe hasło",
+    "saving": "Zapisywanie...",
+    "usernameMinLength": "Nazwa użytkownika musi mieć co najmniej 2 znaki",
+    "emailInvalid": "Wprowadź prawidłowy adres email",
+    "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków"
+  },
+  "toastMsg": {
+    "welcomeMessage": "Witamy w Taskerze!",
+    "createAccountSuccess": "Konto zostało utworzone!",
+    "createAccountFailed": "Tworzenie konta nie powiodło się. Spróbuj ponownie.",
+    "loginSuccess": "Logowanie pomyślne!",
+    "loginFailed": "Logowanie nie powiodło się. Spróbuj ponownie.",
+    "logoutSuccess": "Wylogowanie pomyślne!",
+    "logoutFailed": "Wylogowanie nie powiodło się. Spróbuj ponownie.",
+    "deleteAccountSuccess": "Konto zostało usunięte!",
+    "deleteAccountFailed": "Usuwanie konta nie powiodło się. Spróbuj ponownie.",
+    "updatePasswordSuccess": "Hasło zostało zaktualizowane!",
+    "updatePasswordFailed": "Aktualizacja hasła nie powiodła się. Spróbuj ponownie.",
+    "updateSettingsSuccess": "Ustawienia zostały zaktualizowane!",
+    "updateSettingsFailed": "Aktualizacja ustawień nie powiodła się. Spróbuj ponownie."
+  },
+  "todos": {
+    "title": "Zadania",
+    "add": "Dodaj zadanie",
+    "edit": "Edytuj zadanie",
+    "delete": "Usuń zadanie",
+    "complete": "Ukończ",
+    "pending": "Oczekujące",
+    "searchPlaceholder": "Szukaj zadań...",
+    "noTasks": "Nie znaleziono zadań",
+    "createTask": "Utwórz nowe zadanie",
+    "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
+    "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
+  }
+}

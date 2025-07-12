@@ -1,25 +1,37 @@
-import { Link } from 'react-router-dom';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { LoginFormValues, loginFormSchema } from '@/validators/validators';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useLoginAccount } from '@/api/mutations/users/useLoginAccount';
-import { ROUTES } from '@/routes/constants';
-import Loader from '../Loader';
-import { GOOGLE_IMG_URL } from '@/lib/constants';
-import { useLoginWithGoogle } from '@/api/mutations/users/useLoginWithGoogle';
+import { Link } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { flushSync } from "react-dom";
+import { LoginFormValues, loginFormSchema } from "@/validators/validators";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useLoginAccount } from "@/api/mutations/users/useLoginAccount";
+import { ROUTES } from "@/routes/constants";
+import Loader from "../Loader";
+import { GOOGLE_IMG_URL } from "@/lib/constants";
+import { useLoginWithGoogle } from "@/api/mutations/users/useLoginWithGoogle";
+import { useTranslation } from "react-i18next";
 
 const LoginForm = () => {
   const { isPending: isLoginUser, loginUser } = useLoginAccount();
-  const { isLoadingUseFromGoogle, loginUserWithGoogle } = useLoginWithGoogle();
+  const { loginUserWithGoogle } = useLoginWithGoogle();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { t } = useTranslation();
 
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginFormSchema),
+    resolver: zodResolver(loginFormSchema(t)),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -36,6 +48,19 @@ const LoginForm = () => {
       }
     );
   }
+
+  const handleGoogleLogin = () => {
+    flushSync(() => {
+      setIsGoogleLoading(true);
+    });
+
+    setTimeout(() => {
+      loginUserWithGoogle().catch(() => {
+        setIsGoogleLoading(false);
+      });
+    }, 150);
+  };
+
   return (
     <>
       <Form {...form}>
@@ -45,7 +70,7 @@ const LoginForm = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("loginPage.email")}</FormLabel>
                 <FormControl>
                   <Input type="email" {...field} />
                 </FormControl>
@@ -58,7 +83,7 @@ const LoginForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{t("loginPage.password")}</FormLabel>
                 <FormControl>
                   <Input type="password" {...field} />
                 </FormControl>
@@ -70,30 +95,36 @@ const LoginForm = () => {
             {isLoginUser ? (
               <div className="flex gap-2">
                 <Loader />
-                Loading...
+                {t("app.loading")}
               </div>
             ) : (
-              'Login'
+              t("loginPage.login")
             )}
           </Button>
 
           <div className="flex flex-col items-start gap-2">
             <p className="text-sm mt-1">
-              Don&apos;t have an account?
+              {t("loginPage.dontHaveAccount")}
               <Link to={ROUTES.register} className="text-sm ml-1">
-                Sign up
+                {t("loginPage.signUp")}
               </Link>
             </p>
-            <p className="text-sm mt-1">or</p>
-            <Button type="button" variant="outline" className="flex items-center gap-2" onClick={() => loginUserWithGoogle()}>
-              {isLoadingUseFromGoogle ? (
+            <p className="text-sm mt-1">{t("loginPage.or")}</p>
+            <Button
+              type="button"
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={handleGoogleLogin}
+              disabled={isGoogleLoading}
+            >
+              {isGoogleLoading ? (
                 <div className="flex gap-2">
                   <Loader />
-                  Loading...
+                  {t("app.loading")}
                 </div>
               ) : (
                 <>
-                  <span>Login with </span>
+                  <span>{t("loginPage.loginWithGoogle")} </span>
                   <img src={GOOGLE_IMG_URL} width={15} height={15} />
                 </>
               )}

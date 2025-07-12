@@ -1,0 +1,88 @@
+{
+  "app": {
+    "loading": "Loading...",
+    "navigationLogin": "Login",
+    "navigationRegister": "Register",
+    "userPanel": {
+      "welcomeText": "Welcome",
+      "settings": "Settings",
+      "logout": "Logout",
+      "deleteAccount": "Delete account"
+    }
+  },
+  "loginPage": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "dontHaveAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "or": "or",
+    "loginWithGoogle": "Login with",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "emailInvalid": "Please enter a valid email address"
+  },
+  "registerPage": {
+    "register": "Register",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "alreadyHaveAccount": "Already have an account?",
+    "login": "Log in",
+    "usernameMinLength": "Username must be at least 2 characters",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "emailInvalid": "Please enter a valid email address"
+  },
+  "userSettingsForm": {
+    "editProfile": "Edit profile",
+    "username": "Username",
+    "email": "Email",
+    "addAvatar": "Add avatar",
+    "saveNewProfile": "Save new profile",
+    "newPassword": "New password",
+    "saveNewPassword": "Save new password",
+    "saving": "Saving...",
+    "usernameMinLength": "Username must be at least 2 characters",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordMinLength": "Password must be at least 8 characters"
+  },
+  "toastMsg": {
+    "welcomeMessage": "Welcome to Tasker!",
+    "createAccountSuccess": "Account created successfully!",
+    "createAccountFailed": "Creating account failed. Please try again.",
+    "loginSuccess": "Login successful!",
+    "loginFailed": "Login failed. Please try again.",
+    "logoutSuccess": "Logout successful!",
+    "logoutFailed": "Logout failed. Please try again.",
+    "deleteAccountSuccess": "Account deleted successfully!",
+    "deleteAccountFailed": "Deleting account failed. Please try again.",
+    "updatePasswordSuccess": "Password updated successfully!",
+    "updatePasswordFailed": "Updating password failed. Please try again.",
+    "updateSettingsSuccess": "Settings updated successfully!",
+    "updateSettingsFailed": "Updating settings failed. Please try again."
+  },
+  "todos": {
+    "title": "Tasks",
+    "add": "Add task",
+    "edit": "Edit task",
+    "delete": "Delete task",
+    "complete": "Complete",
+    "pending": "Pending",
+    "searchPlaceholder": "Search tasks...",
+    "noTasks": "No tasks found",
+    "createTask": "Create new task",
+    "todoMinLength": "Todo item must be at least 2 characters",
+    "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "search": "Search",
+    "filter": "Filter",
+    "date": "Date",
+    "language": "Language"
+  }
+}

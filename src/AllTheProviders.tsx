@@ -1,5 +1,6 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -10,11 +11,19 @@ const queryClient = new QueryClient({
   },
 });
 
-export const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
+export const AllTheProviders = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   return (
     <QueryClientProvider client={queryClient}>
-      {import.meta.env.MODE === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
-      {children}
+      <LanguageProvider>
+        {import.meta.env.MODE === "development" && (
+          <ReactQueryDevtools initialIsOpen={false} />
+        )}
+        {children}
+      </LanguageProvider>
     </QueryClientProvider>
   );
 };

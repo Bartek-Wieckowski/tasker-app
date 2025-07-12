@@ -25,7 +25,7 @@ export type AuthContextType = {
 export type UpdateUser = {
   username: string;
   email: string;
-  imageUrl: File;
+  imageUrl?: File;
 };
 export type UserProfileUpdates = {
   displayName?: string;

@@ -1,23 +1,35 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { UserSettingsFormInfoValues, userSettingsFormInfoSchema } from '@/validators/validators';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
-import { useChangeSettingsAccount } from '@/api/mutations/users/useChangeSettingsAccount';
-import Loader from '../Loader';
-import FileUploader from '../FileUploader';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  UserSettingsFormInfoValues,
+  userSettingsFormInfoSchema,
+} from "@/validators/validators";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { useChangeSettingsAccount } from "@/api/mutations/users/useChangeSettingsAccount";
+import Loader from "../Loader";
+import FileUploader from "../FileUploader";
+import { useTranslation } from "react-i18next";
 
 const UserSettingsFormInfo = () => {
   const { currentUser, isLoading: updatingUser } = useAuth();
   const { isUpdatingSettings, updateSettings } = useChangeSettingsAccount();
+  const { t } = useTranslation();
 
   const form = useForm<UserSettingsFormInfoValues>({
-    resolver: zodResolver(userSettingsFormInfoSchema),
+    resolver: zodResolver(userSettingsFormInfoSchema(t)),
     defaultValues: {
-      username: currentUser.username || '',
-      email: currentUser.email || '',
+      username: currentUser.username || "",
+      email: currentUser.email || "",
     },
   });
 
@@ -33,7 +45,7 @@ const UserSettingsFormInfo = () => {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>{t("userSettingsForm.username")}</FormLabel>
               <FormControl>
                 <Input type="text" {...field} />
               </FormControl>
@@ -46,7 +58,7 @@ const UserSettingsFormInfo = () => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t("userSettingsForm.email")}</FormLabel>
               <FormControl>
                 <Input type="email" {...field} />
               </FormControl>
@@ -59,9 +71,12 @@ const UserSettingsFormInfo = () => {
           name="imageUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Add Avatar</FormLabel>
+              <FormLabel>{t("userSettingsForm.addAvatar")}</FormLabel>
               <FormControl>
-                <FileUploader fieldChange={field.onChange} mediaUrl={currentUser.imageUrl} />
+                <FileUploader
+                  fieldChange={field.onChange}
+                  mediaUrl={currentUser.imageUrl}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -71,10 +86,10 @@ const UserSettingsFormInfo = () => {
           {updatingUser || isUpdatingSettings ? (
             <div className="flex gap-2">
               <Loader />
-              Saving...
+              {t("userSettingsForm.saving")}
             </div>
           ) : (
-            'Save new profile details'
+            t("userSettingsForm.saveNewProfile")
           )}
         </Button>
       </form>

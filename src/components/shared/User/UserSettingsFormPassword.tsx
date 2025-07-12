@@ -1,18 +1,32 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { userSettingsFormPasswordSchema, UserSettingsFormPasswordValues } from '@/validators/validators';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import Loader from '../Loader';
-import { useChangeSettingsPassword } from '@/api/mutations/users/useChangeSettingsPassword';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  userSettingsFormPasswordSchema,
+  UserSettingsFormPasswordValues,
+} from "@/validators/validators";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import Loader from "../Loader";
+import { useChangeSettingsPassword } from "@/api/mutations/users/useChangeSettingsPassword";
+import { useTranslation } from "react-i18next";
 
 const UserSettingsFormPassword = () => {
-  const { updateSettingsPassword, isUpdatingPassword } = useChangeSettingsPassword();
+  const { updateSettingsPassword, isUpdatingPassword } =
+    useChangeSettingsPassword();
+  const { t } = useTranslation();
+
   const form = useForm<UserSettingsFormPasswordValues>({
-    resolver: zodResolver(userSettingsFormPasswordSchema),
+    resolver: zodResolver(userSettingsFormPasswordSchema(t)),
     defaultValues: {
-      password: '',
+      password: "",
     },
   });
 
@@ -32,7 +46,7 @@ const UserSettingsFormPassword = () => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Password</FormLabel>
+              <FormLabel>{t("userSettingsForm.newPassword")}</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -45,10 +59,10 @@ const UserSettingsFormPassword = () => {
           {isUpdatingPassword ? (
             <div className="flex gap-2">
               <Loader />
-              Saving...
+              {t("userSettingsForm.saving")}
             </div>
           ) : (
-            'Save new password'
+            t("userSettingsForm.saveNewPassword")
           )}
         </Button>
       </form>

@@ -1,8 +1,8 @@
-import { Outlet } from 'react-router-dom';
-import Container from './Container';
-import Logo from './Logo';
-import Header from './Header';
-import UserNavigation from './User/UserNavigation';
+import { Outlet } from "react-router-dom";
+import Container from "./Container";
+import Logo from "./Logo";
+import Header from "./Header";
+import UserNavigation from "./User/UserNavigation";
 
 const StarterLayout = () => {
   return (

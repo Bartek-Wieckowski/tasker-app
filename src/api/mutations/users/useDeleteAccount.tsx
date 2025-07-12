@@ -1,12 +1,15 @@
-import { useMutation } from '@tanstack/react-query';
-import { deleteAccount } from '@/api/apiUsers';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
-import { ROUTES } from '@/routes/constants';
+import { useMutation } from "@tanstack/react-query";
+import { deleteAccount } from "@/api/apiUsers";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
+import { ROUTES } from "@/routes/constants";
+import { useTranslation } from "react-i18next";
 
 export function useDeleteAccount() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
+
   const {
     isPending: isDeleting,
     isError,
@@ -15,10 +18,13 @@ export function useDeleteAccount() {
     mutationFn: deleteAccount,
     onSuccess: () => {
       navigate(ROUTES.home);
-      toast({ title: 'Delete account success' });
+      toast({ title: t("toastMsg.deleteAccountSuccess") });
     },
     onError: () => {
-      toast({ title: 'Deleting account failed. Please try again.', variant: 'destructive' });
+      toast({
+        title: t("toastMsg.deleteAccountFailed"),
+        variant: "destructive",
+      });
     },
   });
 
