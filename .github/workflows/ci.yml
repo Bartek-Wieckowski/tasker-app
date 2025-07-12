@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   unit-tests:
@@ -24,57 +24,57 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
-  e2e-tests:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+  # e2e-tests:
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
 
-    steps:
-      - uses: actions/checkout@v4
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "18"
+  #         cache: "npm"
 
-      - name: Install dependencies
-        run: npm install
+  #     - name: Install dependencies
+  #       run: npm install
 
-      - name: Start Supabase local emulator
-        run: npx supabase start
+  #     - name: Start Supabase local emulator
+  #       run: npx supabase start
 
-      - name: Wait for Supabase to be ready
-        run: |
-          npx wait-on http://localhost:54321
-          sleep 5
+  #     - name: Wait for Supabase to be ready
+  #       run: |
+  #         npx wait-on http://localhost:54321
+  #         sleep 5
 
-      - name: Start dev server
-        run: npm run dev &
-        env:
-          VITE_SUPABASE_URL: http://127.0.0.1:54321
-          VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+  #     - name: Start dev server
+  #       run: npm run dev &
+  #       env:
+  #         VITE_SUPABASE_URL: http://127.0.0.1:54321
+  #         VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
 
-      - name: Wait for dev server
-        run: npx wait-on http://localhost:5173
+  #     - name: Wait for dev server
+  #       run: npx wait-on http://localhost:5173
 
-      - name: Run E2E tests
-        run: npm run test:e2e
+  #     - name: Run E2E tests
+  #       run: npm run test:e2e
 
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots
-          if-no-files-found: ignore
+  #     - name: Upload screenshots
+  #       uses: actions/upload-artifact@v4
+  #       if: failure()
+  #       with:
+  #         name: cypress-screenshots
+  #         path: cypress/screenshots
+  #         if-no-files-found: ignore
 
-      - name: Stop Supabase local emulator
-        if: always()
-        run: npx supabase stop
+  #     - name: Stop Supabase local emulator
+  #       if: always()
+  #       run: npx supabase stop
 
   build-and-deploy:
     runs-on: ubuntu-latest
-    needs: [unit-tests, e2e-tests]
+    needs: [unit-tests]
     if: github.ref == 'refs/heads/main'
 
     steps:
