@@ -101,5 +101,5 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.HOST_SSH_KEY_P }}
-          source: "dist/*"
-          target: "/home/${{ secrets.USERNAME }}/tasker.developedbybart.pl/public_html"
+          source: "dist/"
+          target: "/home/${{ secrets.USERNAME }}/domains/tasker.developedbybart.pl/public_html"
