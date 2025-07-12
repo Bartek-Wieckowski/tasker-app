@@ -95,11 +95,21 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Deploy to MyDevil via SCP
+      - name: Copy dist files to server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.HOST_SSH_KEY_P }}
           source: "dist/"
-          target: "/home/${{ secrets.USERNAME }}/domains/tasker.developedbybart.pl/public_html"
+          target: "/tmp/"
+
+      - name: Deploy to MyDevil
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.HOST_SSH_KEY_P }}
+          script: |
+            cp -r /tmp/dist/* /home/${{ secrets.USERNAME }}/domains/tasker.developedbybart.pl/public_html/
+            rm -rf /tmp/dist
