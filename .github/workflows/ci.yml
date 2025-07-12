@@ -40,12 +40,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Supabase CLI
-        run: npm install -g supabase
-
       - name: Start Supabase local emulator
-        run: supabase start --no-telemetry
-        # Dodaj opcję --no-telemetry, by nie wysyłać danych telemetrycznych
+        run: npx supabase start --no-telemetry
 
       - name: Wait for Supabase to be ready
         run: |
@@ -74,7 +70,7 @@ jobs:
 
       - name: Stop Supabase local emulator
         if: always()
-        run: supabase stop
+        run: npx supabase stop
 
   build-and-deploy:
     runs-on: ubuntu-latest
