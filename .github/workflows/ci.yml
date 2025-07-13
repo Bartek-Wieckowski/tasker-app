@@ -40,6 +40,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create storage folders
+        run: |
+          mkdir -p supabase/storage/user-avatars
+          ls -la supabase/storage/
+
       - name: Start Supabase local emulator
         run: npx supabase start
 
