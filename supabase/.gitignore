@@ -8,5 +8,6 @@
 .env.*.local
 
 # Keep storage folders but ignore their contents
-storage/*/
+storage/*/*
 !storage/*/.gitkeep
+!storage/user-avatars/
