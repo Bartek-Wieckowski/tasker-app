@@ -45,13 +45,13 @@ export const todoFormSchema = (t: TFunction) =>
     todo: z
       .string()
       .min(2, {
-        message: t("todos.todoMinLength"),
+        message: t("todoForm.todoMinLength"),
       })
       .max(70, {
-        message: t("todos.todoMaxLength"),
+        message: t("todoForm.todoMaxLength"),
       }),
-    todoMoreContent: z.optional(z.string()),
-    imageUrl: z.custom<File>(),
+    todo_more_content: z.optional(z.string()),
+    imageFile: z.optional(z.custom<File>()),
   });
 
 export type RegisterFormValues = z.infer<ReturnType<typeof registerFormSchema>>;

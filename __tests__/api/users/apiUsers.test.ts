@@ -9,72 +9,10 @@ import {
   updateUserSettings,
   updateUserPassword,
 } from "@/api/apiUsers";
-import { supabase } from "@/lib/supabaseClient";
 
-// Define mock type
-type MockSupabase = {
-  auth: {
-    signUp: ReturnType<typeof vi.fn>;
-    getUser: ReturnType<typeof vi.fn>;
-    signOut: ReturnType<typeof vi.fn>;
-    signInWithPassword: ReturnType<typeof vi.fn>;
-    signInWithOAuth: ReturnType<typeof vi.fn>;
-    updateUser: ReturnType<typeof vi.fn>;
-  };
-  functions: {
-    invoke: ReturnType<typeof vi.fn>;
-  };
-  from: ReturnType<typeof vi.fn>;
-  storage: {
-    from: ReturnType<typeof vi.fn>;
-  };
-};
-
-vi.mock("@/lib/supabaseClient", () => {
-  const mockSupabase = {
-    auth: {
-      signUp: vi.fn(),
-      getUser: vi.fn(),
-      signOut: vi.fn(),
-      signInWithPassword: vi.fn(),
-      signInWithOAuth: vi.fn(),
-      updateUser: vi.fn(),
-    },
-    functions: {
-      invoke: vi.fn(),
-    },
-    from: vi.fn(() => ({
-      update: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            select: vi.fn(() => ({
-              single: vi.fn(),
-            })),
-          })),
-        })),
-      })),
-    })),
-    storage: {
-      from: vi.fn(() => ({
-        list: vi.fn(() => ({
-          data: [],
-          error: null,
-        })),
-        getPublicUrl: vi.fn(() => ({
-          data: { publicUrl: null },
-        })),
-      })),
-    },
-  };
-
-  return {
-    supabase: mockSupabase,
-  };
-});
+import { mockSupabase } from "../../setup";
 
 describe("apiUsers - Supabase Functions", () => {
-  const mockSupabase = vi.mocked(supabase) as unknown as MockSupabase;
-
   beforeEach(() => {
     vi.clearAllMocks();
   });

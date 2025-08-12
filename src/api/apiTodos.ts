@@ -1,170 +1,300 @@
-// import {
-//   FILES_FOLDER_todoImages,
-//   TABLE_NAME_taskerDelegatedTodos,
-//   TABLE_NAME_taskerUserTodos,
-// } from '@/lib/constants';
-// import { storage } from '@/lib/firebase.config';
-// import { getFirestoreDocRef } from '@/lib/firebaseHelpers';
-// import { convertTimestampToDate } from '@/lib/helpers';
-// import {
-//   TodoItem,
-//   TodoItemDetails,
-//   TodoItemDetailsGlobalSearch,
-//   User,
-// } from '@/types/types';
-// import {
-//   getDoc,
-//   updateDoc,
-//   DocumentSnapshot,
-//   DocumentReference,
-//   DocumentData,
-//   deleteField,
-//   setDoc
-// } from 'firebase/firestore';
-// import {
-//   deleteObject,
-//   getDownloadURL,
-//   ref,
-//   uploadBytesResumable,
-// } from 'firebase/storage';
+import { supabase } from "@/lib/supabaseClient";
+import { TodoInsertWithFile, TodoInsert, User } from "@/types/types";
 
-// export async function getUserTodos(accountId: string, selectedDate: string) {
-//   const docSnapshot = await getUserTodosDocSnapshot(accountId);
-//   if (!docSnapshot.exists()) return null;
+export async function getUserTodos(accountId: string) {
+  const { data: todos, error } = await supabase
+    .from("todos")
+    .select("*")
+    .eq("user_id", accountId)
+    .order("created_at", { ascending: false });
 
-//   const userData = docSnapshot.data();
-//   if (!userData[selectedDate]?.userTodosOfDay) return null;
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "GET_USER_TODOS_ERROR" };
+  }
 
-//   const docRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, accountId);
-//   return {
-//     docRef,
-//     userData,
-//     todosOfDay: userData[selectedDate].userTodosOfDay,
-//   };
-// }
+  return todos;
+}
 
-// export async function getUserTodosDocSnapshot(accountId: string) {
-//   const userTodosDocRef = getFirestoreDocRef(
-//     TABLE_NAME_taskerUserTodos,
-//     accountId
-//   );
-//   return await getDoc(userTodosDocRef);
-// }
+export async function getTodosFromDay(selectedDate: string, currentUser: User) {
+  const { data: todos, error } = await supabase
+    .from("todos")
+    .select("*")
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate)
+    .order("created_at", { ascending: false });
 
-// export async function getTodosFromDay(selectedDate: string, currentUser: User) {
-//   const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
-//   return getTodosForDate(selectedDate, docSnapshot);
-// }
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "GET_TODOS_FROM_DAY_ERROR" };
+  }
 
-// export async function getTodosForDate(
-//   selectedDate: string,
-//   docSnapshot: DocumentSnapshot
-// ): Promise<TodoItemDetails[]> {
-//   if (!docSnapshot.exists()) return [];
+  return todos;
+  //   return todos || [];
+}
 
-//   const userData = docSnapshot.data();
-//   const dayData = userData[selectedDate];
-//   return dayData?.userTodosOfDay ?? [];
-// }
+export async function getTodoById(todoId: string, currentUser: User) {
+  const { data: todo, error } = await supabase
+    .from("todos")
+    .select("*")
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .single();
 
-// export async function getTodoById(
-//   todoId: string,
-//   selectedDate: string,
-//   currentUser: User
-// ) {
-//   const result = await getUserTodos(currentUser.accountId, selectedDate);
-//   if (!result) return;
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "GET_TODO_BY_ID_ERROR" };
+  }
 
-//   const { todosOfDay } = result;
-//   const todo = todosOfDay.find((todo: TodoItemDetails) => todo.id === todoId);
-//   return todo;
-// }
+  return todo;
+}
 
-// export async function uploadImageAndGetUrl(
-//   accountId: string,
-//   todoId: string,
-//   image: File
-// ) {
-//   const imageRef = ref(
-//     storage,
-//     `${FILES_FOLDER_todoImages}/${accountId}/${todoId}`
-//   );
-//   const uploadTask = uploadBytesResumable(imageRef, image);
-//   await uploadTask;
-//   return await getDownloadURL(uploadTask.snapshot.ref);
-// }
-
+// Helper function do tworzenia obiektu todo (może być przydatne do mapowania danych)
 // export function createTodoItem(
-//   todoDetails: TodoItem,
+//   todoDetails: TodoInsert,
 //   todoId: string,
-//   imageUrl: string
+//   imageUrl?: string
 // ) {
 //   return {
 //     id: todoId,
 //     todo: todoDetails.todo,
-//     todoMoreContent: todoDetails.todoMoreContent,
-//     imageUrl: imageUrl,
-//     isCompleted: false,
-//     createdAt: new Date(),
+//     todo_more_content: todoDetails.todo_more_content,
+//     image_url: imageUrl || null,
+//     user_id: todoDetails.user_id,
+//     todo_date: todoDetails.todo_date,
+//     is_completed: todoDetails.is_completed || false,
+//     created_at: new Date().toISOString(),
+//     updated_at: new Date().toISOString(),
 //   };
 // }
 
-// export async function updateOrCreateTodos(
-//   docRef: DocumentReference,
-//   selectedDate: string,
-//   todoItem: TodoItemDetails,
-//   userData: DocumentData | undefined,
-//   currentUser: User
-// ) {
-//   if (userData && userData[selectedDate]?.userTodosOfDay) {
-//     await updateDoc(docRef, {
-//       [selectedDate]: {
-//         userTodosOfDay: [...userData[selectedDate].userTodosOfDay, todoItem],
-//       },
-//     });
-//   } else {
-//     await setDoc(docRef, {
-//       [selectedDate]: {
-//         userTodosOfDay: [todoItem],
-//       },
-//       userInfo: currentUser,
-//     }, { merge: true });
-//   }
-// }
+export async function searchTodos(searchTerm: string, currentUser: User) {
+  const { data: todos, error } = await supabase.rpc("search_todos", {
+    search_term: searchTerm,
+    user_id_param: currentUser.accountId,
+  });
 
-// export async function addTodo(
-//   todoDetails: TodoItem,
-//   selectedDate: string,
-//   currentUser: User
-// ) {
-//   const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
-//   const docRef = getFirestoreDocRef(
-//     TABLE_NAME_taskerUserTodos,
-//     currentUser.accountId
-//   );
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "SEARCH_TODOS_ERROR" };
+  }
 
-//   const todoId = crypto.randomUUID();
-//   let imageUrl = '';
+  return todos;
+  //   return todos || []
+}
 
-//   if (todoDetails.imageUrl) {
-//     imageUrl = await uploadImageAndGetUrl(
-//       currentUser.accountId,
-//       todoId,
-//       todoDetails.imageUrl as File
-//     );
-//   }
+async function uploadImageAndGetUrl(
+  accountId: string,
+  todoId: string,
+  image: File
+) {
+  const fileExt = image.name.split(".").pop();
+  const fileName = `${crypto.randomUUID()}.${fileExt}`;
+  const filePath = `${accountId}/${todoId}/${fileName}`;
 
-//   const todoItem = createTodoItem(todoDetails, todoId, imageUrl);
+  const { error: uploadError } = await supabase.storage
+    .from("todo-images")
+    .upload(filePath, image, {
+      cacheControl: "3600",
+      upsert: false,
+    });
 
-//   const userData = docSnapshot.exists() ? docSnapshot.data() : undefined;
-//   await updateOrCreateTodos(
-//     docRef,
-//     selectedDate,
-//     todoItem,
-//     userData,
-//     currentUser
-//   );
-// }
+  if (uploadError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        message: uploadError.message,
+      });
+    }
+    throw { code: "UPLOAD_IMAGE_ERROR" };
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("todo-images").getPublicUrl(filePath);
+
+  return publicUrl;
+}
+
+export async function addTodo(
+  todoDetails: TodoInsertWithFile,
+  selectedDate: string,
+  currentUser: User
+) {
+  let imageUrl = "";
+
+  // Przygotuj obiekt do insert - pomijamy id, żeby Supabase sam je wygenerował
+  const insertData: TodoInsert = {
+    user_id: currentUser.accountId,
+    todo: todoDetails.todo,
+    todo_more_content: todoDetails.todo_more_content ?? null,
+    image_url: imageUrl || null,
+    todo_date: selectedDate,
+    is_completed: false,
+  };
+
+  // Jeśli jest obrazek, najpierw wstawiamy todo żeby dostać ID, potem uploadujemy obrazek
+  if (todoDetails.imageFile) {
+    const { data: todo, error } = await supabase
+      .from("todos")
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: error.code,
+          message: error.message,
+        });
+      }
+      throw { code: "CREATE_TODO_ERROR" };
+    }
+
+    // Teraz mamy ID, możemy uploadować obrazek
+    imageUrl = await uploadImageAndGetUrl(
+      currentUser.accountId,
+      todo.id,
+      todoDetails.imageFile
+    );
+
+    // Aktualizujemy todo z URL obrazka
+    const { error: updateError } = await supabase
+      .from("todos")
+      .update({ image_url: imageUrl })
+      .eq("id", todo.id);
+
+    if (updateError) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: updateError.code,
+          message: updateError.message,
+        });
+      }
+      throw { code: "UPDATE_TODO_ERROR" };
+    }
+
+    const { error: updateOriginalTodoIdError } = await supabase
+      .from("todos")
+      .update({ original_todo_id: todo.id })
+      .eq("id", todo.id);
+
+    if (updateOriginalTodoIdError) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: updateOriginalTodoIdError.code,
+          message: updateOriginalTodoIdError.message,
+        });
+      }
+      throw { code: "UPDATE_TODO_ERROR" };
+    }
+
+    return todo;
+  } else {
+    // Bez obrazka - prosty insert
+    const { data: todo, error } = await supabase
+      .from("todos")
+      .insert(insertData)
+      .select()
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: error.code,
+          message: error.message,
+        });
+      }
+      throw { code: "CREATE_TODO_ERROR" };
+    }
+
+    if (!error) {
+      const { error: updateOriginalTodoIdError } = await supabase
+        .from("todos")
+        .update({ original_todo_id: todo.id })
+        .eq("id", todo.id);
+
+      if (updateOriginalTodoIdError) {
+        if (import.meta.env.DEV) {
+          console.error({
+            code: updateOriginalTodoIdError.code,
+            message: updateOriginalTodoIdError.message,
+          });
+        }
+        throw { code: "UPDATE_TODO_ERROR" };
+      }
+    }
+
+    return todo;
+  }
+}
+
+export async function updateTodoCompletionStatus(
+  todoId: string,
+  selectedDate: string,
+  currentUser: User,
+  isCompleted: boolean
+) {
+  const { error } = await supabase
+    .from("todos")
+    .update({ is_completed: isCompleted })
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate);
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "UPDATE_TODO_COMPLETION_STATUS_ERROR" };
+  }
+}
+
+export async function deleteTodo(
+  todoId: string,
+  selectedDate: string,
+  currentUser: User
+) {
+  const { error } = await supabase
+    .from("todos")
+    .delete()
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate);
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+
+    throw { code: "DELETE_TODO_ERROR" };
+  }
+}
 
 // export async function editTodo(
 //   todoId: string,

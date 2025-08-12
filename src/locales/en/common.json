@@ -59,7 +59,10 @@
     "updatePasswordSuccess": "Password updated successfully!",
     "updatePasswordFailed": "Updating password failed. Please try again.",
     "updateSettingsSuccess": "Settings updated successfully!",
-    "updateSettingsFailed": "Updating settings failed. Please try again."
+    "updateSettingsFailed": "Updating settings failed. Please try again.",
+    "addingTodosFailed": "Adding todos failed. Please try again.",
+    "updatingTodosStatusFailed": "Updating status todos failed. Please try again.",
+    "deletingTodosFailed": "Deleting todos failed. Please try again."
   },
   "todos": {
     "title": "Tasks",
@@ -84,5 +87,54 @@
     "filter": "Filter",
     "date": "Date",
     "language": "Language"
+  },
+  "datePicker": {
+    "pickDate": "Pick a date"
+  },
+  "todosTabs": {
+    "all": "All",
+    "completed": "Completed",
+    "notCompleted": "Not completed",
+    "searchPlaceholder": "Search for a task on a selected day :)",
+    "noResults": "The task you searched for is not on the list.",
+    "addFirstTask": "Add your first task!"
+  },
+  "todosAdd": {
+    "addNewTodo": "Add new todo"
+  },
+  "todoForm": {
+    "todoContent": "Todo content",
+    "todoContentPlaceholder": "Add todo content",
+    "todoMoreContent": "Additional information (if you need)",
+    "todoMoreContentPlaceholder": "If you need more content, write it here!",
+    "addTodo": "Add todo",
+    "editTodo": "Edit todo",
+    "saveTodo": "Save todo",
+    "cancel": "Cancel",
+    "createTodo": "Create todo",
+    "updateTodo": "Update todo",
+    "creating": "Creating todo...",
+    "updating": "Updating todo...",
+    "todoMinLength": "Todo item must be at least 2 characters",
+    "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field"
+  },
+  "fileUploader": {
+    "dragPhotoHere": "Drag photo here",
+    "selectFromComputer": "Select from computer"
+  },
+  "todosItemCard": {
+    "options": {
+      "details": "Details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting todo...",
+      "moreActionsText": "More actions ?",
+      "move": "Move",
+      "repeat": "Repeat"
+    }
+  },
+  "todosGlobalSearch": {
+    "searchPlaceholder": "Search task and press enter",
+    "noResults": "Nothing of this value was found"
   }
 }

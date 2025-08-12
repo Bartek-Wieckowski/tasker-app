@@ -46,6 +46,13 @@ vi.mock("@/lib/supabaseClient", () => ({
   supabase: mockSupabase,
 }));
 
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { changeLanguage: vi.fn() },
+  }),
+}));
+
 beforeAll(() => {
   global.ResizeObserver = class {
     observe() {}

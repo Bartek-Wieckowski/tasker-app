@@ -1,28 +1,32 @@
 export function dateCustomFormatting(date: Date): string {
-  const padStart = (value: number): string => value.toString().padStart(2, '0');
-  return `${padStart(date.getDate())}-${padStart(date.getMonth() + 1)}-${date.getFullYear()}`;
+  const padStart = (value: number): string => value.toString().padStart(2, "0");
+  return `${date.getFullYear()}-${padStart(date.getMonth() + 1)}-${padStart(
+    date.getDate()
+  )}`;
 }
 
 export function formatDateString(dateString: string | Date) {
   const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   };
 
   const date = new Date(dateString);
-  const formattedDate = date.toLocaleDateString('en-US', options);
+  const formattedDate = date.toLocaleDateString("en-US", options);
 
   const time = date.toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit',
+    hour: "numeric",
+    minute: "2-digit",
   });
 
   return `${formattedDate} at ${time}`;
 }
 
-export const multiFormatDateString = (timestamp: Date | { seconds: number; nanoseconds: number } = new Date()): string => {
-  const date: Date = convertTimestampToDate(timestamp);
+export const multiFormatDateString = (
+  dateString: string | Date = new Date()
+): string => {
+  const date: Date = new Date(dateString);
   const now: Date = new Date();
 
   const diff: number = now.getTime() - date.getTime();
@@ -43,17 +47,6 @@ export const multiFormatDateString = (timestamp: Date | { seconds: number; nanos
     case Math.floor(diffInMinutes) >= 1:
       return `${Math.floor(diffInMinutes)} minutes ago`;
     default:
-      return 'Just now';
+      return "Just now";
   }
 };
-
-export function convertTimestampToDate(timestamp: Date | { seconds: number; nanoseconds: number }): Date {
-  if (timestamp instanceof Date) {
-    return timestamp;
-  } else {
-    const seconds = timestamp.seconds * 1000;
-    const nanoseconds = timestamp.nanoseconds / 1000000;
-    const milliseconds = seconds + nanoseconds;
-    return new Date(milliseconds);
-  }
-}

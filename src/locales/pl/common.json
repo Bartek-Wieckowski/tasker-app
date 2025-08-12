@@ -62,7 +62,10 @@
     "updatePasswordSuccess": "Hasło zostało zaktualizowane!",
     "updatePasswordFailed": "Aktualizacja hasła nie powiodła się. Spróbuj ponownie.",
     "updateSettingsSuccess": "Ustawienia zostały zaktualizowane!",
-    "updateSettingsFailed": "Aktualizacja ustawień nie powiodła się. Spróbuj ponownie."
+    "updateSettingsFailed": "Aktualizacja ustawień nie powiodła się. Spróbuj ponownie.",
+    "addingTodosFailed": "Dodawanie zadania nie powiodło się. Spróbuj ponownie.",
+    "updatingTodosStatusFailed": "Aktualizacja statusu zadania nie powiodła się. Spróbuj ponownie.",
+    "deletingTodosFailed": "Usuwanie zadania nie powiodło się. Spróbuj ponownie."
   },
   "todos": {
     "title": "Zadania",
@@ -76,5 +79,54 @@
     "createTask": "Utwórz nowe zadanie",
     "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
     "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
+  },
+  "datePicker": {
+    "pickDate": "Wybierz datę"
+  },
+  "todosTabs": {
+    "all": "Wszystkie",
+    "completed": "Ukończone",
+    "notCompleted": "Nieukończone",
+    "searchPlaceholder": "Szukaj zadania w wybranym dniu :)",
+    "noResults": "Zadanie, które szukasz, nie znajduje się na liście.",
+    "addFirstTask": "Dodaj swoje pierwsze zadanie!"
+  },
+  "todosAdd": {
+    "addNewTodo": "Dodaj nowe zadanie"
+  },
+  "todoForm": {
+    "todoContent": "Treść zadania",
+    "todoContentPlaceholder": "Dodaj treść zadania",
+    "todoMoreContent": "Dodatkowe informacje (jeśli potrzebujesz)",
+    "todoMoreContentPlaceholder": "Jeśli potrzebujesz więcej treści, wpisz je tutaj!",
+    "addTodo": "Dodaj zadanie",
+    "editTodo": "Edytuj zadanie",
+    "saveTodo": "Zapisz zadanie",
+    "cancel": "Anuluj",
+    "createTodo": "Utwórz zadanie",
+    "updateTodo": "Zaktualizuj zadanie",
+    "creating": "Tworzenie zadania...",
+    "updating": "Aktualizowanie zadania...",
+    "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
+    "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
+  },
+  "fileUploader": {
+    "dragPhotoHere": "Przeciągnij zdjęcie tutaj",
+    "selectFromComputer": "Wybierz z komputera"
+  },
+  "todosItemCard": {
+    "options": {
+      "details": "Szczegóły",
+      "edit": "Edytuj",
+      "delete": "Usuń",
+      "deleting": "Usuwanie zadania...",
+      "moreActionsText": "Więcej akcji ?",
+      "move": "Przenieś",
+      "repeat": "Powtórz"
+    }
+  },
+  "todosGlobalSearch": {
+    "searchPlaceholder": "Szukaj zadania i wciśnij enter",
+    "noResults": "Nie znaleziono niczego o tej wartości."
   }
 }
