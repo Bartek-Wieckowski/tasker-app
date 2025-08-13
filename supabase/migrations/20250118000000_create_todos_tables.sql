@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "public"."todos" (
     "image_url" "text",
     "is_completed" boolean DEFAULT false NOT NULL,
     "created_at" timestamp with time zone DEFAULT now() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+    "updated_at" timestamp with time zone,
     "original_todo_id" "uuid",
     "is_independent_edit" boolean DEFAULT false,
     "from_delegated" boolean DEFAULT false,

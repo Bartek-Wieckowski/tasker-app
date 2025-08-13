@@ -136,5 +136,14 @@
   "todosGlobalSearch": {
     "searchPlaceholder": "Search task and press enter",
     "noResults": "Nothing of this value was found"
+  },
+  "todopage": {
+    "errorText": "Item don't exist!",
+    "createTodo": "Todo created",
+    "updateTodo": "Todo updated",
+    "currentTodoDate": "Current date todo",
+    "todoStatus": "Todo status",
+    "todoTitle": "Todo title",
+    "todoMoreContent": "Todo more content"
   }
 }

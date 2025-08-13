@@ -5,6 +5,12 @@ export function dateCustomFormatting(date: Date): string {
   )}`;
 }
 
+export function convertTimestampToDate(timestamp: string): Date {
+  const date = new Date(timestamp);
+  date.setMilliseconds(0);
+  return date;
+}
+
 export function formatDateString(dateString: string | Date) {
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",

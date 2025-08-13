@@ -128,5 +128,14 @@
   "todosGlobalSearch": {
     "searchPlaceholder": "Szukaj zadania i wciśnij enter",
     "noResults": "Nie znaleziono niczego o tej wartości."
+  },
+  "todopage": {
+    "errorText": "Zadanie nie istnieje!",
+    "createTodo": "Zadanie stworzone",
+    "currentTodoDate": "Aktualny dzień",
+    "updateTodo": "Zadanie zaktualizowane",
+    "todoStatus": "Status zadania",
+    "todoTitle": "Tytuł zadania",
+    "todoMoreContent": "Dodatkowe informacje"
   }
 }
