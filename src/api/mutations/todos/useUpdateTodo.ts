@@ -1,15 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { editTodo, TodoUpdateDetails } from "@/api/apiTodos";
-import { User } from "@/types/types";
+import { editTodo } from "@/api/apiTodos";
+import { TodoUpdateDetails, User } from "@/types/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "react-i18next";
-
-type UpdateTodoParams = {
-  todoId: string;
-  todoDetails: TodoUpdateDetails;
-  selectedDate: string;
-  currentUser: User;
-};
 
 export const useUpdateTodo = () => {
   const queryClient = useQueryClient();
@@ -20,13 +13,17 @@ export const useUpdateTodo = () => {
     mutationFn: ({
       todoId,
       todoDetails,
-      selectedDate,
       currentUser,
-    }: UpdateTodoParams) => {
-      return editTodo(todoId, todoDetails, selectedDate, currentUser);
+    }: {
+      todoId: string;
+      todoDetails: TodoUpdateDetails;
+      currentUser: User;
+    }) => {
+      return editTodo(todoId, todoDetails, currentUser);
     },
-    onSuccess: () => {
+    onSuccess: (_, { todoId }) => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
+      queryClient.invalidateQueries({ queryKey: ["todos", todoId] });
       toast({
         title: t("toastMsg.todoUpdated"),
         variant: "default",

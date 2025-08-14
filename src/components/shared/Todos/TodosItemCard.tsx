@@ -18,20 +18,25 @@ import { ROUTES } from "@/routes/constants";
 import { useState } from "react";
 import { TodoRow } from "@/types/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { dateCustomFormatting, multiFormatDateString } from "@/lib/helpers";
+import {
+  dateCustomFormatting,
+  localeMap,
+  multiFormatDateString,
+} from "@/lib/helpers";
 import { useDeleteTodo } from "@/api/mutations/todos/useDeleteTodo";
 import Loader from "../Loader";
 import TodoForm from "./TodoForm";
 import LightboxImage from "../LightboxImage";
 import { Calendar } from "@/components/ui/calendar";
 // import { useRepeatTodo } from "@/api/mutations/todos/useRepeatTodo";
-// import { useMoveTodo } from "@/api/mutations/todos/useMoveTodo";
-// import { toast } from "@/components/ui/use-toast";
+import { useMoveTodo } from "@/api/mutations/todos/useMoveTodo";
+import { toast } from "@/components/ui/use-toast";
 // import { useDelegateTodo } from "@/api/mutations/todos/useDelegateTodo";
 import { useTranslation } from "react-i18next";
 import { useUpdateTodoStatus } from "@/api/mutations/todos/useUpdateTodoStatus";
 import { searchTodos } from "@/api/apiTodos";
 import { useGlobalSearch } from "@/contexts/GlobalSearchContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type TodosItemCardProps = {
   data: TodoRow;
@@ -50,10 +55,12 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
   const [selectedRepeatDate, setSelectedRepeatDate] = useState<Date>();
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [selectedMoveDate, setSelectedMoveDate] = useState<Date>();
+  const { currentLanguage } = useLanguage();
   //   const { repeatTodoItem, isRepeatingTodo } = useRepeatTodo();
-  //   const { moveTodoItem, isMovingTodo } = useMoveTodo();
+  const { moveTodoItem, isMovingTodo } = useMoveTodo();
   //   const { delegateTodoItem, isDelegatingTodo } = useDelegateTodo();
 
+  // Use data.image_url for lightbox - this will be updated by global search refresh
   const dataImgToLightBoxImage = [{ src: data.image_url || "" }];
 
   const handleCheckboxClick = async () => {
@@ -167,33 +174,41 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
   //     }
   //   };
 
-  //   const handleMoveTodo = async () => {
-  //     if (!selectedMoveDate) return;
+  const handleMoveTodo = async () => {
+    if (!selectedMoveDate) return;
 
-  //     // const formattedDate = dateCustomFormatting(selectedMoveDate);
-  //     // const originalDate = isGlobalSearch
-  //     //   ? (data.todoDate as string)
-  //     //   : selectedDate;
+    const formattedDate = dateCustomFormatting(selectedMoveDate);
+    const originalDate = isGlobalSearch
+      ? (data.todo_date as string)
+      : selectedDate;
 
-  //     try {
-  //     //   await moveTodoItem({
-  //     //     todoDetails: {
-  //     //       ...data,
-  //     //     },
-  //     //     newDate: formattedDate,
-  //     //     currentUser,
-  //     //     originalDate,
-  //     //   });
-  //       setMoveDialogOpen(false);
-  //       setSelectedMoveDate(undefined);
-  //     } catch (error) {
-  //       toast({
-  //         title: "Failed to moving todo",
-  //         description: "Please try again.",
-  //         variant: "destructive",
-  //       });
-  //     }
-  //   };
+    try {
+      if (isGlobalSearch) {
+        await moveTodoItem({
+          todoId: data.id,
+          newDate: formattedDate,
+          currentUser,
+          originalDate,
+        });
+        await updateClickedTodoItem();
+      } else {
+        await moveTodoItem({
+          todoId: data.id,
+          newDate: formattedDate,
+          currentUser,
+          originalDate,
+        });
+      }
+      setMoveDialogOpen(false);
+      setSelectedMoveDate(undefined);
+    } catch (error) {
+      toast({
+        title: t("toastMsg.moveTodoFailed"),
+        description: t("toastMsg.moveTodoFailedDescription"),
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div
@@ -269,6 +284,9 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                     singleTodoId={data.id}
                     onCloseDialog={() => setDialogOpen(false)}
                     globalSearchItemDate={data.todo_date}
+                    onUpdateSuccess={
+                      isGlobalSearch ? updateClickedTodoItem : undefined
+                    }
                   />
                 </DialogContent>
               </Dialog>
@@ -300,7 +318,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Choose Date to Move Todo</DialogTitle>
+                    <DialogTitle>{t("todosItemCard.moveTodoDate")}</DialogTitle>
                   </DialogHeader>
                   <div className="flex flex-col gap-4">
                     <Calendar
@@ -308,33 +326,26 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                       selected={selectedMoveDate}
                       onSelect={setSelectedMoveDate}
                       disabled={(date) => {
-                        const todoDate = isGlobalSearch
-                          ? new Date(
-                              data.todo_date
-                                ?.split("-")
-                                .reverse()
-                                .join("-") as string
-                            )
-                          : new Date(
-                              selectedDate.split("-").reverse().join("-")
-                            );
-                        return date <= todoDate;
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date < today;
                       }}
+                      locale={localeMap[currentLanguage]}
                       className="flex justify-center"
                     />
-                    {/* <Button
+                    <Button
                       onClick={handleMoveTodo}
                       disabled={!selectedMoveDate || isMovingTodo}
                     >
                       {isMovingTodo ? (
                         <div className="flex gap-2">
                           <Loader />
-                          Moving...
+                          {t("todosItemCard.options.moving")}
                         </div>
                       ) : (
-                        "Confirm"
+                        t("todosItemCard.confirmMove")
                       )}
-                    </Button> */}
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -349,7 +360,9 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle>Choose Date to Repeat Todo</DialogTitle>
+                    <DialogTitle>
+                      {t("todosItemCard.repeatTodoDate")}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="flex flex-col gap-4">
                     <Calendar
@@ -357,18 +370,11 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                       selected={selectedRepeatDate}
                       onSelect={setSelectedRepeatDate}
                       disabled={(date) => {
-                        const todoDate = isGlobalSearch
-                          ? new Date(
-                              data.todo_date
-                                ?.split("-")
-                                .reverse()
-                                .join("-") as string
-                            )
-                          : new Date(
-                              selectedDate.split("-").reverse().join("-")
-                            );
-                        return date <= todoDate;
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date < today;
                       }}
+                      locale={localeMap[currentLanguage]}
                       className="flex justify-center"
                     />
                     {/* <Button

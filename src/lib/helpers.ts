@@ -1,3 +1,5 @@
+import { enUS, pl } from "date-fns/locale";
+
 export function dateCustomFormatting(date: Date): string {
   const padStart = (value: number): string => value.toString().padStart(2, "0");
   return `${date.getFullYear()}-${padStart(date.getMonth() + 1)}-${padStart(
@@ -55,4 +57,9 @@ export const multiFormatDateString = (
     default:
       return "Just now";
   }
+};
+
+export const localeMap = {
+  en: enUS,
+  pl: pl,
 };

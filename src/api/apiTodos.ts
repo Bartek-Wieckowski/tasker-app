@@ -69,25 +69,6 @@ export async function getTodoById(todoId: string, currentUser: User) {
   return todo;
 }
 
-// Helper function do tworzenia obiektu todo (może być przydatne do mapowania danych)
-// export function createTodoItem(
-//   todoDetails: TodoInsert,
-//   todoId: string,
-//   imageUrl?: string
-// ) {
-//   return {
-//     id: todoId,
-//     todo: todoDetails.todo,
-//     todo_more_content: todoDetails.todo_more_content,
-//     image_url: imageUrl || null,
-//     user_id: todoDetails.user_id,
-//     todo_date: todoDetails.todo_date,
-//     is_completed: todoDetails.is_completed || false,
-//     created_at: new Date().toISOString(),
-//     updated_at: new Date().toISOString(),
-//   };
-// }
-
 export async function searchTodos(searchTerm: string, currentUser: User) {
   const { data: todos, error } = await supabase.rpc("search_todos", {
     search_term: searchTerm,
@@ -114,7 +95,9 @@ async function uploadImageAndGetUrl(
   image: File
 ) {
   const fileExt = image.name.split(".").pop();
-  const filePath = `${accountId}/${todoId}.${fileExt}`;
+  // Add timestamp to make filename unique and avoid browser caching issues
+  const timestamp = Date.now();
+  const filePath = `${accountId}/${todoId}_${timestamp}.${fileExt}`;
 
   const { error: uploadError } = await supabase.storage
     .from("todo-images")
@@ -291,8 +274,10 @@ async function deleteImageFromStorage(accountId: string, todoId: string) {
     throw { code: "LIST_IMAGES_ERROR" };
   }
 
-  // Find the file that starts with todoId
-  const file = files.find((f) => f.name.startsWith(todoId));
+  // Find the file that starts with todoId (could have timestamp: todoId_timestamp.ext)
+  const file = files.find(
+    (f) => f.name.startsWith(todoId + ".") || f.name.startsWith(todoId + "_")
+  );
   if (!file) return; // No image found for this todo
 
   const { error: deleteError } = await supabase.storage
@@ -382,16 +367,15 @@ export async function deleteTodo(
 export async function editTodo(
   todoId: string,
   newTodoDetails: TodoUpdateDetails,
-  selectedDate: string,
   currentUser: User
 ) {
   // First get the current todo to check its state
+  // Note: We don't filter by todo_date because the todo might have been moved to a different date
   const { data: currentTodo, error: getTodoError } = await supabase
     .from("todos")
     .select("*")
     .eq("id", todoId)
     .eq("user_id", currentUser.accountId)
-    .eq("todo_date", selectedDate)
     .single();
 
   if (getTodoError) {
@@ -447,8 +431,7 @@ export async function editTodo(
     .from("todos")
     .update(updateData)
     .eq("id", todoId)
-    .eq("user_id", currentUser.accountId)
-    .eq("todo_date", selectedDate);
+    .eq("user_id", currentUser.accountId);
 
   if (updateError) {
     if (import.meta.env.DEV) {
@@ -745,64 +728,57 @@ export async function editTodo(
 //   return { success: true, todoId };
 // }
 
-// export async function moveTodo(
-//   todoDetails: TodoItemDetails & { todoDate?: string },
-//   newDate: string,
-//   currentUser: User,
-//   originalDate: string
-// ) {
-//   const docSnapshot = await getUserTodosDocSnapshot(currentUser.accountId);
-//   if (!docSnapshot.exists()) {
-//     throw new Error('User document does not exist');
-//   }
+export async function moveTodo(
+  todoId: string,
+  newDate: string,
+  currentUser: User,
+  originalDate: string
+) {
+  // First get the todo that needs to be moved
+  const { data: todoToMove, error: getTodoError } = await supabase
+    .from("todos")
+    .select("*")
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", originalDate)
+    .single();
 
-//   if (todoDetails.isCompleted) {
-//     throw new Error('Cannot move completed todo');
-//   }
+  if (getTodoError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: getTodoError.code,
+        message: getTodoError.message,
+      });
+    }
+    throw { code: "GET_TODO_ERROR" };
+  }
 
-//   const docRef = getFirestoreDocRef(
-//     TABLE_NAME_taskerUserTodos,
-//     currentUser.accountId
-//   );
+  if (todoToMove.is_completed) {
+    throw { code: "CANNOT_MOVE_COMPLETED_TODO" };
+  }
 
-//   const todoId = todoDetails.id;
-//   const imageUrl = todoDetails.imageUrl || '';
+  // Update the todo's date to move it
+  const { error: updateError } = await supabase
+    .from("todos")
+    .update({
+      todo_date: newDate,
+    })
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", originalDate);
 
-//   const movedTodoItem = {
-//     ...todoDetails,
-//     imageUrl,
-//     updatedAt: new Date(),
-//   };
+  if (updateError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: updateError.code,
+        message: updateError.message,
+      });
+    }
+    throw { code: "MOVE_TODO_ERROR" };
+  }
 
-//   const userData = docSnapshot.data();
-
-//   const originalTodos = userData[originalDate]?.userTodosOfDay || [];
-//   const updatedOriginalTodos = originalTodos.filter(
-//     (todo: TodoItemDetails) => todo.id !== todoId
-//   );
-
-//   if (updatedOriginalTodos.length === 0) {
-//     await updateDoc(docRef, {
-//       [originalDate]: deleteField(),
-//     });
-//   } else {
-//     await updateDoc(docRef, {
-//       [originalDate]: {
-//         userTodosOfDay: updatedOriginalTodos,
-//       },
-//     });
-//   }
-
-//   await updateOrCreateTodos(
-//     docRef,
-//     newDate,
-//     movedTodoItem,
-//     userData!,
-//     currentUser
-//   );
-
-//   return { success: true, todoId };
-// }
+  return { success: true, todoId };
+}
 
 // export async function updateAllRelatedTodos(
 //   accountId: string,

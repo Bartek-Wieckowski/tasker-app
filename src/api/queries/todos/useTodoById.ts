@@ -8,11 +8,13 @@ export const useTodoById = (todoId: string, currentUser: User) => {
     data: todo,
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: [QUERY_KEYS.todos, todoId],
     queryFn: () => getTodoById(todoId, currentUser),
     enabled: !!todoId,
+    staleTime: 0, // Always consider data stale to ensure fresh fetches
   });
 
-  return { todo, isLoading, isError };
+  return { todo, isLoading, isError, refetch };
 };

@@ -64,7 +64,11 @@
     "updatingTodosStatusFailed": "Updating status todos failed. Please try again.",
     "deletingTodosFailed": "Deleting todos failed. Please try again.",
     "updatingTodosFailed": "Updating todos failed. Please try again.",
-    "todoUpdated": "Todo updated successfully!"
+    "todoUpdated": "Todo updated successfully!",
+    "moveTodoTitle": "Todo moved successfully",
+    "moveTodoDescription": "The todo has been moved to the new date.",
+    "moveTodoFailed": "Failed to move todo",
+    "moveTodoFailedDescription": "Please try again."
   },
   "todos": {
     "title": "Tasks",
@@ -134,11 +138,15 @@
   },
   "todosItemCard": {
     "editTodo": "Edit todo",
+    "moveTodoDate": "Choose date to move todo",
+    "repeatTodoDate": "Choose date to repeat todo",
+    "confirmMove": "Confirm Move",
     "options": {
       "details": "Details",
       "edit": "Edit",
       "delete": "Delete",
       "deleting": "Deleting todo...",
+      "moving": "Moving...",
       "moreActionsText": "More actions ?",
       "move": "Move",
       "repeat": "Repeat"

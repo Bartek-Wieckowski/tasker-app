@@ -35,6 +35,7 @@ type TodoFormProps = {
   action: "Create" | "Update";
   onCloseDialog: () => void;
   globalSearchItemDate?: string;
+  onUpdateSuccess?: () => void;
 };
 
 const TodoForm = ({
@@ -42,6 +43,7 @@ const TodoForm = ({
   action,
   onCloseDialog,
   globalSearchItemDate,
+  onUpdateSuccess,
 }: TodoFormProps) => {
   const [isOpenCollapsible, setIsOpenCollapsible] = useState(false);
   const [imageAction, setImageAction] = useState<"keep" | "delete" | "edit">(
@@ -135,6 +137,11 @@ const TodoForm = ({
         selectedDate: globalSearchItemDate || selectedDate,
         currentUser,
       });
+
+      // Call the callback to update global search results if provided
+      if (onUpdateSuccess) {
+        await onUpdateSuccess();
+      }
     }
     onCloseDialog();
   }
