@@ -40,42 +40,66 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
     );
 
-    let userFilePaths: string[] = [];
-
     try {
-      const { data: files, error: listError } = await supabase.storage
-        .from("user-avatars")
-        .list(user_id);
+      // Clean up user avatars
+      const { data: avatarFiles, error: avatarListError } =
+        await supabase.storage.from("user-avatars").list(user_id);
 
-      if (!listError && files && files.length > 0) {
-        userFilePaths = files.map((file) => `${user_id}/${file.name}`);
+      if (!avatarListError && avatarFiles && avatarFiles.length > 0) {
+        const avatarPaths = avatarFiles.map(
+          (file) => `${user_id}/${file.name}`
+        );
+        const { error: avatarDeleteError } = await supabase.storage
+          .from("user-avatars")
+          .remove(avatarPaths);
+
+        if (avatarDeleteError) {
+          console.warn("Failed to clean up user avatars:", avatarDeleteError);
+        }
       }
 
+      // Clean up todo images
+      const { data: todoFiles, error: todoListError } = await supabase.storage
+        .from("todo-images")
+        .list(user_id);
+
+      if (!todoListError && todoFiles && todoFiles.length > 0) {
+        const todoPaths = todoFiles.map((file) => `${user_id}/${file.name}`);
+        const { error: todoDeleteError } = await supabase.storage
+          .from("todo-images")
+          .remove(todoPaths);
+
+        if (todoDeleteError) {
+          console.warn("Failed to clean up todo images:", todoDeleteError);
+        }
+      }
+
+      // Delete all todos for the user
+      const { error: todosError } = await supabase
+        .from("todos")
+        .delete()
+        .eq("user_id", user_id);
+
+      if (todosError) {
+        console.warn("Failed to delete user todos:", todosError);
+      }
+
+      // Deactivate user in database
+      const { error: deactivateError } = await supabase.rpc("deactivate_user", {
+        p_user_id: user_id,
+      });
+      if (deactivateError) {
+        throw new Error(
+          `Database deactivation failed: ${deactivateError.message}`
+        );
+      }
+
+      // Delete user from auth
       const { error: deleteError } = await supabase.auth.admin.deleteUser(
         user_id
       );
       if (deleteError) {
         throw new Error(`Auth deletion failed: ${deleteError.message}`);
-      }
-
-      const { error: rpcError } = await supabase.rpc("deactivate_user", {
-        p_user_id: user_id,
-      });
-      if (rpcError) {
-        throw new Error(`Database deactivation failed: ${rpcError.message}`);
-      }
-
-      if (userFilePaths.length > 0) {
-        const { error: storageError } = await supabase.storage
-          .from("user-avatars")
-          .remove(userFilePaths);
-
-        if (storageError) {
-          console.warn(
-            "Failed to clean up user images after successful user deletion:",
-            storageError
-          );
-        }
       }
     } catch (error) {
       return new Response(
