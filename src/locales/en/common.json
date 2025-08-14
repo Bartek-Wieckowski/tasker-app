@@ -62,7 +62,9 @@
     "updateSettingsFailed": "Updating settings failed. Please try again.",
     "addingTodosFailed": "Adding todos failed. Please try again.",
     "updatingTodosStatusFailed": "Updating status todos failed. Please try again.",
-    "deletingTodosFailed": "Deleting todos failed. Please try again."
+    "deletingTodosFailed": "Deleting todos failed. Please try again.",
+    "updatingTodosFailed": "Updating todos failed. Please try again.",
+    "todoUpdated": "Todo updated successfully!"
   },
   "todos": {
     "title": "Tasks",
@@ -115,6 +117,14 @@
     "updateTodo": "Update todo",
     "creating": "Creating todo...",
     "updating": "Updating todo...",
+    "deleteImage": "Delete image",
+    "editImage": "Edit image",
+    "imageOptions": "Image options",
+    "keepImage": "Keep current image",
+    "replaceImage": "Replace with new image",
+    "currentImage": "Current image",
+    "imageWillBeDeleted": "Current image will be deleted",
+    "selectNewImage": "Select a new image to replace current one",
     "todoMinLength": "Todo item must be at least 2 characters",
     "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field"
   },
@@ -123,6 +133,7 @@
     "selectFromComputer": "Select from computer"
   },
   "todosItemCard": {
+    "editTodo": "Edit todo",
     "options": {
       "details": "Details",
       "edit": "Edit",

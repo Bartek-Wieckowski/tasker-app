@@ -49,6 +49,13 @@ export type TodoSearchResult = {
   like: TodoRow;
 };
 
+export type TodoUpdateDetails = {
+  todo?: string;
+  todo_more_content?: string | null;
+  imageFile?: File | null;
+  deleteImage?: boolean;
+};
+
 // Typ dla danych z bazy danych (po pobraniu)
 export type TodoFromDatabase = {
   id: string;

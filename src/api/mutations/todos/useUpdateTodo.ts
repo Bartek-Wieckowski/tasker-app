@@ -1,44 +1,44 @@
-// import { editTodo } from '@/api/apiTodos';
-// import { QUERY_KEYS } from '@/api/constants';
-// import { useToast } from '@/components/ui/use-toast';
-// import { TodoItemDetails, User } from '@/types/types';
-// import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { editTodo, TodoUpdateDetails } from "@/api/apiTodos";
+import { User } from "@/types/types";
+import { useToast } from "@/components/ui/use-toast";
+import { useTranslation } from "react-i18next";
 
-export function useUpdateTodo() {
-  // const { toast } = useToast();
-  // const queryClient = useQueryClient();
-  // const {
-  //   isPending: isTodoChanging,
-  //   isError,
-  //   mutateAsync: updateTodo,
-  // } = useMutation({
-  //   mutationFn: ({
-  //     todoId,
-  //     newTodoDetails,
-  //     selectedDate,
-  //     currentUser,
-  //     deleteImage,
-  //   }: {
-  //     todoId: string;
-  //     newTodoDetails: Partial<TodoItemDetails>;
-  //     selectedDate: string;
-  //     currentUser: User;
-  //     deleteImage: boolean;
-  //   }) => editTodo(todoId, newTodoDetails, selectedDate, currentUser, deleteImage),
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
-  //     toast({
-  //       title: 'Todo updated successfully',
-  //       variant: 'default'
-  //     });
-  //   },
-  //   onError: () => {
-  //     toast({
-  //       title: 'Updating todos failed',
-  //       description: 'Please try again.',
-  //       variant: 'destructive',
-  //     });
-  //   },
-  // });
-  // return { isTodoChanging, isError, updateTodo };
-}
+type UpdateTodoParams = {
+  todoId: string;
+  todoDetails: TodoUpdateDetails;
+  selectedDate: string;
+  currentUser: User;
+};
+
+export const useUpdateTodo = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { t } = useTranslation();
+
+  const { mutateAsync: updateTodo, isPending: isTodoChanging } = useMutation({
+    mutationFn: ({
+      todoId,
+      todoDetails,
+      selectedDate,
+      currentUser,
+    }: UpdateTodoParams) => {
+      return editTodo(todoId, todoDetails, selectedDate, currentUser);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+      toast({
+        title: t("toastMsg.todoUpdated"),
+        variant: "default",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: t("toastMsg.todoUpdateError"),
+      });
+    },
+  });
+
+  return { updateTodo, isTodoChanging };
+};

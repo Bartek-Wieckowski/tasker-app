@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/supabaseClient";
-import { TodoInsertWithFile, TodoInsert, User } from "@/types/types";
+import {
+  TodoInsertWithFile,
+  TodoInsert,
+  User,
+  TodoUpdateDetails,
+} from "@/types/types";
 
 export async function getUserTodos(accountId: string) {
   const { data: todos, error } = await supabase
@@ -109,8 +114,7 @@ async function uploadImageAndGetUrl(
   image: File
 ) {
   const fileExt = image.name.split(".").pop();
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
-  const filePath = `${accountId}/${todoId}/${fileName}`;
+  const filePath = `${accountId}/${todoId}.${fileExt}`;
 
   const { error: uploadError } = await supabase.storage
     .from("todo-images")
@@ -272,11 +276,69 @@ export async function updateTodoCompletionStatus(
   }
 }
 
+async function deleteImageFromStorage(accountId: string, todoId: string) {
+  // First list files to get the file extension
+  const { data: files, error: listError } = await supabase.storage
+    .from("todo-images")
+    .list(accountId);
+
+  if (listError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        message: listError.message,
+      });
+    }
+    throw { code: "LIST_IMAGES_ERROR" };
+  }
+
+  // Find the file that starts with todoId
+  const file = files.find((f) => f.name.startsWith(todoId));
+  if (!file) return; // No image found for this todo
+
+  const { error: deleteError } = await supabase.storage
+    .from("todo-images")
+    .remove([`${accountId}/${file.name}`]);
+
+  if (deleteError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        message: deleteError.message,
+      });
+    }
+    throw { code: "DELETE_IMAGE_ERROR" };
+  }
+}
+
 export async function deleteTodo(
   todoId: string,
   selectedDate: string,
   currentUser: User
 ) {
+  // First get the todo to check if it has an image
+  const { data: todo, error: getTodoError } = await supabase
+    .from("todos")
+    .select("image_url")
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate)
+    .single();
+
+  if (getTodoError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: getTodoError.code,
+        message: getTodoError.message,
+      });
+    }
+    throw { code: "GET_TODO_ERROR" };
+  }
+
+  // If todo has an image, delete it from storage
+  if (todo.image_url) {
+    await deleteImageFromStorage(currentUser.accountId, todoId);
+  }
+
+  // Then delete the todo
   const { error } = await supabase
     .from("todos")
     .delete()
@@ -317,54 +379,99 @@ export async function deleteTodo(
 //     await handleImageDeletion(currentUser.accountId, todoToEdit.imageUrl, todoId);
 //   }
 
-//   if (deleteImage && todoToEdit?.imageUrl && typeof todoToEdit.imageUrl === 'string') {
-//     await handleTodoImageDelete(
-//       currentUser.accountId,
-//       todoId,
-//       todosOfDay
-//     );
-//   } else if (newTodoDetails.imageUrl) {
-//     await handleTodoImageUploadAndUpdate(
-//       docRef,
-//       todoId,
-//       newTodoDetails.imageUrl as File,
-//       selectedDate,
-//       todosOfDay,
-//       currentUser.accountId
-//     );
-//   }
+export async function editTodo(
+  todoId: string,
+  newTodoDetails: TodoUpdateDetails,
+  selectedDate: string,
+  currentUser: User
+) {
+  // First get the current todo to check its state
+  const { data: currentTodo, error: getTodoError } = await supabase
+    .from("todos")
+    .select("*")
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate)
+    .single();
 
-//   const currentResult = await getUserTodos(currentUser.accountId, selectedDate);
-//   if (!currentResult) return;
+  if (getTodoError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        message: getTodoError.message,
+      });
+    }
+    throw { code: "GET_TODO_ERROR" };
+  }
 
-//   const updatedUserTodos = updateTodosList(
-//     todoId,
-//     newTodoDetails,
-//     currentResult.todosOfDay,
-//     deleteImage,
-//     isRepeatedTodo
-//   );
+  let image_url = currentTodo.image_url;
 
-//   await updateTodosInDatabase(docRef, selectedDate, updatedUserTodos);
+  // Handle image updates
+  if (newTodoDetails.deleteImage) {
+    // Delete existing image if present
+    if (currentTodo.image_url) {
+      await deleteImageFromStorage(currentUser.accountId, todoId);
+      image_url = null;
+    }
+  } else if (newTodoDetails.imageFile) {
+    // Delete old image if exists
+    if (currentTodo.image_url) {
+      await deleteImageFromStorage(currentUser.accountId, todoId);
+    }
+    // Upload new image
+    image_url = await uploadImageAndGetUrl(
+      currentUser.accountId,
+      todoId,
+      newTodoDetails.imageFile
+    );
+  }
 
-//   if (!isRepeatedTodo && (newTodoDetails.todo || newTodoDetails.todoMoreContent)) {
-//     await updateAllRelatedTodos(
-//       currentUser.accountId,
-//       selectedDate,
-//       todoId,
-//       (todo) => {
-//         if (!todo.isIndependentEdit) {
-//           return {
-//             ...todo,
-//             todo: newTodoDetails.todo || todo.todo,
-//             todoMoreContent: newTodoDetails.todoMoreContent || todo.todoMoreContent,
-//           };
-//         }
-//         return todo;
-//       }
-//     );
-//   }
-// }
+  // Prepare update object - only include fields that are being updated
+  const updateData: Partial<{
+    todo: string;
+    todo_more_content: string | null;
+    image_url: string | null;
+  }> = { image_url };
+
+  // Only update todo field if it's provided in the update details
+  if (newTodoDetails.todo !== undefined) {
+    updateData.todo = newTodoDetails.todo;
+  }
+
+  // Only update todo_more_content field if it's provided in the update details
+  if (newTodoDetails.todo_more_content !== undefined) {
+    updateData.todo_more_content = newTodoDetails.todo_more_content;
+  }
+
+  // Update todo in database
+  const { error: updateError } = await supabase
+    .from("todos")
+    .update(updateData)
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate);
+
+  if (updateError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        message: updateError.message,
+      });
+    }
+    throw { code: "UPDATE_TODO_ERROR" };
+  }
+
+  // Return the updated todo with only the fields that were actually changed
+  const updatedTodo = { ...currentTodo, image_url };
+
+  if (newTodoDetails.todo !== undefined) {
+    updatedTodo.todo = newTodoDetails.todo;
+  }
+
+  if (newTodoDetails.todo_more_content !== undefined) {
+    updatedTodo.todo_more_content = newTodoDetails.todo_more_content;
+  }
+
+  return updatedTodo;
+}
 
 // export function updateTodosList(
 //   todoId: string,

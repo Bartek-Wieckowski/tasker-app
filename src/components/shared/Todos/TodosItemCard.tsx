@@ -262,7 +262,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
                   <DialogHeader>
-                    <DialogTitle>Edit Todo Item</DialogTitle>
+                    <DialogTitle>{t("todosItemCard.editTodo")}</DialogTitle>
                   </DialogHeader>
                   <TodoForm
                     action="Update"

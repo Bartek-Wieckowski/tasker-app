@@ -65,7 +65,9 @@
     "updateSettingsFailed": "Aktualizacja ustawień nie powiodła się. Spróbuj ponownie.",
     "addingTodosFailed": "Dodawanie zadania nie powiodło się. Spróbuj ponownie.",
     "updatingTodosStatusFailed": "Aktualizacja statusu zadania nie powiodła się. Spróbuj ponownie.",
-    "deletingTodosFailed": "Usuwanie zadania nie powiodło się. Spróbuj ponownie."
+    "deletingTodosFailed": "Usuwanie zadania nie powiodło się. Spróbuj ponownie.",
+    "updatingTodosFailed": "Aktualizacja zadania nie powiodła się. Spróbuj ponownie.",
+    "todoUpdated": "Zadanie zostało zaktualizowane!"
   },
   "todos": {
     "title": "Zadania",
@@ -107,6 +109,14 @@
     "updateTodo": "Zaktualizuj zadanie",
     "creating": "Tworzenie zadania...",
     "updating": "Aktualizowanie zadania...",
+    "deleteImage": "Usuń zdjęcie",
+    "editImage": "Edytuj zdjęcie",
+    "imageOptions": "Opcje zdjęcia",
+    "keepImage": "Zostaw obecne zdjęcie",
+    "replaceImage": "Zastąp nowym zdjęciem",
+    "currentImage": "Obecne zdjęcie",
+    "imageWillBeDeleted": "Obecne zdjęcie zostanie usunięte",
+    "selectNewImage": "Wybierz nowe zdjęcie aby zastąpić obecne",
     "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
     "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
   },
@@ -115,6 +125,7 @@
     "selectFromComputer": "Wybierz z komputera"
   },
   "todosItemCard": {
+    "editTodo": "Edytuj zadanie",
     "options": {
       "details": "Szczegóły",
       "edit": "Edytuj",
