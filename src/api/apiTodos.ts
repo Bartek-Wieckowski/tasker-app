@@ -90,7 +90,7 @@ export async function searchTodos(searchTerm: string, currentUser: User) {
   //   return todos || []
 }
 
-async function uploadImageAndGetUrl(
+export async function uploadImageAndGetUrl(
   accountId: string,
   todoId: string,
   image: File
@@ -305,7 +305,7 @@ export async function deleteTodo(
   }
 }
 
-async function updateRelatedTodos(
+export async function updateRelatedTodos(
   accountId: string,
   originalTodoId: string,
   updates: Partial<{
@@ -657,7 +657,7 @@ export async function isLastImageReference(
   return referenceCount === 0;
 }
 
-function getFilePathFromUrl(imageUrl: string): string | null {
+export function getFilePathFromUrl(imageUrl: string): string | null {
   try {
     const url = new URL(imageUrl);
     const pathParts = url.pathname.split("/");

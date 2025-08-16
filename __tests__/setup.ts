@@ -15,29 +15,16 @@ const mockSupabase = {
     signInWithOAuth: vi.fn(),
     updateUser: vi.fn(),
   },
+  rpc: vi.fn(),
   functions: {
     invoke: vi.fn(),
   },
-  from: vi.fn(() => ({
-    update: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          select: vi.fn(() => ({
-            single: vi.fn(),
-          })),
-        })),
-      })),
-    })),
-  })),
+  from: vi.fn(),
   storage: {
     from: vi.fn(() => ({
-      list: vi.fn(() => ({
-        data: [],
-        error: null,
-      })),
-      getPublicUrl: vi.fn(() => ({
-        data: { publicUrl: null },
-      })),
+      list: vi.fn(() => ({ data: [], error: null })),
+      upload: vi.fn(() => ({ data: { path: "mock-path" }, error: null })),
+      getPublicUrl: vi.fn(() => ({ data: { publicUrl: "mock-url" } })),
     })),
   },
 };
