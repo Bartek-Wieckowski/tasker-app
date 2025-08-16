@@ -42,13 +42,13 @@ export function useMoveTodo() {
       });
       toast({
         title: t("toastMsg.moveTodoTitle"),
-        description: t("toastMsg.moveTodoDescription"),
+        description: `${t("toastMsg.moveTodoDescription")} ${newDate}`,
       });
     },
     onError: () => {
       toast({
         title: t("toastMsg.moveTodoFailed"),
-        description: t("toastMsg.moveTodoDescription"),
+        description: t("toastMsg.moveTodoFailedDescription"),
         variant: "destructive",
       });
     },

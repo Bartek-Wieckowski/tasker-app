@@ -40,16 +40,17 @@ const Todopage = () => {
         </Link>
       </nav>
       <div className="max-5xl w-full border border-slate-200 p-3 rounded-md shadow">
-        <div className="flex flex-col sm:flex-row  items-start sm:items-center justify-between mb-4">
+        <div className="flex flex-col items-start justify-between mb-4">
+          <div className="text-sm text-slate-700">
+            <span>{t("todopage.currentTodoDate")}: </span>
+            <span className="font-semibold italic">{selectedDate}</span>
+          </div>
+
           <div className="text-sm text-slate-700">
             <span>{t("todopage.createTodo")}: </span>
             <span className="font-semibold italic">
               {dateCustomFormatting(createAtDate)}
             </span>
-          </div>
-          <div className="text-sm text-slate-700">
-            <span>{t("todopage.currentTodoDate")}: </span>
-            <span className="font-semibold italic">{selectedDate}</span>
           </div>
 
           {updateAtDate.getTime() !== createAtDate.getTime() && (

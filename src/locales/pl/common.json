@@ -68,10 +68,15 @@
     "deletingTodosFailed": "Usuwanie zadania nie powiodło się. Spróbuj ponownie.",
     "updatingTodosFailed": "Aktualizacja zadania nie powiodła się. Spróbuj ponownie.",
     "todoUpdated": "Zadanie zostało zaktualizowane!",
-    "moveTodoTitle": "Zadanie zostało przeniesione",
-    "moveTodoDescription": "Zadanie zostało przeniesione na nową datę.",
+    "moveTodoTitle": "Zadanie zostało przeniesione!",
+    "moveTodoDescription": "Nowa data: ",
     "moveTodoFailed": "Nie udało się przenieść zadania",
-    "moveTodoFailedDescription": "Spróbuj ponownie."
+    "moveTodoFailedDescription": "Spróbuj ponownie.",
+    "repeatTodoTitle": "Zadanie zostało powtórzone!",
+    "repeatTodoDescription": "Nowa data: ",
+    "repeatTodoFailed": "Nie udało się powtórzyć zadania",
+    "repeatTodoFailedDescription": "Spróbuj ponownie.",
+    "repeatTodoDescriptionImage": "i posiada zdjęcie"
   },
   "todos": {
     "title": "Zadania",
@@ -133,15 +138,17 @@
     "moveTodoDate": "Wybierz datę, aby przenieść zadanie",
     "repeatTodoDate": "Wybierz datę, aby powtórzyć zadanie",
     "confirmMove": "Potwierdź przeniesienie",
+    "confirmRepeat": "Potwierdź powtórzenie",
     "options": {
       "details": "Szczegóły",
       "edit": "Edytuj",
       "delete": "Usuń",
       "deleting": "Usuwanie zadania...",
-      "moving": "Przenoszenie...",
       "moreActionsText": "Więcej akcji ?",
+      "moving": "Przenoszenie...",
       "move": "Przenieś",
-      "repeat": "Powtórz"
+      "repeat": "Powtórz",
+      "repeating": "Powtarzanie..."
     }
   },
   "todosGlobalSearch": {
@@ -151,7 +158,7 @@
   "todopage": {
     "errorText": "Zadanie nie istnieje!",
     "createTodo": "Zadanie stworzone",
-    "currentTodoDate": "Aktualny dzień",
+    "currentTodoDate": "Zadanie przypisane na dzień",
     "updateTodo": "Zadanie zaktualizowane",
     "todoStatus": "Status zadania",
     "todoTitle": "Tytuł zadania",

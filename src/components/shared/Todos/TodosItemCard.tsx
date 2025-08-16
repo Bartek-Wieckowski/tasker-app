@@ -28,7 +28,7 @@ import Loader from "../Loader";
 import TodoForm from "./TodoForm";
 import LightboxImage from "../LightboxImage";
 import { Calendar } from "@/components/ui/calendar";
-// import { useRepeatTodo } from "@/api/mutations/todos/useRepeatTodo";
+import { useRepeatTodo } from "@/api/mutations/todos/useRepeatTodo";
 import { useMoveTodo } from "@/api/mutations/todos/useMoveTodo";
 import { toast } from "@/components/ui/use-toast";
 // import { useDelegateTodo } from "@/api/mutations/todos/useDelegateTodo";
@@ -56,7 +56,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [selectedMoveDate, setSelectedMoveDate] = useState<Date>();
   const { currentLanguage } = useLanguage();
-  //   const { repeatTodoItem, isRepeatingTodo } = useRepeatTodo();
+  const { repeatTodoItem, isRepeatingTodo } = useRepeatTodo();
   const { moveTodoItem, isMovingTodo } = useMoveTodo();
   //   const { delegateTodoItem, isDelegatingTodo } = useDelegateTodo();
 
@@ -106,6 +106,29 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
         selectedDate,
         currentUser,
       });
+    }
+  };
+
+  const handleRepeatTodo = async () => {
+    if (!selectedRepeatDate) return;
+
+    const newDate = dateCustomFormatting(selectedRepeatDate);
+
+    try {
+      await repeatTodoItem({
+        todoDetails: data,
+        newDate,
+        currentUser,
+      });
+
+      setRepeatDialogOpen(false);
+      setSelectedRepeatDate(undefined);
+
+      if (isGlobalSearch) {
+        await updateClickedTodoItem();
+      }
+    } catch (error) {
+      console.error("Error during todo repeat:", error);
     }
   };
 
@@ -377,19 +400,19 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                       locale={localeMap[currentLanguage]}
                       className="flex justify-center"
                     />
-                    {/* <Button
+                    <Button
                       onClick={handleRepeatTodo}
                       disabled={!selectedRepeatDate || isRepeatingTodo}
                     >
                       {isRepeatingTodo ? (
                         <div className="flex gap-2">
                           <Loader />
-                          Repeating...
+                          {t("todosItemCard.repeating")}
                         </div>
                       ) : (
-                        "Confirm"
+                        t("todosItemCard.confirmRepeat")
                       )}
-                    </Button> */}
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>

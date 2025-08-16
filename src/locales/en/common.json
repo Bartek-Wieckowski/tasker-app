@@ -65,10 +65,15 @@
     "deletingTodosFailed": "Deleting todos failed. Please try again.",
     "updatingTodosFailed": "Updating todos failed. Please try again.",
     "todoUpdated": "Todo updated successfully!",
-    "moveTodoTitle": "Todo moved successfully",
-    "moveTodoDescription": "The todo has been moved to the new date.",
+    "moveTodoTitle": "Todo moved successfully!",
+    "moveTodoDescription": "New date: ",
     "moveTodoFailed": "Failed to move todo",
-    "moveTodoFailedDescription": "Please try again."
+    "moveTodoFailedDescription": "Please try again.",
+    "repeatTodoTitle": "Todo repeated successfully!",
+    "repeatTodoDescription": "New date: ",
+    "repeatTodoFailed": "Failed to repeat todo",
+    "repeatTodoFailedDescription": "Please try again.",
+    "repeatTodoDescriptionImage": "and has image"
   },
   "todos": {
     "title": "Tasks",
@@ -87,6 +92,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "repeating": "Repeating...",
     "yes": "Yes",
     "no": "No",
     "search": "Search",
@@ -141,15 +147,17 @@
     "moveTodoDate": "Choose date to move todo",
     "repeatTodoDate": "Choose date to repeat todo",
     "confirmMove": "Confirm Move",
+    "confirmRepeat": "Confirm Repeat",
     "options": {
       "details": "Details",
       "edit": "Edit",
       "delete": "Delete",
       "deleting": "Deleting todo...",
-      "moving": "Moving...",
       "moreActionsText": "More actions ?",
+      "moving": "Moving...",
       "move": "Move",
-      "repeat": "Repeat"
+      "repeat": "Repeat",
+      "repeating": "Repeating..."
     }
   },
   "todosGlobalSearch": {
@@ -160,7 +168,7 @@
     "errorText": "Item don't exist!",
     "createTodo": "Todo created",
     "updateTodo": "Todo updated",
-    "currentTodoDate": "Current date todo",
+    "currentTodoDate": "Todo assigned on date",
     "todoStatus": "Todo status",
     "todoTitle": "Todo title",
     "todoMoreContent": "Todo more content"
