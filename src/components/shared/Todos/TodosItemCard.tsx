@@ -175,28 +175,6 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
     return "";
   };
 
-  //   const handleRepeatTodo = async () => {
-  //     if (!selectedRepeatDate) return;
-
-  //     const formattedDate = dateCustomFormatting(selectedRepeatDate);
-
-  //     try {
-  //     //   await repeatTodoItem({
-  //     //     todoDetails: data,
-  //     //     newDate: formattedDate,
-  //     //     currentUser,
-  //     //   });
-  //       setRepeatDialogOpen(false);
-  //       setSelectedRepeatDate(undefined);
-  //     } catch (error) {
-  //       toast({
-  //         title: "Failed to repeat todo",
-  //         description: "Please try again.",
-  //         variant: "destructive",
-  //       });
-  //     }
-  //   };
-
   const handleMoveTodo = async () => {
     if (!selectedMoveDate) return;
 
@@ -306,7 +284,6 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                     action="Update"
                     singleTodoId={data.id}
                     onCloseDialog={() => setDialogOpen(false)}
-                    globalSearchItemDate={data.todo_date}
                     onUpdateSuccess={
                       isGlobalSearch ? updateClickedTodoItem : undefined
                     }
