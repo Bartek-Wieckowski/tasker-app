@@ -166,7 +166,7 @@ const TodoForm = ({
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage data-testid="todo-form-message" />
               </FormItem>
             )}
           />

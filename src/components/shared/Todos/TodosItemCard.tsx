@@ -253,6 +253,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
         {data.image_url && (
           <Image
             data-testid="todo-item-has-image"
+            data-image-url={data.image_url}
             className="absolute -right-6 -top-1 text-slate-400 w-[12px] h-[12px] cursor-zoom-in"
             onClick={() => setOpenLightBoxImage(true)}
           />
@@ -294,7 +295,11 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 </DialogContent>
               </Dialog>
 
-              <Button variant="destructive" onClick={handleDeleteClick}>
+              <Button
+                data-testid="delete-todo-button"
+                variant="destructive"
+                onClick={handleDeleteClick}
+              >
                 {isDeletingItemTodo ? (
                   <div className="flex gap-2">
                     <Loader />
@@ -384,11 +389,12 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                     <Button
                       onClick={handleRepeatTodo}
                       disabled={!selectedRepeatDate || isRepeatingTodo}
+                      data-testid="repeat-todo-button"
                     >
                       {isRepeatingTodo ? (
                         <div className="flex gap-2">
                           <Loader />
-                          {t("todosItemCard.repeating")}
+                          {t("todosItemCard.options.repeating")}
                         </div>
                       ) : (
                         t("todosItemCard.confirmRepeat")

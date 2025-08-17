@@ -1,5 +1,5 @@
-import Lightbox, { SlideImage } from 'yet-another-react-lightbox';
-import 'yet-another-react-lightbox/styles.css';
+import Lightbox, { SlideImage } from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
 type LightboxImageProps = {
   open: boolean;

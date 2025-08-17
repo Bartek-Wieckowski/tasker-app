@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import { constants } from "buffer";
 import { defineConfig } from "cypress";
 
 export default defineConfig({

@@ -64,6 +64,13 @@ declare global {
         targetMonth: number,
         targetYear: number
       ): Chainable<void>;
+      repeatTodo(
+        todoText: string,
+        targetDay: number,
+        targetMonth: number,
+        targetYear: number,
+        currentDate: Date
+      ): Chainable<void>;
     }
   }
 }
@@ -200,5 +207,28 @@ Cypress.Commands.add("navigateToDate", (targetDay, targetMonth, targetYear) => {
 
   cy.get(`[role="gridcell"]`).contains(targetDay).click({ force: true });
 });
+
+Cypress.Commands.add(
+  "repeatTodo",
+  (todoText, targetDay, targetMonth, targetYear, currentDate) => {
+    cy.contains(todoText)
+      .closest('div[class*="todo-item-card"]')
+      .find('[data-testid="popover-trigger"]')
+      .click();
+
+    cy.contains("button", /repeat/i).click();
+
+    if (
+      targetMonth > currentDate.getMonth() + 1 ||
+      targetYear > currentDate.getFullYear()
+    ) {
+      cy.get('[role="button"][name="next-month"]').click();
+    }
+
+    cy.get(`[role="gridcell"]`).contains(targetDay).click();
+
+    cy.get('[data-testid="repeat-todo-button"]').click();
+  }
+);
 
 export {};
