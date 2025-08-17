@@ -43,6 +43,7 @@ export function DatePicker() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          data-testid="date-picker-button"
           variant={"outline"}
           className={cn(
             "w-full justify-center text-left font-normal",

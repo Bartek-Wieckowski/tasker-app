@@ -40,6 +40,7 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
               src={fileUrl}
               alt="Uploaded Image"
               className="h-[30px] w-[30px] rounded-[24px]"
+              data-testid="image-preview"
             />
           </div>
         </>

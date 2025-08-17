@@ -22,6 +22,7 @@ const TodosAdd = () => {
           variant="outline"
           size="icon"
           className="border-none sm:border-solid"
+          data-testid="add-todo-button"
         >
           <PlusCircle className="h-4 w-4" />
         </Button>

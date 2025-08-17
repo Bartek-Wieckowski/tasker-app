@@ -213,7 +213,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
 
   return (
     <div
-      className={`flex justify-between border border-stone-200 rounded-lg mb-3 p-3 ${shortTimeToFinishTask(
+      className={`todo-item-card flex justify-between border border-stone-200 rounded-lg mb-3 p-3 ${shortTimeToFinishTask(
         isGlobalSearch ? (data.todo_date as string) : selectedDate,
         data.is_completed
       )}`}
@@ -221,6 +221,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
       <div className="flex flex-col gap-1 relative">
         <div className="flex items-center space-x-2 w-full">
           <Checkbox
+            data-testid="checkbox-to-change-status-todo"
             id={data.id}
             checked={data.is_completed}
             onClick={handleCheckboxClick}
@@ -231,6 +232,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
           <label
             htmlFor={data.id}
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            data-testid="label-to-change-status-todo"
             onClick={handleCheckboxClick}
           >
             <div className="flex items-center gap-2">
@@ -250,6 +252,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
         </small>
         {data.image_url && (
           <Image
+            data-testid="todo-item-has-image"
             className="absolute -right-6 -top-1 text-slate-400 w-[12px] h-[12px] cursor-zoom-in"
             onClick={() => setOpenLightBoxImage(true)}
           />
@@ -336,6 +339,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                     <Button
                       onClick={handleMoveTodo}
                       disabled={!selectedMoveDate || isMovingTodo}
+                      data-testid="move-todo-button"
                     >
                       {isMovingTodo ? (
                         <div className="flex gap-2">
