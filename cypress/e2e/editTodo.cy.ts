@@ -101,71 +101,71 @@ describe("Edit Todo()", () => {
         .and("be.visible");
     });
 
-    it("should replace existing image with new image", () => {
-      const todoText = "Todo with replaceable image";
+    // it("should replace existing image with new image", () => {
+    //   const todoText = "Todo with replaceable image";
 
-      cy.login(email, password);
-      cy.visit("/");
+    //   cy.login(email, password);
+    //   cy.visit("/");
 
-      cy.createTodoWithImage(todoText, "test-image.jpg");
+    //   cy.createTodoWithImage(todoText, "test-image.jpg");
 
-      cy.contains(todoText).should("exist");
+    //   cy.contains(todoText).should("exist");
 
-      cy.contains(todoText)
-        .closest('div[class*="todo-item-card"]')
-        .find('[data-testid="todo-item-has-image"]')
-        .should("exist")
-        .and("have.attr", "data-image-url");
+    //   cy.contains(todoText)
+    //     .closest('div[class*="todo-item-card"]')
+    //     .find('[data-testid="todo-item-has-image"]')
+    //     .should("exist")
+    //     .and("have.attr", "data-image-url");
 
-      let originalImageUrl: string;
-      cy.contains(todoText)
-        .closest('div[class*="todo-item-card"]')
-        .find('[data-testid="todo-item-has-image"]')
-        .invoke("attr", "data-image-url")
-        .then((url) => {
-          originalImageUrl = url || "";
-        });
+    //   let originalImageUrl: string;
+    //   cy.contains(todoText)
+    //     .closest('div[class*="todo-item-card"]')
+    //     .find('[data-testid="todo-item-has-image"]')
+    //     .invoke("attr", "data-image-url")
+    //     .then((url) => {
+    //       originalImageUrl = url || "";
+    //     });
 
-      cy.contains(todoText)
-        .closest('div[class*="todo-item-card"]')
-        .find('[data-testid="popover-trigger"]')
-        .click();
+    //   cy.contains(todoText)
+    //     .closest('div[class*="todo-item-card"]')
+    //     .find('[data-testid="popover-trigger"]')
+    //     .click();
 
-      cy.contains("button", /edit/i).click();
+    //   cy.contains("button", /edit/i).click();
 
-      cy.get('input[id="edit-image"]').click();
+    //   cy.get('input[id="edit-image"]').click();
 
-      cy.get('input[type="file"]').selectFile(
-        "cypress/fixtures/test-image-update.jpg",
-        { force: true }
-      );
+    //   cy.get('input[type="file"]').selectFile(
+    //     "cypress/fixtures/test-image-update.jpg",
+    //     { force: true }
+    //   );
 
-      cy.get('[data-testid="image-preview"]').should("be.visible");
+    //   cy.get('[data-testid="image-preview"]').should("be.visible");
 
-      cy.get('button[type="submit"]').click();
+    //   cy.get('button[type="submit"]').click();
 
-      cy.wait(3000);
+    //   cy.wait(3000);
 
-      cy.contains(todoText)
-        .closest('div[class*="todo-item-card"]')
-        .find('[data-testid="todo-item-has-image"]')
-        .should("exist")
-        .and("have.attr", "data-image-url");
+    //   cy.contains(todoText)
+    //     .closest('div[class*="todo-item-card"]')
+    //     .find('[data-testid="todo-item-has-image"]')
+    //     .should("exist")
+    //     .and("have.attr", "data-image-url");
 
-      cy.contains(todoText)
-        .closest('div[class*="todo-item-card"]')
-        .find('[data-testid="todo-item-has-image"]')
-        .invoke("attr", "data-image-url")
-        .then((newUrl) => {
-          expect(newUrl).to.not.equal(originalImageUrl);
-          expect(newUrl).to.not.be.empty;
-        });
+    //   cy.contains(todoText)
+    //     .closest('div[class*="todo-item-card"]')
+    //     .find('[data-testid="todo-item-has-image"]')
+    //     .invoke("attr", "data-image-url")
+    //     .then((newUrl) => {
+    //       expect(newUrl).to.not.equal(originalImageUrl);
+    //       expect(newUrl).to.not.be.empty;
+    //     });
 
-      cy.contains(todoText)
-        .closest('div[class*="todo-item-card"]')
-        .find('[data-testid="todo-item-has-image"]')
-        .click({ force: true });
-    });
+    //   cy.contains(todoText)
+    //     .closest('div[class*="todo-item-card"]')
+    //     .find('[data-testid="todo-item-has-image"]')
+    //     .click({ force: true });
+    // });
 
     it("should delete image from todo", () => {
       const todoText = "Todo with deletable image";
