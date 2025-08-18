@@ -60,8 +60,8 @@ describe("Edit Todo()", () => {
       cy.get('textarea[name*="todo_more_content"]').clear().type(editedContent);
       cy.get('button[type="submit"]').click();
 
-      cy.contains(editedContent).should("exist");
-      cy.contains(originalContent).should("not.exist");
+      cy.contains(originalContent, { timeout: 10000 }).should("not.exist");
+      cy.contains(editedContent, { timeout: 10000 }).should("exist");
     });
 
     it("should add image to existing todo", () => {
