@@ -29,7 +29,7 @@ const Todopage = () => {
   }
 
   const createAtDate = convertTimestampToDate(todo?.created_at);
-  const updateAtDate = convertTimestampToDate(todo?.updated_at);
+  const updateAtDate = convertTimestampToDate(todo?.updated_at as string);
   const dataImgToLightBoxImage = [{ src: todo?.image_url as string }];
 
   return (
