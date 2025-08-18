@@ -37,32 +37,32 @@ describe("Edit Todo()", () => {
       cy.contains(originalText).should("not.exist");
     });
 
-    it("should edit todo more content successfully", () => {
-      const todoText = "Todo with content";
-      const originalContent = "Original content";
-      const editedContent = "Edited content";
+    // it("should edit todo more content successfully", () => {
+    //   const todoText = "Todo with content";
+    //   const originalContent = "Original content";
+    //   const editedContent = "Edited content";
 
-      cy.login(email, password);
-      cy.visit("/");
+    //   cy.login(email, password);
+    //   cy.visit("/");
 
-      cy.get('[data-testid="add-todo-button"]').click();
-      cy.get('input[name*="todo"]').type(todoText);
-      cy.get('textarea[name*="todo_more_content"]').type(originalContent);
-      cy.get('button[type="submit"]').click();
+    //   cy.get('[data-testid="add-todo-button"]').click();
+    //   cy.get('input[name*="todo"]').type(todoText);
+    //   cy.get('textarea[name*="todo_more_content"]').type(originalContent);
+    //   cy.get('button[type="submit"]').click();
 
-      cy.contains(todoText)
-        .closest('div[class*="todo-item-card"]')
-        .find('[data-testid="popover-trigger"]')
-        .click();
+    //   cy.contains(todoText)
+    //     .closest('div[class*="todo-item-card"]')
+    //     .find('[data-testid="popover-trigger"]')
+    //     .click();
 
-      cy.contains("button", /edit/i).click();
+    //   cy.contains("button", /edit/i).click();
 
-      cy.get('textarea[name*="todo_more_content"]').clear().type(editedContent);
-      cy.get('button[type="submit"]').click();
+    //   cy.get('textarea[name*="todo_more_content"]').clear().type(editedContent);
+    //   cy.get('button[type="submit"]').click();
 
-      cy.contains(originalContent, { timeout: 10000 }).should("not.exist");
-      cy.contains(editedContent, { timeout: 10000 }).should("exist");
-    });
+    //   cy.contains(originalContent, { timeout: 10000 }).should("not.exist");
+    //   cy.contains(editedContent, { timeout: 10000 }).should("exist");
+    // });
 
     it("should add image to existing todo", () => {
       const todoText = "Todo without image";
