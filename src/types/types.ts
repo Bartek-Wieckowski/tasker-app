@@ -37,12 +37,12 @@ export type UpdateUserPassword = {
   password: string;
 };
 
-export type TodoRow = Database["public"]["Tables"]["todos"]["Row"]; // reprezentacja rekordu w bazie
-export type TodoInsert = Database["public"]["Tables"]["todos"]["Insert"]; // struktura potrzebna do insert
+export type TodoRow = Database["public"]["Tables"]["todos"]["Row"];
+export type TodoInsert = Database["public"]["Tables"]["todos"]["Insert"];
 export type TodoUpdate = Database["public"]["Tables"]["todos"]["Update"];
 
 export type TodoInsertWithFile = TablesInsert<"todos"> & {
-  imageFile?: File; // pole tymczasowe, nie ma go w bazie
+  imageFile?: File;
 };
 
 export type TodoSearchResult = {
@@ -56,57 +56,19 @@ export type TodoUpdateDetails = {
   deleteImage?: boolean;
 };
 
-// Typ dla danych z bazy danych (po pobraniu)
-export type TodoFromDatabase = {
-  id: string;
-  todo: string;
-  todo_more_content: string | null;
-  image_url: string | null; // W bazie to string | null
-  user_id: string;
-  todo_date: string;
-  is_completed: boolean;
-  created_at: string;
-  updated_at: string;
-  original_todo_id: string | null;
-  is_independent_edit: boolean | null;
-  from_delegated: boolean | null;
-};
+export type DelegatedTodoRow =
+  Database["public"]["Tables"]["delegated_todos"]["Row"];
+export type DelegatedTodoInsert =
+  Database["public"]["Tables"]["delegated_todos"]["Insert"];
+export type DelegatedTodoUpdate =
+  Database["public"]["Tables"]["delegated_todos"]["Update"];
 
-// Typ dla danych w formularzu (przed wysłaniem)
-export type TodoForForm = {
-  todo: string;
-  todo_more_content?: string;
-  imageFile?: File; // Tylko w formularzu
-  user_id: string;
-  todo_date: string;
-  is_completed: boolean;
-};
+export type GlobalTodoRow = Database["public"]["Tables"]["global_todos"]["Row"];
+export type GlobalTodoInsert =
+  Database["public"]["Tables"]["global_todos"]["Insert"];
+export type GlobalTodoUpdate =
+  Database["public"]["Tables"]["global_todos"]["Update"];
 
-// export type TodoItem = {
-//   todo: string;
-//   todoMoreContent?: string;
-//   imageUrl?: File;
-// };
-
-// Typ bazowy dla kompatybilności wstecznej - używaj TodoFromDatabase zamiast tego
-export type TodoItemBase = {
-  todo: string;
-  todoMoreContent?: string;
-  imageUrl: string | null; // Zmienione na string | null dla kompatybilności z bazą
-  id: string;
-  isCompleted: boolean;
-  createdAt: Date | { seconds: number; nanoseconds: number };
-  updatedAt?: Date | { seconds: number; nanoseconds: number };
-  originalTodoId?: string;
-  isIndependentEdit?: boolean;
-  fromDelegated?: boolean;
-};
-
-export type TodoItemDetails = TodoItemBase;
-export type TodoItemDetailsGlobalSearch = TodoItemBase & {
-  todoDate?: string;
-  todoSearchValue?: string;
-};
 export type SearchGlobalContextType = {
   searchValueGlobal: string;
   setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;

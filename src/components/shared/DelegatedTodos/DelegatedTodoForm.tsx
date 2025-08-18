@@ -1,6 +1,5 @@
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -12,29 +11,37 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/shared/Loader";
-
-const formSchema = z.object({
-  todo: z.string().min(1, "Task name is required"),
-});
-
-type FormData = z.infer<typeof formSchema>;
+import { useTranslation } from "react-i18next";
+import {
+  delegatedTodoFormSchema,
+  DelegatedTodoFormValues,
+} from "@/validators/validators";
 
 type DelegatedTodoFormProps = {
-  onSubmit: (data: FormData, form: UseFormReturn<FormData>) => void;
+  onSubmit: (
+    data: DelegatedTodoFormValues,
+    form: UseFormReturn<DelegatedTodoFormValues>
+  ) => void;
   isLoading: boolean;
-  type: 'add' | 'edit';
-  defaultValues?: FormData;
-}
+  type: "add" | "edit";
+  defaultValues?: DelegatedTodoFormValues;
+};
 
-export function DelegatedTodoForm({ onSubmit, isLoading, type, defaultValues }: DelegatedTodoFormProps) {
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+export function DelegatedTodoForm({
+  onSubmit,
+  isLoading,
+  type,
+  defaultValues,
+}: DelegatedTodoFormProps) {
+  const { t } = useTranslation();
+  const form = useForm<DelegatedTodoFormValues>({
+    resolver: zodResolver(delegatedTodoFormSchema(t)),
     defaultValues: defaultValues || {
       todo: "",
     },
   });
 
-  const handleSubmit = (data: FormData): void => {
+  const handleSubmit = (data: DelegatedTodoFormValues): void => {
     onSubmit(data, form);
   };
 
@@ -47,12 +54,18 @@ export function DelegatedTodoForm({ onSubmit, isLoading, type, defaultValues }: 
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {type === 'add' ? 'New delegated task name' : 'Edit delegated task name'}
+                {type === "add"
+                  ? t("delegatedTodoForm.newDelegatedTaskName")
+                  : t("delegatedTodoForm.editDelegatedTaskName")}
               </FormLabel>
               <FormControl>
-                <Input 
-                  placeholder={type === 'add' ? "Write your task name for delegated list" : "Edit your delegated todo"} 
-                  {...field} 
+                <Input
+                  placeholder={
+                    type === "add"
+                      ? t("delegatedTodoForm.writeYourTaskNameForDelegatedList")
+                      : t("delegatedTodoForm.editYourDelegatedTodo")
+                  }
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -63,10 +76,12 @@ export function DelegatedTodoForm({ onSubmit, isLoading, type, defaultValues }: 
           {isLoading ? (
             <div className="flex gap-2">
               <Loader />
-              {type === 'add' ? 'Adding...' : 'Updating...'}
+              {type === "add" ? t("common.adding") : t("common.updating")}
             </div>
+          ) : type === "add" ? (
+            t("delegatedTodoForm.addDelegatedTask")
           ) : (
-            type === 'add' ? 'Add delegated task' : 'Update todo'
+            t("delegatedTodoForm.updateTodo")
           )}
         </Button>
       </form>

@@ -31,7 +31,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useRepeatTodo } from "@/api/mutations/todos/useRepeatTodo";
 import { useMoveTodo } from "@/api/mutations/todos/useMoveTodo";
 import { toast } from "@/components/ui/use-toast";
-// import { useDelegateTodo } from "@/api/mutations/todos/useDelegateTodo";
+import { useDelegateTodo } from "@/api/mutations/todos/useDelegateTodo";
 import { useTranslation } from "react-i18next";
 import { useUpdateTodoStatus } from "@/api/mutations/todos/useUpdateTodoStatus";
 import { searchTodos } from "@/api/apiTodos";
@@ -58,7 +58,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
   const { currentLanguage } = useLanguage();
   const { repeatTodoItem, isRepeatingTodo } = useRepeatTodo();
   const { moveTodoItem, isMovingTodo } = useMoveTodo();
-  //   const { delegateTodoItem, isDelegatingTodo } = useDelegateTodo();
+  const { delegateTodoItem, isDelegatingTodo } = useDelegateTodo();
 
   // Use data.image_url for lightbox - this will be updated by global search refresh
   const dataImgToLightBoxImage = [{ src: data.image_url || "" }];
@@ -403,13 +403,13 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                   </div>
                 </DialogContent>
               </Dialog>
-              {/* <Button
+              <Button
                 variant="outline"
                 onClick={() => {
                   delegateTodoItem({
                     todoId: data.id,
                     selectedDate: isGlobalSearch
-                      ? (data.todoDate as string)
+                      ? (data.todo_date as string)
                       : selectedDate,
                     currentUser,
                   });
@@ -419,12 +419,12 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 {isDelegatingTodo ? (
                   <div className="flex gap-2">
                     <Loader />
-                    Delegating...
+                    {t("todosItemCard.options.delegating")}
                   </div>
                 ) : (
-                  "Delegate"
+                  t("todosItemCard.options.delegate")
                 )}
-              </Button> */}
+              </Button>
             </div>
           </div>
         </PopoverContent>

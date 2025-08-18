@@ -84,6 +84,29 @@ Deno.serve(async (req) => {
         console.warn("Failed to delete user todos:", todosError);
       }
 
+      // Delete all delegated todos for the user
+      const { error: delegatedTodosError } = await supabase
+        .from("delegated_todos")
+        .delete()
+        .eq("user_id", user_id);
+
+      if (delegatedTodosError) {
+        console.warn(
+          "Failed to delete user delegated todos:",
+          delegatedTodosError
+        );
+      }
+
+      // Delete all global todos for the user
+      const { error: globalTodosError } = await supabase
+        .from("global_todos")
+        .delete()
+        .eq("user_id", user_id);
+
+      if (globalTodosError) {
+        console.warn("Failed to delete user global todos:", globalTodosError);
+      }
+
       // Deactivate user in database
       const { error: deactivateError } = await supabase.rpc("deactivate_user", {
         p_user_id: user_id,

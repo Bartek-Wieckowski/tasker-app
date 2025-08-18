@@ -43,6 +43,7 @@ jobs:
       - name: Create storage folders
         run: |
           mkdir -p supabase/storage/user-avatars
+          mkdir -p supabase/storage/todo-images
           ls -la supabase/storage/
 
       - name: Start Supabase local emulator

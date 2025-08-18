@@ -5,6 +5,7 @@ import {
   User,
   TodoUpdateDetails,
   TodoRow,
+  DelegatedTodoInsert,
 } from "@/types/types";
 
 export async function getUserTodos(accountId: string) {
@@ -718,4 +719,95 @@ export async function handleImageDeletion(
       console.log("Image kept - other todos still reference it:", imageUrl);
     }
   }
+}
+
+export async function delegateTodo(
+  todoId: string,
+  selectedDate: string,
+  currentUser: User
+) {
+  const { data: todoToDelegate, error: getTodoError } = await supabase
+    .from("todos")
+    .select("*")
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate)
+    .single();
+
+  if (getTodoError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: getTodoError.code,
+        message: getTodoError.message,
+      });
+    }
+    throw { code: "GET_TODO_ERROR" };
+  }
+
+  if (!todoToDelegate) {
+    throw { code: "TODO_NOT_FOUND" };
+  }
+
+  const delegatedTodoData: DelegatedTodoInsert = {
+    created_at: todoToDelegate.created_at,
+    updated_at: todoToDelegate.updated_at,
+    user_id: currentUser.accountId,
+    todo: todoToDelegate.todo,
+    todo_more_content: todoToDelegate.todo_more_content,
+    image_url: todoToDelegate.image_url,
+    is_completed: todoToDelegate.is_completed,
+    original_todo_id: todoToDelegate.original_todo_id || todoToDelegate.id,
+    delegated_by: currentUser.accountId,
+    delegated_at: new Date().toISOString(),
+    from_delegated: todoToDelegate.from_delegated || false,
+  };
+
+  const { data: delegatedTodo, error: insertError } = await supabase
+    .from("delegated_todos")
+    .insert(delegatedTodoData)
+    .select()
+    .single();
+
+  if (insertError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: insertError.code,
+        message: insertError.message,
+      });
+    }
+    throw { code: "CREATE_DELEGATED_TODO_ERROR" };
+  }
+
+  const { error: deleteError } = await supabase
+    .from("todos")
+    .delete()
+    .eq("id", todoId)
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate);
+
+  if (deleteError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: deleteError.code,
+        message: deleteError.message,
+      });
+    }
+    await supabase
+      .from("delegated_todos")
+      .delete()
+      .eq("id", delegatedTodo.id)
+      .eq("user_id", currentUser.accountId);
+
+    throw { code: "DELETE_TODO_ERROR" };
+  }
+
+  if (import.meta.env.DEV) {
+    console.log("Todo delegated successfully:", {
+      originalId: todoId,
+      delegatedId: delegatedTodo.id,
+      hasImage: !!todoToDelegate.image_url,
+    });
+  }
+
+  return delegatedTodo;
 }

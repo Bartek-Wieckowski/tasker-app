@@ -76,7 +76,25 @@
     "repeatTodoDescription": "Nowa data: ",
     "repeatTodoFailed": "Nie udało się powtórzyć zadania",
     "repeatTodoFailedDescription": "Spróbuj ponownie.",
-    "repeatTodoDescriptionImage": "i posiada zdjęcie"
+    "repeatTodoDescriptionImage": "i posiada zdjęcie",
+    "delegateTodoSuccess": "Zadanie zostało przekazane!",
+    "delegateTodoFailed": "Przekazywanie zadania nie powiodło się. Spróbuj ponownie.",
+    "globalTodoUpdated": "Globalne zadanie zostało zaktualizowane!",
+    "globalTodoUpdatedFailed": "Aktualizacja globalnego zadania nie powiodła się. Spróbuj ponownie.",
+    "globalTodoDeleted": "Globalne zadanie zostało usunięte!",
+    "globalTodoDeletedFailed": "Usuwanie globalnego zadania nie powiodło się. Spróbuj ponownie.",
+    "globalTodoAssignedToSelectedDate": "Globalne zadanie zostało przypisane do wybranej daty!",
+    "globalTodoAssignedToSelectedDateFailed": "Przypisywanie globalnego zadania do wybranej daty nie powiodło się. Spróbuj ponownie.",
+    "globalTodoAdded": "Globalne zadanie zostało dodane!",
+    "globalTodoAddedFailed": "Dodawanie globalnego zadania nie powiodło się. Spróbuj ponownie.",
+    "delegatedTodoAdded": "Delegowane zadanie zostało dodane!",
+    "delegatedTodoAddedFailed": "Dodawanie delegowanego zadania nie powiodło się. Spróbuj ponownie.",
+    "delegatedTodoAssignedToSelectedDate": "Delegowane zadanie zostało przypisane do wybranej daty!",
+    "delegatedTodoAssignedToSelectedDateFailed": "Przypisywanie delegowanego zadania do wybranej daty nie powiodło się. Spróbuj ponownie.",
+    "delegatedTodoDeleted": "Delegowane zadanie zostało usunięte!",
+    "delegatedTodoDeletedFailed": "Usuwanie delegowanego zadania nie powiodło się. Spróbuj ponownie.",
+    "delegatedTodoUpdated": "Delegowane zadanie zostało zaktualizowane!",
+    "delegatedTodoUpdatedFailed": "Aktualizacja delegowanego zadania nie powiodła się. Spróbuj ponownie."
   },
   "todos": {
     "title": "Zadania",
@@ -90,6 +108,23 @@
     "createTask": "Utwórz nowe zadanie",
     "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
     "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
+  },
+  "common": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "confirm": "Potwierdź",
+    "repeating": "Powtarzanie...",
+    "yes": "Tak",
+    "no": "Nie",
+    "search": "Szukaj",
+    "filter": "Filtruj",
+    "date": "Data",
+    "language": "Język",
+    "delete": "Usuń",
+    "deleting": "Usuwanie...",
+    "edit": "Edytuj",
+    "adding": "Dodawanie...",
+    "updating": "Aktualizowanie..."
   },
   "datePicker": {
     "pickDate": "Wybierz datę"
@@ -148,7 +183,9 @@
       "moving": "Przenoszenie...",
       "move": "Przenieś",
       "repeat": "Powtórz",
-      "repeating": "Powtarzanie..."
+      "repeating": "Powtarzanie...",
+      "delegate": "Deleguj",
+      "delegating": "Delegowanie..."
     }
   },
   "todosGlobalSearch": {
@@ -163,5 +200,42 @@
     "todoStatus": "Status zadania",
     "todoTitle": "Tytuł zadania",
     "todoMoreContent": "Dodatkowe informacje"
+  },
+  "delegatedTodos": {
+    "title": "Delegowane zadania",
+    "description": "Dodaj zadania do delegowanej listy, aby móc przypisać konkretną datę do zadania, gdy tylko będziesz potrzebować",
+    "add": "Dodaj delegowane zadanie",
+    "edit": "Edytuj delegowane zadanie",
+    "delete": "Usuń delegowane zadanie",
+    "assignToDay": "Przypisz do dnia",
+    "assignToDayTitle": "Przypisz zadanie do dnia",
+    "assignToDayDescription": "Wybierz datę, aby przypisać zadanie"
+  },
+  "delegatedTodoForm": {
+    "todoTaskIsRequired": "Nazwa zadania jest wymagana",
+    "newDelegatedTaskName": "Nowa nazwa delegowanego zadania",
+    "editDelegatedTaskName": "Edytuj nazwę delegowanego zadania",
+    "writeYourTaskNameForDelegatedList": "Wpisz nazwę zadania do delegowanej listy",
+    "editYourDelegatedTodo": "Edytuj swoje delegowane zadanie",
+    "addDelegatedTask": "Dodaj delegowane zadanie",
+    "updateTodo": "Zaktualizuj zadanie"
+  },
+  "globalTodos": {
+    "title": "Globalne zadania",
+    "description": "Dodaj zadania do globalnej listy, aby móc przypisać konkretną datę do zadania, gdy tylko będziesz potrzebować",
+    "assignToDay": "Przypisz do dnia",
+    "assignToDayTitle": "Przypisz zadanie do dnia",
+    "assignToDayDescription": "Wybierz datę, aby przypisać zadanie",
+    "edit": "Edytuj",
+    "delete": "Usuń"
+  },
+  "globalTodoForm": {
+    "todoTaskIsRequired": "Nazwa zadania jest wymagana",
+    "newGlobalTaskName": "Nowa nazwa globalnego zadania",
+    "editGlobalTaskName": "Edytuj nazwę globalnego zadania",
+    "writeYourTaskNameForGlobalList": "Wpisz nazwę zadania do globalnej listy",
+    "editYourGlobalTodo": "Edytuj swoje globalne zadanie",
+    "addGlobalTask": "Dodaj globalne zadanie",
+    "updateTodo": "Zaktualizuj zadanie"
   }
 }

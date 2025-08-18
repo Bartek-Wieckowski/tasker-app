@@ -1,168 +1,220 @@
-// import { collection, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
-// import { db } from '@/lib/firebase.config';
-// import { TodoItemBase } from '@/types/types';
-// import { getFirestoreDocRef } from '@/lib/firebaseHelpers';
-// import { format } from 'date-fns';
-// import {
-//   TABLE_NAME_taskerGlobalTodos,
-//   TABLE_NAME_taskerUserTodos,
-// } from '@/lib/constants';
+import { supabase } from "@/lib/supabaseClient";
+import { handleImageDeletion } from "./apiTodos";
+import { TodoInsert } from "@/types/types";
+import { dateCustomFormatting } from "@/lib/helpers";
 
-// export async function addGlobalTodo(todo: { todo: string }, userId: string) {
-//   const userGlobalTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerGlobalTodos),
-//     userId
-//   );
-//   const docSnapshot = await getDoc(userGlobalTodosRef);
+export async function getGlobalTodos(userId: string) {
+  const { data, error } = await supabase
+    .from("global_todos")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
-//   const newTodo: Omit<TodoItemBase, 'imageUrl'> & { imageUrl: string } = {
-//     id: crypto.randomUUID(),
-//     todo: todo.todo,
-//     isCompleted: false,
-//     createdAt: new Date(),
-//     imageUrl: '',
-//     todoMoreContent: '',
-//   };
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "GET_GLOBAL_TODOS_ERROR" };
+  }
 
-//   if (docSnapshot.exists()) {
-//     await setDoc(
-//       userGlobalTodosRef,
-//       {
-//         userGlobalTodos: [...docSnapshot.data().userGlobalTodos, newTodo],
-//       },
-//       { merge: true }
-//     );
-//   } else {
-//     await setDoc(userGlobalTodosRef, {
-//       userGlobalTodos: [newTodo],
-//     });
-//   }
+  return data;
+}
 
-//   return newTodo;
-// }
+export async function addGlobalTodo(todo: { todo: string }, userId: string) {
+  const { data, error } = await supabase
+    .from("global_todos")
+    .insert({
+      todo: todo.todo,
+      user_id: userId,
+    })
+    .select()
+    .single();
 
-// export async function getGlobalTodos(userId: string) {
-//   const userGlobalTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerGlobalTodos),
-//     userId
-//   );
-//   const docSnapshot = await getDoc(userGlobalTodosRef);
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "ADD_GLOBAL_TODO_ERROR" };
+  } else {
+    const { error: updateOriginalTodoIdError } = await supabase
+      .from("global_todos")
+      .update({ original_todo_id: data.id })
+      .eq("id", data.id);
 
-//   if (!docSnapshot.exists()) {
-//     return [];
-//   }
+    if (updateOriginalTodoIdError) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: updateOriginalTodoIdError.code,
+          message: updateOriginalTodoIdError.message,
+        });
+      }
+      throw { code: "UPDATE_GLOBAL_TODO_ERROR" };
+    }
+  }
 
-//   return docSnapshot.data().userGlobalTodos;
-// }
+  return data;
+}
 
-// export async function assignGlobalTodoToDay(
-//   globalTodoId: string,
-//   date: Date,
-//   userId: string
-// ) {
-//   const userGlobalTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerGlobalTodos),
-//     userId
-//   );
-//   const docSnapshot = await getDoc(userGlobalTodosRef);
+export async function assignGlobalTodoToDay(
+  globalTodoId: string,
+  todoDate: Date,
+  userId: string
+) {
+  const { data: globalTodo, error: getTodoError } = await supabase
+    .from("global_todos")
+    .select("*")
+    .eq("id", globalTodoId)
+    .eq("user_id", userId)
+    .single();
 
-//   if (!docSnapshot.exists()) return;
+  if (getTodoError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: getTodoError.code,
+        message: getTodoError.message,
+      });
+    }
+    throw { code: "GET_GLOBAL_TODO_ERROR" };
+  }
 
-//   const globalTodos = docSnapshot.data().userGlobalTodos;
-//   const globalTodo = globalTodos.find(
-//     (todo: TodoItemBase) => todo.id === globalTodoId
-//   );
+  if (!globalTodo) {
+    throw { code: "GLOBAL_TODO_NOT_FOUND" };
+  }
 
-//   if (!globalTodo) return;
+  const todoData: TodoInsert = {
+    user_id: userId,
+    todo: globalTodo.todo,
+    todo_more_content: globalTodo.todo_more_content,
+    image_url: globalTodo.image_url,
+    todo_date: dateCustomFormatting(todoDate),
+    is_completed: globalTodo.is_completed,
+    original_todo_id: globalTodo.original_todo_id || globalTodo.id,
+    is_independent_edit: false,
+    from_delegated: false,
+    created_at: globalTodo.created_at,
+    updated_at: globalTodo.updated_at,
+  };
 
-//   const userTodosRef = getFirestoreDocRef(TABLE_NAME_taskerUserTodos, userId);
-//   const userTodosSnapshot = await getDoc(userTodosRef);
+  const { data: newTodo, error: insertError } = await supabase
+    .from("todos")
+    .insert(todoData)
+    .select()
+    .single();
 
-//   const newTodo: Omit<TodoItemBase, 'imageUrl'> & { imageUrl: string } = {
-//     id: crypto.randomUUID(),
-//     todo: globalTodo.todo,
-//     todoMoreContent: globalTodo.todoMoreContent || '',
-//     imageUrl:
-//       typeof globalTodo.imageUrl === 'string' ? globalTodo.imageUrl : '',
-//     isCompleted: false,
-//     createdAt: new Date(),
-//   };
+  if (insertError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: insertError.code,
+        message: insertError.message,
+      });
+    }
+    throw { code: "CREATE_TODO_ERROR" };
+  }
 
-//   const formattedDate = format(date, 'dd-MM-yyyy');
+  const { error: deleteError } = await supabase
+    .from("global_todos")
+    .delete()
+    .eq("id", globalTodoId)
+    .eq("user_id", userId);
 
-//   if (userTodosSnapshot.exists()) {
-//     const userData = userTodosSnapshot.data();
-//     await setDoc(
-//       userTodosRef,
-//       {
-//         ...userData,
-//         [formattedDate]: {
-//           userTodosOfDay: [
-//             ...(userData[formattedDate]?.userTodosOfDay || []),
-//             newTodo,
-//           ],
-//         },
-//       },
-//       { merge: true }
-//     );
-//   } else {
-//     await setDoc(userTodosRef, {
-//       [formattedDate]: {
-//         userTodosOfDay: [newTodo],
-//       },
-//     });
-//   }
+  if (deleteError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: deleteError.code,
+        message: deleteError.message,
+      });
+    }
 
-//   const updatedGlobalTodos = globalTodos.filter(
-//     (todo: TodoItemBase) => todo.id !== globalTodoId
-//   );
-//   if (updatedGlobalTodos.length === 0) {
-//     await deleteDoc(userGlobalTodosRef);
-//   } else {
-//     await setDoc(userGlobalTodosRef, {
-//       userGlobalTodos: updatedGlobalTodos,
-//     });
-//   }
-// }
+    await supabase
+      .from("todos")
+      .delete()
+      .eq("id", newTodo.id)
+      .eq("user_id", userId);
 
-// export async function editGlobalTodo(
-//   todoId: string,
-//   newTodoName: string,
-//   accountId: string
-// ) {
-//   const userGlobalTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerGlobalTodos),
-//     accountId
-//   );
-//   const docSnapshot = await getDoc(userGlobalTodosRef);
+    throw { code: "DELETE_GLOBAL_TODO_ERROR" };
+  }
 
-//   if (!docSnapshot.exists()) return;
+  if (import.meta.env.DEV) {
+    console.log("Global todo assigned to day successfully:", {
+      globalId: globalTodoId,
+      newTodoId: newTodo.id,
+      todoDate,
+      hasImage: !!globalTodo.image_url,
+    });
+  }
 
-//   const globalTodos = docSnapshot.data().userGlobalTodos;
-//   const updatedGlobalTodos = globalTodos.map((todo: TodoItemBase) =>
-//     todo.id === todoId ? { ...todo, todo: newTodoName } : todo
-//   );
+  return newTodo;
+}
 
-//   await setDoc(userGlobalTodosRef, {
-//     userGlobalTodos: updatedGlobalTodos,
-//   });
-// }
+export async function editGlobalTodo(
+  todoId: string,
+  newTodoName: string,
+  accountId: string
+) {
+  const { data, error } = await supabase
+    .from("global_todos")
+    .update({ todo: newTodoName })
+    .eq("id", todoId)
+    .eq("user_id", accountId)
+    .select()
+    .single();
 
-// export async function deleteGlobalTodo(todoId: string, accountId: string) {
-//   const userGlobalTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerGlobalTodos),
-//     accountId
-//   );
-//   const docSnapshot = await getDoc(userGlobalTodosRef);
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "EDIT_GLOBAL_TODO_ERROR" };
+  }
 
-//   if (!docSnapshot.exists()) return;
+  return data;
+}
 
-//   const globalTodos = docSnapshot.data().userGlobalTodos;
-//   const updatedGlobalTodos = globalTodos.filter(
-//     (todo: TodoItemBase) => todo.id !== todoId
-//   );
+export async function deleteGlobalTodo(todoId: string, accountId: string) {
+  const { data: todo, error: getTodoError } = await supabase
+    .from("global_todos")
+    .select("*")
+    .eq("id", todoId)
+    .eq("user_id", accountId)
+    .single();
 
-//   await setDoc(userGlobalTodosRef, {
-//     userGlobalTodos: updatedGlobalTodos,
-//   });
-// }
+  if (getTodoError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: getTodoError.code,
+        message: getTodoError.message,
+      });
+    }
+    throw { code: "GET_GLOBAL_TODO_ERROR" };
+  }
+
+  if (todo?.image_url) {
+    await handleImageDeletion(accountId, todo.image_url, todoId);
+  }
+
+  const { error } = await supabase
+    .from("global_todos")
+    .delete()
+    .eq("id", todoId)
+    .eq("user_id", accountId);
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "DELETE_GLOBAL_TODO_ERROR" };
+  }
+
+  return { success: true };
+}

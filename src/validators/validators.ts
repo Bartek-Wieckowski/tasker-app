@@ -54,6 +54,20 @@ export const todoFormSchema = (t: TFunction) =>
     imageFile: z.optional(z.custom<File>()),
   });
 
+export const delegatedTodoFormSchema = (t: TFunction) =>
+  z.object({
+    todo: z.string().min(2, {
+      message: t("delegatedTodoForm.todoTaskIsRequired"),
+    }),
+  });
+
+export const globalTodoFormSchema = (t: TFunction) =>
+  z.object({
+    todo: z.string().min(2, {
+      message: t("globalTodoForm.todoTaskIsRequired"),
+    }),
+  });
+
 export type RegisterFormValues = z.infer<ReturnType<typeof registerFormSchema>>;
 export type LoginFormValues = z.infer<ReturnType<typeof loginFormSchema>>;
 export type UserSettingsFormInfoValues = z.infer<
@@ -63,3 +77,9 @@ export type UserSettingsFormPasswordValues = z.infer<
   ReturnType<typeof userSettingsFormPasswordSchema>
 >;
 export type TodoFormValues = z.infer<ReturnType<typeof todoFormSchema>>;
+export type DelegatedTodoFormValues = z.infer<
+  ReturnType<typeof delegatedTodoFormSchema>
+>;
+export type GlobalTodoFormValues = z.infer<
+  ReturnType<typeof globalTodoFormSchema>
+>;
