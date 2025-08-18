@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   registerUser,
   getAuthenticatedUser,
@@ -9,76 +9,10 @@ import {
   updateUserSettings,
   updateUserPassword,
 } from "@/api/apiUsers";
-import { supabase } from "@/lib/supabaseClient";
 
-// Define mock type
-type MockSupabase = {
-  auth: {
-    signUp: ReturnType<typeof vi.fn>;
-    getUser: ReturnType<typeof vi.fn>;
-    signOut: ReturnType<typeof vi.fn>;
-    signInWithPassword: ReturnType<typeof vi.fn>;
-    signInWithOAuth: ReturnType<typeof vi.fn>;
-    updateUser: ReturnType<typeof vi.fn>;
-  };
-  functions: {
-    invoke: ReturnType<typeof vi.fn>;
-  };
-  from: ReturnType<typeof vi.fn>;
-  storage: {
-    from: ReturnType<typeof vi.fn>;
-  };
-};
+import { mockSupabase } from "../../setup";
 
-vi.mock("@/lib/supabaseClient", () => {
-  const mockSupabase = {
-    auth: {
-      signUp: vi.fn(),
-      getUser: vi.fn(),
-      signOut: vi.fn(),
-      signInWithPassword: vi.fn(),
-      signInWithOAuth: vi.fn(),
-      updateUser: vi.fn(),
-    },
-    functions: {
-      invoke: vi.fn(),
-    },
-    from: vi.fn(() => ({
-      update: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            select: vi.fn(() => ({
-              single: vi.fn(),
-            })),
-          })),
-        })),
-      })),
-    })),
-    storage: {
-      from: vi.fn(() => ({
-        list: vi.fn(() => ({
-          data: [],
-          error: null,
-        })),
-        getPublicUrl: vi.fn(() => ({
-          data: { publicUrl: null },
-        })),
-      })),
-    },
-  };
-
-  return {
-    supabase: mockSupabase,
-  };
-});
-
-describe("apiUsers - Supabase Functions", () => {
-  const mockSupabase = vi.mocked(supabase) as unknown as MockSupabase;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
+describe("apiUsers", () => {
   describe("registerUser()", () => {
     it("should successfully register a user", async () => {
       const mockUser = {
@@ -380,44 +314,46 @@ describe("apiUsers - Supabase Functions", () => {
         error: null,
       });
 
-      // Mock auth update (email + metadata)
       mockSupabase.auth.updateUser.mockResolvedValue({
         data: { user: mockUser },
         error: null,
       });
 
-      // Mock database update
-      const mockUpdate = vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            select: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
-                data: mockUpdatedData,
-                error: null,
+      mockSupabase.from.mockImplementation(() => ({
+        update: () => ({
+          eq: () => ({
+            eq: () => ({
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: mockUpdatedData,
+                    error: null,
+                  }),
               }),
-            })),
-          })),
-        })),
+            }),
+          }),
+        }),
       }));
 
-      mockSupabase.from.mockReturnValue({
-        update: mockUpdate,
-      });
-
-      // Mock storage to return no custom avatar
       mockSupabase.storage.from.mockReturnValue({
         list: vi.fn().mockResolvedValue({
           data: [],
           error: null,
         }),
+        upload: vi.fn().mockResolvedValue({
+          data: { path: "mock-path" },
+          error: null,
+        }),
         getPublicUrl: vi.fn(() => ({
-          data: { publicUrl: null },
+          data: {
+            publicUrl:
+              "https://i.pinimg.com/280x280_RS/77/0f/b7/770fb75f5e81e4c2dbe8934f246aeeab.jpg",
+          },
         })),
       });
 
       const result = await updateUserSettings(updateData);
 
-      // Should update auth with both email and username
       expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith({
         email: "new@example.com",
         data: {
@@ -428,7 +364,6 @@ describe("apiUsers - Supabase Functions", () => {
         },
       });
 
-      // Should update db_users table with is_active = true
       expect(mockSupabase.from).toHaveBeenCalledWith("db_users");
       expect(result).toEqual(mockUpdatedData);
     });
@@ -442,7 +377,7 @@ describe("apiUsers - Supabase Functions", () => {
 
       const updateData = {
         username: "newusername",
-        email: "test@example.com", // Same email
+        email: "test@example.com",
         imageUrl: undefined,
       };
 
@@ -456,37 +391,41 @@ describe("apiUsers - Supabase Functions", () => {
         error: null,
       });
 
-      const mockUpdate = vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            select: vi.fn(() => ({
-              single: vi.fn().mockResolvedValue({
-                data: {},
-                error: null,
+      mockSupabase.from.mockImplementation(() => ({
+        update: () => ({
+          eq: () => ({
+            eq: () => ({
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: {},
+                    error: null,
+                  }),
               }),
-            })),
-          })),
-        })),
+            }),
+          }),
+        }),
       }));
 
-      mockSupabase.from.mockReturnValue({
-        update: mockUpdate,
-      });
-
-      // Mock storage to return no custom avatar
       mockSupabase.storage.from.mockReturnValue({
         list: vi.fn().mockResolvedValue({
           data: [],
           error: null,
         }),
+        upload: vi.fn().mockResolvedValue({
+          data: { path: "mock-path" },
+          error: null,
+        }),
         getPublicUrl: vi.fn(() => ({
-          data: { publicUrl: null },
+          data: {
+            publicUrl:
+              "https://i.pinimg.com/280x280_RS/77/0f/b7/770fb75f5e81e4c2dbe8934f246aeeab.jpg",
+          },
         })),
       });
 
       await updateUserSettings(updateData);
 
-      // Should only update username, not email
       expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith({
         data: {
           username: "newusername",
@@ -560,27 +499,32 @@ describe("apiUsers - Supabase Functions", () => {
         error: null,
       });
 
-      const mockUpdate = vi.fn(() => ({
-        eq: vi.fn(() => ({
-          eq: vi.fn().mockResolvedValue({
-            data: null,
-            error: null,
+      mockSupabase.from.mockImplementation(() => ({
+        update: () => ({
+          eq: () => ({
+            eq: () =>
+              Promise.resolve({
+                data: null,
+                error: null,
+              }),
           }),
-        })),
+        }),
       }));
 
-      mockSupabase.from.mockReturnValue({
-        update: mockUpdate,
-      });
-
-      // Mock storage to return no custom avatar
       mockSupabase.storage.from.mockReturnValue({
         list: vi.fn().mockResolvedValue({
           data: [],
           error: null,
         }),
+        upload: vi.fn().mockResolvedValue({
+          data: { path: "mock-path" },
+          error: null,
+        }),
         getPublicUrl: vi.fn(() => ({
-          data: { publicUrl: null },
+          data: {
+            publicUrl:
+              "https://i.pinimg.com/280x280_RS/77/0f/b7/770fb75f5e81e4c2dbe8934f246aeeab.jpg",
+          },
         })),
       });
 

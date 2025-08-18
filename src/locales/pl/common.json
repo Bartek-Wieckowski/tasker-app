@@ -62,7 +62,39 @@
     "updatePasswordSuccess": "Hasło zostało zaktualizowane!",
     "updatePasswordFailed": "Aktualizacja hasła nie powiodła się. Spróbuj ponownie.",
     "updateSettingsSuccess": "Ustawienia zostały zaktualizowane!",
-    "updateSettingsFailed": "Aktualizacja ustawień nie powiodła się. Spróbuj ponownie."
+    "updateSettingsFailed": "Aktualizacja ustawień nie powiodła się. Spróbuj ponownie.",
+    "addingTodosFailed": "Dodawanie zadania nie powiodło się. Spróbuj ponownie.",
+    "updatingTodosStatusFailed": "Aktualizacja statusu zadania nie powiodła się. Spróbuj ponownie.",
+    "deletingTodosFailed": "Usuwanie zadania nie powiodło się. Spróbuj ponownie.",
+    "updatingTodosFailed": "Aktualizacja zadania nie powiodła się. Spróbuj ponownie.",
+    "todoUpdated": "Zadanie zostało zaktualizowane!",
+    "moveTodoTitle": "Zadanie zostało przeniesione!",
+    "moveTodoDescription": "Nowa data: ",
+    "moveTodoFailed": "Nie udało się przenieść zadania",
+    "moveTodoFailedDescription": "Spróbuj ponownie.",
+    "repeatTodoTitle": "Zadanie zostało powtórzone!",
+    "repeatTodoDescription": "Nowa data: ",
+    "repeatTodoFailed": "Nie udało się powtórzyć zadania",
+    "repeatTodoFailedDescription": "Spróbuj ponownie.",
+    "repeatTodoDescriptionImage": "i posiada zdjęcie",
+    "delegateTodoSuccess": "Zadanie zostało przekazane!",
+    "delegateTodoFailed": "Przekazywanie zadania nie powiodło się. Spróbuj ponownie.",
+    "globalTodoUpdated": "Globalne zadanie zostało zaktualizowane!",
+    "globalTodoUpdatedFailed": "Aktualizacja globalnego zadania nie powiodła się. Spróbuj ponownie.",
+    "globalTodoDeleted": "Globalne zadanie zostało usunięte!",
+    "globalTodoDeletedFailed": "Usuwanie globalnego zadania nie powiodło się. Spróbuj ponownie.",
+    "globalTodoAssignedToSelectedDate": "Globalne zadanie zostało przypisane do wybranej daty!",
+    "globalTodoAssignedToSelectedDateFailed": "Przypisywanie globalnego zadania do wybranej daty nie powiodło się. Spróbuj ponownie.",
+    "globalTodoAdded": "Globalne zadanie zostało dodane!",
+    "globalTodoAddedFailed": "Dodawanie globalnego zadania nie powiodło się. Spróbuj ponownie.",
+    "delegatedTodoAdded": "Delegowane zadanie zostało dodane!",
+    "delegatedTodoAddedFailed": "Dodawanie delegowanego zadania nie powiodło się. Spróbuj ponownie.",
+    "delegatedTodoAssignedToSelectedDate": "Delegowane zadanie zostało przypisane do wybranej daty!",
+    "delegatedTodoAssignedToSelectedDateFailed": "Przypisywanie delegowanego zadania do wybranej daty nie powiodło się. Spróbuj ponownie.",
+    "delegatedTodoDeleted": "Delegowane zadanie zostało usunięte!",
+    "delegatedTodoDeletedFailed": "Usuwanie delegowanego zadania nie powiodło się. Spróbuj ponownie.",
+    "delegatedTodoUpdated": "Delegowane zadanie zostało zaktualizowane!",
+    "delegatedTodoUpdatedFailed": "Aktualizacja delegowanego zadania nie powiodła się. Spróbuj ponownie."
   },
   "todos": {
     "title": "Zadania",
@@ -76,5 +108,134 @@
     "createTask": "Utwórz nowe zadanie",
     "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
     "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
+  },
+  "common": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "confirm": "Potwierdź",
+    "repeating": "Powtarzanie...",
+    "yes": "Tak",
+    "no": "Nie",
+    "search": "Szukaj",
+    "filter": "Filtruj",
+    "date": "Data",
+    "language": "Język",
+    "delete": "Usuń",
+    "deleting": "Usuwanie...",
+    "edit": "Edytuj",
+    "adding": "Dodawanie...",
+    "updating": "Aktualizowanie..."
+  },
+  "datePicker": {
+    "pickDate": "Wybierz datę"
+  },
+  "todosTabs": {
+    "all": "Wszystkie",
+    "completed": "Ukończone",
+    "notCompleted": "Nieukończone",
+    "searchPlaceholder": "Szukaj zadania w wybranym dniu :)",
+    "noResults": "Zadanie, które szukasz, nie znajduje się na liście.",
+    "addFirstTask": "Dodaj swoje pierwsze zadanie!"
+  },
+  "todosAdd": {
+    "addNewTodo": "Dodaj nowe zadanie"
+  },
+  "todoForm": {
+    "todoContent": "Treść zadania",
+    "todoContentPlaceholder": "Dodaj treść zadania",
+    "todoMoreContent": "Dodatkowe informacje (jeśli potrzebujesz)",
+    "todoMoreContentPlaceholder": "Jeśli potrzebujesz więcej treści, wpisz je tutaj!",
+    "addTodo": "Dodaj zadanie",
+    "editTodo": "Edytuj zadanie",
+    "saveTodo": "Zapisz zadanie",
+    "cancel": "Anuluj",
+    "createTodo": "Utwórz zadanie",
+    "updateTodo": "Zaktualizuj zadanie",
+    "creating": "Tworzenie zadania...",
+    "updating": "Aktualizowanie zadania...",
+    "deleteImage": "Usuń zdjęcie",
+    "editImage": "Edytuj zdjęcie",
+    "imageOptions": "Opcje zdjęcia",
+    "keepImage": "Zostaw obecne zdjęcie",
+    "replaceImage": "Zastąp nowym zdjęciem",
+    "currentImage": "Obecne zdjęcie",
+    "imageWillBeDeleted": "Obecne zdjęcie zostanie usunięte",
+    "selectNewImage": "Wybierz nowe zdjęcie aby zastąpić obecne",
+    "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
+    "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
+  },
+  "fileUploader": {
+    "dragPhotoHere": "Przeciągnij zdjęcie tutaj",
+    "selectFromComputer": "Wybierz z komputera"
+  },
+  "todosItemCard": {
+    "editTodo": "Edytuj zadanie",
+    "moveTodoDate": "Wybierz datę, aby przenieść zadanie",
+    "repeatTodoDate": "Wybierz datę, aby powtórzyć zadanie",
+    "confirmMove": "Potwierdź przeniesienie",
+    "confirmRepeat": "Potwierdź powtórzenie",
+    "options": {
+      "details": "Szczegóły",
+      "edit": "Edytuj",
+      "delete": "Usuń",
+      "deleting": "Usuwanie zadania...",
+      "moreActionsText": "Więcej akcji ?",
+      "moving": "Przenoszenie...",
+      "move": "Przenieś",
+      "repeat": "Powtórz",
+      "repeating": "Powtarzanie...",
+      "delegate": "Deleguj",
+      "delegating": "Delegowanie..."
+    }
+  },
+  "todosGlobalSearch": {
+    "searchPlaceholder": "Szukaj zadania i wciśnij enter",
+    "noResults": "Nie znaleziono niczego o tej wartości."
+  },
+  "todopage": {
+    "errorText": "Zadanie nie istnieje!",
+    "createTodo": "Zadanie stworzone",
+    "currentTodoDate": "Zadanie przypisane na dzień",
+    "updateTodo": "Zadanie zaktualizowane",
+    "todoStatus": "Status zadania",
+    "todoTitle": "Tytuł zadania",
+    "todoMoreContent": "Dodatkowe informacje"
+  },
+  "delegatedTodos": {
+    "title": "Delegowane zadania",
+    "description": "Dodaj zadania do delegowanej listy, aby móc przypisać konkretną datę do zadania, gdy tylko będziesz potrzebować",
+    "add": "Dodaj delegowane zadanie",
+    "edit": "Edytuj delegowane zadanie",
+    "delete": "Usuń delegowane zadanie",
+    "assignToDay": "Przypisz do dnia",
+    "assignToDayTitle": "Przypisz zadanie do dnia",
+    "assignToDayDescription": "Wybierz datę, aby przypisać zadanie"
+  },
+  "delegatedTodoForm": {
+    "todoTaskIsRequired": "Nazwa zadania jest wymagana",
+    "newDelegatedTaskName": "Nowa nazwa delegowanego zadania",
+    "editDelegatedTaskName": "Edytuj nazwę delegowanego zadania",
+    "writeYourTaskNameForDelegatedList": "Wpisz nazwę zadania do delegowanej listy",
+    "editYourDelegatedTodo": "Edytuj swoje delegowane zadanie",
+    "addDelegatedTask": "Dodaj delegowane zadanie",
+    "updateTodo": "Zaktualizuj zadanie"
+  },
+  "globalTodos": {
+    "title": "Globalne zadania",
+    "description": "Dodaj zadania do globalnej listy, aby móc przypisać konkretną datę do zadania, gdy tylko będziesz potrzebować",
+    "assignToDay": "Przypisz do dnia",
+    "assignToDayTitle": "Przypisz zadanie do dnia",
+    "assignToDayDescription": "Wybierz datę, aby przypisać zadanie",
+    "edit": "Edytuj",
+    "delete": "Usuń"
+  },
+  "globalTodoForm": {
+    "todoTaskIsRequired": "Nazwa zadania jest wymagana",
+    "newGlobalTaskName": "Nowa nazwa globalnego zadania",
+    "editGlobalTaskName": "Edytuj nazwę globalnego zadania",
+    "writeYourTaskNameForGlobalList": "Wpisz nazwę zadania do globalnej listy",
+    "editYourGlobalTodo": "Edytuj swoje globalne zadanie",
+    "addGlobalTask": "Dodaj globalne zadanie",
+    "updateTodo": "Zaktualizuj zadanie"
   }
 }

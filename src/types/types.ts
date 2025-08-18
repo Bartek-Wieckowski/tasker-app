@@ -1,3 +1,5 @@
+import { Database, TablesInsert } from "./supabase";
+
 export type NewUser = {
   username: string;
   email: string;
@@ -34,35 +36,46 @@ export type UserProfileUpdates = {
 export type UpdateUserPassword = {
   password: string;
 };
-export type TodoItem = {
-  todo: string;
-  todoMoreContent?: string;
-  imageUrl?: File;
+
+export type TodoRow = Database["public"]["Tables"]["todos"]["Row"];
+export type TodoInsert = Database["public"]["Tables"]["todos"]["Insert"];
+export type TodoUpdate = Database["public"]["Tables"]["todos"]["Update"];
+
+export type TodoInsertWithFile = TablesInsert<"todos"> & {
+  imageFile?: File;
 };
-export type TodoItemBase = {
-  todo: string;
-  todoMoreContent?: string;
-  imageUrl: string | File;
-  id: string;
-  isCompleted: boolean;
-  createdAt: Date | { seconds: number; nanoseconds: number };
-  updatedAt?: Date | { seconds: number; nanoseconds: number };
-  originalTodoId?: string;
-  isIndependentEdit?: boolean;
-  fromDelegated?: boolean;
+
+export type TodoSearchResult = {
+  like: TodoRow;
 };
-export type TodoItemDetails = TodoItemBase;
-export type TodoItemDetailsGlobalSearch = TodoItemBase & {
-  todoDate?: string;
-  todoSearchValue?: string;
+
+export type TodoUpdateDetails = {
+  todo?: string;
+  todo_more_content?: string | null;
+  imageFile?: File | null;
+  deleteImage?: boolean;
 };
+
+export type DelegatedTodoRow =
+  Database["public"]["Tables"]["delegated_todos"]["Row"];
+export type DelegatedTodoInsert =
+  Database["public"]["Tables"]["delegated_todos"]["Insert"];
+export type DelegatedTodoUpdate =
+  Database["public"]["Tables"]["delegated_todos"]["Update"];
+
+export type GlobalTodoRow = Database["public"]["Tables"]["global_todos"]["Row"];
+export type GlobalTodoInsert =
+  Database["public"]["Tables"]["global_todos"]["Insert"];
+export type GlobalTodoUpdate =
+  Database["public"]["Tables"]["global_todos"]["Update"];
+
 export type SearchGlobalContextType = {
   searchValueGlobal: string;
   setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;
   isGlobalSearch: boolean;
   setIsGlobalSearch: React.Dispatch<React.SetStateAction<boolean>>;
-  globalSearchResult: TodoItemDetailsGlobalSearch[];
+  globalSearchResult: TodoSearchResult[];
   setGlobalSearchResult: React.Dispatch<
-    React.SetStateAction<TodoItemDetailsGlobalSearch[]>
+    React.SetStateAction<TodoSearchResult[]>
   >;
 };

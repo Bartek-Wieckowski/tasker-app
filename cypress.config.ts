@@ -53,12 +53,100 @@ export default defineConfig({
                 "Test data cleanup completed successfully using clean_test_users function"
               );
             }
+            // 3. Empty bucket with images in subfolders
+            const bucketName = "todo-images";
+
+            // list main folder → there are subfolders (UUID)
+            const { data: folders, error: listFoldersError } =
+              await supabase.storage.from(bucketName).list("", { limit: 1000 });
+
+            if (listFoldersError) {
+              console.error("❌ Error listing folders:", listFoldersError);
+            } else if (folders && folders.length > 0) {
+              const allFilePaths: string[] = [];
+
+              for (const folder of folders) {
+                if (folder.name) {
+                  // list files in folder (e.g. "uuid-user-1")
+                  const { data: files, error: listFilesError } =
+                    await supabase.storage
+                      .from(bucketName)
+                      .list(folder.name, { limit: 1000 });
+
+                  if (listFilesError) {
+                    console.error(
+                      `❌ Error listing files in folder ${folder.name}:`,
+                      listFilesError
+                    );
+                    continue;
+                  }
+
+                  if (files && files.length > 0) {
+                    // you need to provide full path: "uuid-user-1/file.png"
+                    const filePaths = files.map(
+                      (f) => `${folder.name}/${f.name}`
+                    );
+                    allFilePaths.push(...filePaths);
+                  }
+                }
+              }
+
+              if (allFilePaths.length > 0) {
+                const { error: removeError } = await supabase.storage
+                  .from(bucketName)
+                  .remove(allFilePaths);
+                if (removeError) {
+                  console.error(
+                    "❌ Error deleting files from bucket:",
+                    removeError
+                  );
+                } else {
+                  console.log(
+                    `✅ Deleted ${allFilePaths.length} files from bucket "${bucketName}"`
+                  );
+                }
+              } else {
+                console.log(`ℹ️ No files to delete in bucket "${bucketName}"`);
+              }
+            } else {
+              console.log(`ℹ️ No folders found in bucket "${bucketName}"`);
+            }
 
             console.log("=== DB RESET TASK COMPLETED SUCCESSFULLY ===");
             return null;
           } catch (error) {
             console.error("=== DB RESET TASK FAILED ===", error);
             // Don't fail the test, just log the error
+            return null;
+          }
+        },
+        supabaseInsert: async ({ table, values }) => {
+          try {
+            console.log(`Inserting into ${table}:`, values);
+
+            const supabase = createClient(
+              "http://127.0.0.1:54321",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+            );
+
+            const { data, error } = await supabase
+              .from(table)
+              .insert(values)
+              .select()
+              .single();
+
+            if (error) {
+              console.error(`❌ Error inserting into ${table}:`, error);
+              return null;
+            }
+
+            console.log(`✅ Successfully inserted into ${table}:`, data);
+            return data;
+          } catch (error) {
+            console.error(
+              `=== SUPABASE INSERT TASK FAILED for ${table} ===`,
+              error
+            );
             return null;
           }
         },

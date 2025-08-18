@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { List, ListChecks, ListX } from 'lucide-react';
-import { TABS_TEXT_1, TABS_TEXT_2, TABS_TEXT_3 } from '@/lib/constants';
+import { useEffect, useState } from "react";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { List, ListChecks, ListX } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type TodosTabsListProps = {
   categorySetHandler: (value: string) => void;
@@ -9,7 +9,7 @@ type TodosTabsListProps = {
 
 const TodosTabsList = ({ categorySetHandler }: TodosTabsListProps) => {
   const [isMobile, setIsMobile] = useState(false);
-
+  const { t } = useTranslation();
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 574) {
@@ -21,23 +21,41 @@ const TodosTabsList = ({ categorySetHandler }: TodosTabsListProps) => {
 
     handleResize();
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   return (
-    <TabsList className="grid w-full grid-cols-3">
-      <TabsTrigger value={TABS_TEXT_1} onClick={() => categorySetHandler(TABS_TEXT_1)}>
-        {isMobile ? <List data-testid="icon-list" /> : TABS_TEXT_1}
+    <TabsList className="grid w-full grid-cols-3 ">
+      <TabsTrigger value="all" onClick={() => categorySetHandler("all")}>
+        {isMobile ? (
+          <List className="" data-testid="icon-list" />
+        ) : (
+          t("todosTabs.all")
+        )}
       </TabsTrigger>
-      <TabsTrigger value={TABS_TEXT_2} onClick={() => categorySetHandler(TABS_TEXT_2)}>
-        {isMobile ? <ListChecks data-testid="icon-list-checks" /> : TABS_TEXT_2}
+      <TabsTrigger
+        value="completed"
+        onClick={() => categorySetHandler("completed")}
+      >
+        {isMobile ? (
+          <ListChecks data-testid="icon-list-checks" />
+        ) : (
+          t("todosTabs.completed")
+        )}
       </TabsTrigger>
-      <TabsTrigger value={TABS_TEXT_3} onClick={() => categorySetHandler(TABS_TEXT_3)}>
-        {isMobile ? <ListX data-testid="icon-list-x" /> : TABS_TEXT_3}
+      <TabsTrigger
+        value="notCompleted"
+        onClick={() => categorySetHandler("notCompleted")}
+      >
+        {isMobile ? (
+          <ListX data-testid="icon-list-x" />
+        ) : (
+          t("todosTabs.notCompleted")
+        )}
       </TabsTrigger>
     </TabsList>
   );

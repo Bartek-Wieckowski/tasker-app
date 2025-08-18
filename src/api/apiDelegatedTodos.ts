@@ -1,187 +1,220 @@
-// import { collection, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
-// import { TodoItemBase } from '@/types/types';
-// import { format } from 'date-fns';
-// import {
-//   TABLE_NAME_taskerDelegatedTodos,
-//   TABLE_NAME_taskerUserTodos,
-// } from '@/lib/constants';
-// import {  handleImageDeletion } from './apiTodos';
+import { supabase } from "@/lib/supabaseClient";
+import { handleImageDeletion } from "./apiTodos";
+import { TodoInsert } from "@/types/types";
+import { dateCustomFormatting } from "@/lib/helpers";
 
-// export async function addDelegatedTodo(todo: { todo: string; imageUrl?: File }, userId: string) {
-//   const userDelegatedTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerDelegatedTodos),
-//     userId
-//   );
-//   const docSnapshot = await getDoc(userDelegatedTodosRef);
+export async function getDelegatedTodos(userId: string) {
+  const { data, error } = await supabase
+    .from("delegated_todos")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
-//   const todoId = crypto.randomUUID();
-//   const newTodo: Omit<TodoItemBase, 'imageUrl'> & { imageUrl: string } = {
-//     id: todoId,
-//     todo: todo.todo,
-//     isCompleted: false,
-//     createdAt: new Date(),
-//     imageUrl: '',
-//     todoMoreContent: '',
-//     ...(todo.imageUrl && {
-//       imageInfo: {
-//         storageId: crypto.randomUUID(),
-//         isOriginal: true,
-//         sourceId: ""
-//       }
-//     })
-//   };
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "GET_DELEGATED_TODOS_ERROR" };
+  }
 
-//   if (docSnapshot.exists()) {
-//     await setDoc(
-//       userDelegatedTodosRef,
-//       {
-//         userDelegatedTodos: [...docSnapshot.data().userDelegatedTodos, newTodo],
-//       },
-//       { merge: true }
-//     );
-//   } else {
-//     await setDoc(userDelegatedTodosRef, {
-//       userDelegatedTodos: [newTodo],
-//     });
-//   }
+  return data;
+}
 
-//   return newTodo;
-// }
+export async function addDelegatedTodo(todo: { todo: string }, userId: string) {
+  const { data, error } = await supabase
+    .from("delegated_todos")
+    .insert({
+      todo: todo.todo,
+      user_id: userId,
+    })
+    .select()
+    .single();
 
-// export async function getDelegatedTodos(userId: string) {
-//   const userDelegatedTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerDelegatedTodos),
-//     userId
-//   );
-//   const docSnapshot = await getDoc(userDelegatedTodosRef);
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "ADD_DELEGATED_TODO_ERROR" };
+  } else {
+    const { error: updateOriginalTodoIdError } = await supabase
+      .from("delegated_todos")
+      .update({ original_todo_id: data.id })
+      .eq("id", data.id);
 
-//   if (!docSnapshot.exists()) {
-//     return [];
-//   }
+    if (updateOriginalTodoIdError) {
+      if (import.meta.env.DEV) {
+        console.error({
+          code: updateOriginalTodoIdError.code,
+          message: updateOriginalTodoIdError.message,
+        });
+      }
+      throw { code: "UPDATE_DELEGATED_TODO_ERROR" };
+    }
+  }
 
-//   return docSnapshot.data().userDelegatedTodos;
-// }
+  return data;
+}
 
-// export async function assignDelegatedTodoToDay(
-//   delegatedTodoId: string,
-//   date: Date,
-//   userId: string
-// ) {
-//   const userDelegatedTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerDelegatedTodos),
-//     userId
-//   );
-//   const docSnapshot = await getDoc(userDelegatedTodosRef);
+export async function assignDelegatedTodoToDay(
+  delegatedTodoId: string,
+  todoDate: Date,
+  userId: string
+) {
+  const { data: delegatedTodo, error: getTodoError } = await supabase
+    .from("delegated_todos")
+    .select("*")
+    .eq("id", delegatedTodoId)
+    .eq("user_id", userId)
+    .single();
 
-//   if (!docSnapshot.exists()) return;
+  if (getTodoError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: getTodoError.code,
+        message: getTodoError.message,
+      });
+    }
+    throw { code: "GET_DELEGATED_TODO_ERROR" };
+  }
 
-//   const delegatedTodos = docSnapshot.data().userDelegatedTodos;
-//   const delegatedTodo = delegatedTodos.find(
-//     (todo: TodoItemBase) => todo.id === delegatedTodoId
-//   );
+  if (!delegatedTodo) {
+    throw { code: "DELEGATED_TODO_NOT_FOUND" };
+  }
 
-//   if (!delegatedTodo) return;
+  const todoData: TodoInsert = {
+    user_id: userId,
+    todo: delegatedTodo.todo,
+    todo_more_content: delegatedTodo.todo_more_content,
+    image_url: delegatedTodo.image_url,
+    todo_date: dateCustomFormatting(todoDate),
+    is_completed: delegatedTodo.is_completed,
+    original_todo_id: delegatedTodo.original_todo_id || delegatedTodo.id,
+    is_independent_edit: false,
+    from_delegated: true,
+    created_at: delegatedTodo.created_at,
+    updated_at: delegatedTodo.updated_at,
+  };
 
-//   const userTodosRef = true
-//   const userTodosSnapshot = await getDoc(userTodosRef);
-//   const formattedDate = format(date, 'dd-MM-yyyy');
+  const { data: newTodo, error: insertError } = await supabase
+    .from("todos")
+    .insert(todoData)
+    .select()
+    .single();
 
-//   const newTodo: TodoItemBase = {
-//     id: delegatedTodoId,
-//     todo: delegatedTodo.todo,
-//     todoMoreContent: delegatedTodo.todoMoreContent || '',
-//     imageUrl: delegatedTodo.imageUrl,
-//     isCompleted: false,
-//     createdAt: new Date(),
-//     originalTodoId: delegatedTodo.originalTodoId || delegatedTodoId,
-//     isIndependentEdit: false,
-//     fromDelegated: true
-//   };
+  if (insertError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: insertError.code,
+        message: insertError.message,
+      });
+    }
+    throw { code: "CREATE_TODO_ERROR" };
+  }
 
-//   if (userTodosSnapshot.exists()) {
-//     const userData = userTodosSnapshot.data();
-//     await setDoc(
-//       userTodosRef,
-//       {
-//         ...userData,
-//         [formattedDate]: {
-//           userTodosOfDay: [
-//             ...(userData[formattedDate]?.userTodosOfDay || []),
-//             newTodo,
-//           ],
-//         },
-//       },
-//       { merge: true }
-//     );
-//   } else {
-//     await setDoc(userTodosRef, {
-//       [formattedDate]: {
-//         userTodosOfDay: [newTodo],
-//       },
-//     });
-//   }
+  const { error: deleteError } = await supabase
+    .from("delegated_todos")
+    .delete()
+    .eq("id", delegatedTodoId)
+    .eq("user_id", userId);
 
-//   const updatedDelegatedTodos = delegatedTodos.filter(
-//     (todo: TodoItemBase) => todo.id !== delegatedTodoId
-//   );
+  if (deleteError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: deleteError.code,
+        message: deleteError.message,
+      });
+    }
 
-//   if (updatedDelegatedTodos.length === 0) {
-//     await deleteDoc(userDelegatedTodosRef);
-//   } else {
-//     await setDoc(userDelegatedTodosRef, {
-//       userDelegatedTodos: updatedDelegatedTodos,
-//     });
-//   }
+    await supabase
+      .from("todos")
+      .delete()
+      .eq("id", newTodo.id)
+      .eq("user_id", userId);
 
-//   return newTodo;
-// }
+    throw { code: "DELETE_DELEGATED_TODO_ERROR" };
+  }
 
-// export async function editDelegatedTodo(
-//   todoId: string,
-//   newTodoName: string,
-//   accountId: string
-// ) {
-//   const userDelegatedTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerDelegatedTodos),
-//     accountId
-//   );
-//   const docSnapshot = await getDoc(userDelegatedTodosRef);
+  if (import.meta.env.DEV) {
+    console.log("Delegated todo assigned to day successfully:", {
+      delegatedId: delegatedTodoId,
+      newTodoId: newTodo.id,
+      todoDate,
+      hasImage: !!delegatedTodo.image_url,
+    });
+  }
 
-//   if (!docSnapshot.exists()) return;
+  return newTodo;
+}
 
-//   const delegatedTodos = docSnapshot.data().userDelegatedTodos;
-//   const updatedDelegatedTodos = delegatedTodos.map((todo: TodoItemBase) =>
-//     todo.id === todoId ? { ...todo, todo: newTodoName } : todo
-//   );
+export async function editDelegatedTodo(
+  todoId: string,
+  newTodoName: string,
+  accountId: string
+) {
+  const { data, error } = await supabase
+    .from("delegated_todos")
+    .update({ todo: newTodoName })
+    .eq("id", todoId)
+    .eq("user_id", accountId)
+    .select()
+    .single();
 
-//   await setDoc(userDelegatedTodosRef, {
-//     userDelegatedTodos: updatedDelegatedTodos,
-//   });
-// }
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "EDIT_DELEGATED_TODO_ERROR" };
+  }
 
-// export async function deleteDelegatedTodo(todoId: string, accountId: string) {
-//   const userDelegatedTodosRef = doc(
-//     collection(db, TABLE_NAME_taskerDelegatedTodos),
-//     accountId
-//   );
-//   const docSnapshot = await getDoc(userDelegatedTodosRef);
+  return data;
+}
 
-//   if (!docSnapshot.exists()) return;
+export async function deleteDelegatedTodo(todoId: string, accountId: string) {
+  const { data: todo, error: getTodoError } = await supabase
+    .from("delegated_todos")
+    .select("*")
+    .eq("id", todoId)
+    .eq("user_id", accountId)
+    .single();
 
-//   const delegatedTodos = docSnapshot.data().userDelegatedTodos;
-//   const todoToDelete = delegatedTodos.find(
-//     (todo: TodoItemBase) => todo.id === todoId
-//   );
+  if (getTodoError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: getTodoError.code,
+        message: getTodoError.message,
+      });
+    }
+    throw { code: "GET_DELEGATED_TODO_ERROR" };
+  }
 
-//   if (todoToDelete?.imageUrl && !todoToDelete.fromDelegated) {
-//     await handleImageDeletion(accountId, todoToDelete.imageUrl, todoId);
-//   }
+  if (todo?.image_url) {
+    await handleImageDeletion(accountId, todo.image_url, todoId);
+  }
 
-//   const updatedDelegatedTodos = delegatedTodos.filter(
-//     (todo: TodoItemBase) => todo.id !== todoId
-//   );
+  const { error } = await supabase
+    .from("delegated_todos")
+    .delete()
+    .eq("id", todoId)
+    .eq("user_id", accountId);
 
-//   await setDoc(userDelegatedTodosRef, {
-//     userDelegatedTodos: updatedDelegatedTodos,
-//   });
-// }
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "DELETE_DELEGATED_TODO_ERROR" };
+  }
+
+  return { success: true };
+}

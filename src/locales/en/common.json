@@ -59,7 +59,39 @@
     "updatePasswordSuccess": "Password updated successfully!",
     "updatePasswordFailed": "Updating password failed. Please try again.",
     "updateSettingsSuccess": "Settings updated successfully!",
-    "updateSettingsFailed": "Updating settings failed. Please try again."
+    "updateSettingsFailed": "Updating settings failed. Please try again.",
+    "addingTodosFailed": "Adding todos failed. Please try again.",
+    "updatingTodosStatusFailed": "Updating status todos failed. Please try again.",
+    "deletingTodosFailed": "Deleting todos failed. Please try again.",
+    "updatingTodosFailed": "Updating todos failed. Please try again.",
+    "todoUpdated": "Todo updated successfully!",
+    "moveTodoTitle": "Todo moved successfully!",
+    "moveTodoDescription": "New date: ",
+    "moveTodoFailed": "Failed to move todo",
+    "moveTodoFailedDescription": "Please try again.",
+    "repeatTodoTitle": "Todo repeated successfully!",
+    "repeatTodoDescription": "New date: ",
+    "repeatTodoFailed": "Failed to repeat todo",
+    "repeatTodoFailedDescription": "Please try again.",
+    "repeatTodoDescriptionImage": "and has image",
+    "delegateTodoSuccess": "Todo delegated successfully!",
+    "delegateTodoFailed": "Delegating todo failed. Please try again.",
+    "globalTodoUpdated": "Global todo updated successfully!",
+    "globalTodoUpdatedFailed": "Updating global todo failed. Please try again.",
+    "globalTodoDeleted": "Global todo deleted successfully!",
+    "globalTodoDeletedFailed": "Deleting global todo failed. Please try again.",
+    "globalTodoAssignedToSelectedDate": "Global todo assigned to selected date successfully!",
+    "globalTodoAssignedToSelectedDateFailed": "Assigning global todo to selected date failed. Please try again.",
+    "globalTodoAdded": "Global todo added successfully!",
+    "globalTodoAddedFailed": "Adding global todo failed. Please try again.",
+    "delegatedTodoAdded": "Delegated todo added successfully!",
+    "delegatedTodoAddedFailed": "Adding delegated todo failed. Please try again.",
+    "delegatedTodoAssignedToSelectedDate": "Delegated todo assigned to selected date successfully!",
+    "delegatedTodoAssignedToSelectedDateFailed": "Assigning delegated todo to selected date failed. Please try again.",
+    "delegatedTodoDeleted": "Delegated todo deleted successfully!",
+    "delegatedTodoDeletedFailed": "Deleting delegated todo failed. Please try again.",
+    "delegatedTodoUpdated": "Delegated todo updated successfully!",
+    "delegatedTodoUpdatedFailed": "Updating delegated todo failed. Please try again."
   },
   "todos": {
     "title": "Tasks",
@@ -78,11 +110,129 @@
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "repeating": "Repeating...",
     "yes": "Yes",
     "no": "No",
     "search": "Search",
     "filter": "Filter",
     "date": "Date",
-    "language": "Language"
+    "language": "Language",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "edit": "Edit",
+    "adding": "Adding...",
+    "updating": "Updating..."
+  },
+  "datePicker": {
+    "pickDate": "Pick a date"
+  },
+  "todosTabs": {
+    "all": "All",
+    "completed": "Completed",
+    "notCompleted": "Not completed",
+    "searchPlaceholder": "Search for a task on a selected day :)",
+    "noResults": "The task you searched for is not on the list.",
+    "addFirstTask": "Add your first task!"
+  },
+  "todosAdd": {
+    "addNewTodo": "Add new todo"
+  },
+  "todoForm": {
+    "todoContent": "Todo content",
+    "todoContentPlaceholder": "Add todo content",
+    "todoMoreContent": "Additional information (if you need)",
+    "todoMoreContentPlaceholder": "If you need more content, write it here!",
+    "addTodo": "Add todo",
+    "editTodo": "Edit todo",
+    "saveTodo": "Save todo",
+    "cancel": "Cancel",
+    "createTodo": "Create todo",
+    "updateTodo": "Update todo",
+    "creating": "Creating todo...",
+    "updating": "Updating todo...",
+    "deleteImage": "Delete image",
+    "editImage": "Edit image",
+    "imageOptions": "Image options",
+    "keepImage": "Keep current image",
+    "replaceImage": "Replace with new image",
+    "currentImage": "Current image",
+    "imageWillBeDeleted": "Current image will be deleted",
+    "selectNewImage": "Select a new image to replace current one",
+    "todoMinLength": "Todo item must be at least 2 characters",
+    "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field"
+  },
+  "fileUploader": {
+    "dragPhotoHere": "Drag photo here",
+    "selectFromComputer": "Select from computer"
+  },
+  "todosItemCard": {
+    "editTodo": "Edit todo",
+    "moveTodoDate": "Choose date to move todo",
+    "repeatTodoDate": "Choose date to repeat todo",
+    "confirmMove": "Confirm Move",
+    "confirmRepeat": "Confirm Repeat",
+    "options": {
+      "details": "Details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting todo...",
+      "moreActionsText": "More actions ?",
+      "moving": "Moving...",
+      "move": "Move",
+      "repeat": "Repeat",
+      "repeating": "Repeating...",
+      "delegate": "Delegate",
+      "delegating": "Delegating..."
+    }
+  },
+  "todosGlobalSearch": {
+    "searchPlaceholder": "Search task and press enter",
+    "noResults": "Nothing of this value was found"
+  },
+  "todopage": {
+    "errorText": "Item don't exist!",
+    "createTodo": "Todo created",
+    "updateTodo": "Todo updated",
+    "currentTodoDate": "Todo assigned on date",
+    "todoStatus": "Todo status",
+    "todoTitle": "Todo title",
+    "todoMoreContent": "Todo more content"
+  },
+  "delegatedTodos": {
+    "title": "Delegated tasks",
+    "description": "Add tasks to a delegated list that you can assign a specific date to a task when you need it",
+    "add": "Add delegated task",
+    "edit": "Edit delegated task",
+    "delete": "Delete delegated task",
+    "assignToDay": "Assign to day",
+    "assignToDayTitle": "Assign task to a day",
+    "assignToDayDescription": "Pick a date to assign this task"
+  },
+  "delegatedTodoForm": {
+    "todoTaskIsRequired": "Task name is required",
+    "newDelegatedTaskName": "New delegated task name",
+    "editDelegatedTaskName": "Edit delegated task name",
+    "writeYourTaskNameForDelegatedList": "Write your task name for delegated list",
+    "editYourDelegatedTodo": "Edit your delegated todo",
+    "addDelegatedTask": "Add delegated task",
+    "updateTodo": "Update todo"
+  },
+  "globalTodos": {
+    "title": "Global tasks",
+    "description": "Add tasks to a global list that you can assign a specific date to a task when you need it",
+    "assignToDay": "Assign to day",
+    "assignToDayTitle": "Assign task to a day",
+    "assignToDayDescription": "Pick a date to assign this task",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "globalTodoForm": {
+    "todoTaskIsRequired": "Task name is required",
+    "newGlobalTaskName": "New global task name",
+    "editGlobalTaskName": "Edit global task name",
+    "writeYourTaskNameForGlobalList": "Write your task name for global list",
+    "editYourGlobalTodo": "Edit your global todo",
+    "addGlobalTask": "Add global task",
+    "updateTodo": "Update todo"
   }
 }

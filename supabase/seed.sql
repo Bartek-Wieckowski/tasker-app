@@ -1,12 +1,72 @@
--- Test data for development and testing
--- This file is used to seed the database with initial data
+-- -- Test data for development and testing
+-- -- This file is used to seed the database with initial data
 
--- Note: This seed file is currently minimal since you're migrating from Firebase
--- Add more test data as you create new tables
+-- -- Upewnij się, że mamy odpowiednie uprawnienia
+-- SET session_replication_role = replica;
 
--- Example test users (these will be cleaned up by Cypress tests)
+-- -- Test user: taskertestuser@developedbybart.pl / hasło: testowehaslo1!
+-- INSERT INTO auth.users (
+--   id,
+--   instance_id,
+--   email,
+--   encrypted_password,
+--   email_confirmed_at,
+--   email_change_confirm_status,
+--   created_at,
+--   updated_at,
+--   aud,
+--   role,
+--   raw_app_meta_data,
+--   raw_user_meta_data,
+--   is_super_admin,
+--   confirmation_token,
+--   recovery_token,
+--   email_change_token_new,
+--   email_change
+-- ) VALUES (
+--   '550e8400-e29b-41d4-a716-446655440001',
+--   '00000000-0000-0000-0000-000000000000',
+--   'taskertestuser@developedbybart.pl',
+--   '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+--   NOW(),
+--   0,
+--   NOW(),
+--   NOW(),
+--   'authenticated',
+--   'authenticated',
+--   '{"provider": "email", "providers": ["email"]}',
+--   '{"display_name": "Tasker Test User"}',
+--   FALSE,
+--   '',
+--   '',
+--   '',
+--   ''
+-- );
+
+-- -- Dodaj identities record dla email providera (WYMAGANE do logowania!)
+-- INSERT INTO auth.identities (
+--   id,
+--   user_id,
+--   identity_data,
+--   provider,
+--   last_sign_in_at,
+--   created_at,
+--   updated_at,
+--   provider_id
+-- ) VALUES (
+--   '550e8400-e29b-41d4-a716-446655440002',
+--   '550e8400-e29b-41d4-a716-446655440001',
+--   '{"sub": "550e8400-e29b-41d4-a716-446655440001", "email": "taskertestuser@developedbybart.pl", "email_verified": true, "phone_verified": false}',
+--   'email',
+--   NOW(),
+--   NOW(),
+--   NOW(),
+--   'taskertestuser@developedbybart.pl'
+-- );
+
+-- -- Dodaj usera do db_users
 -- INSERT INTO public.db_users (id, email, is_active) VALUES 
---   ('550e8400-e29b-41d4-a716-446655440001', 'test1@example.com', true),
---   ('550e8400-e29b-41d4-a716-446655440002', 'test2@example.com', true);
+--   ('550e8400-e29b-41d4-a716-446655440001', 'taskertestuser@developedbybart.pl', true);
 
--- Add more seed data here as you create new tables for todos, etc. 
+-- -- Przywróć normalne ustawienia
+-- SET session_replication_role = DEFAULT;
