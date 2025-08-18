@@ -34,9 +34,12 @@ import {
 import { GlobalTodoForm } from "./GlobalTodoForm";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { localeMap } from "@/lib/helpers";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function GlobalTodos() {
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const formContainerRef = useRef<HTMLDivElement | null>(null);
   const [selectedTodo, setSelectedTodo] = useState<GlobalTodoRow | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -147,18 +150,21 @@ export default function GlobalTodos() {
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="space-y-2 h-[50vh] overflow-auto custom-scrollbar">
+            <div className=" space-y-2 h-[50vh] overflow-auto custom-scrollbar">
               {isLoading ? (
                 <Loader />
               ) : (
                 globalTodos?.map((todo: GlobalTodoRow) => (
                   <div
                     key={todo.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
+                    className="global-todo-item flex items-center justify-between rounded-lg border p-3"
                   >
                     <span>{todo.todo}</span>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger
+                        asChild
+                        data-testid="dropdown-trigger"
+                      >
                         <EllipsisVertical className="cursor-pointer" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
@@ -237,6 +243,7 @@ export default function GlobalTodos() {
                   }}
                   initialFocus={false}
                   className="rounded-md border"
+                  locale={localeMap[currentLanguage]}
                 />
               </div>
               {isAssigningGlobalTodo && (

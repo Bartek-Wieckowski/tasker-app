@@ -109,12 +109,22 @@ describe("Edit Todo()", () => {
 
       cy.createTodoWithImage(todoText, "test-image.jpg");
 
+      cy.contains(todoText).should("exist");
+
       cy.contains(todoText)
         .closest('div[class*="todo-item-card"]')
         .find('[data-testid="todo-item-has-image"]')
-        .scrollIntoView()
-        .should("be.visible")
-        .should("exist");
+        .should("exist")
+        .and("have.attr", "data-image-url");
+
+      let originalImageUrl: string;
+      cy.contains(todoText)
+        .closest('div[class*="todo-item-card"]')
+        .find('[data-testid="todo-item-has-image"]')
+        .invoke("attr", "data-image-url")
+        .then((url) => {
+          originalImageUrl = url || "";
+        });
 
       cy.contains(todoText)
         .closest('div[class*="todo-item-card"]')
@@ -134,21 +144,27 @@ describe("Edit Todo()", () => {
 
       cy.get('button[type="submit"]').click();
 
-      // Verify the todo still has an image (confirming replacement worked)
-      cy.contains(todoText)
-        .closest('div[class*="todo-item-card"]')
-        .find('[data-testid="todo-item-has-image"]')
-        .scrollIntoView()
-        .should("exist")
-        .and("be.visible");
+      cy.wait(3000);
 
-      // Test that we can open the lightbox to confirm image changed
       cy.contains(todoText)
         .closest('div[class*="todo-item-card"]')
         .find('[data-testid="todo-item-has-image"]')
-        .scrollIntoView()
-        .should("be.visible")
-        .click();
+        .should("exist")
+        .and("have.attr", "data-image-url");
+
+      cy.contains(todoText)
+        .closest('div[class*="todo-item-card"]')
+        .find('[data-testid="todo-item-has-image"]')
+        .invoke("attr", "data-image-url")
+        .then((newUrl) => {
+          expect(newUrl).to.not.equal(originalImageUrl);
+          expect(newUrl).to.not.be.empty;
+        });
+
+      cy.contains(todoText)
+        .closest('div[class*="todo-item-card"]')
+        .find('[data-testid="todo-item-has-image"]')
+        .click({ force: true });
     });
 
     it("should delete image from todo", () => {

@@ -65,14 +65,27 @@ export function GlobalTodoForm({
                       ? t("globalTodoForm.writeYourTaskNameForGlobalList")
                       : t("globalTodoForm.editYourGlobalTodo")
                   }
+                  data-testid={
+                    type === "add"
+                      ? "add-global-todo-input"
+                      : "edit-global-todo-input"
+                  }
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage data-testid="global-todo-form-message" />
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isLoading}>
+        <Button
+          type="submit"
+          disabled={isLoading}
+          data-testid={
+            type === "add"
+              ? "add-global-todo-button"
+              : "edit-global-todo-button"
+          }
+        >
           {isLoading ? (
             <div className="flex gap-2">
               <Loader />

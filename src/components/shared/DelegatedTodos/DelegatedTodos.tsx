@@ -138,11 +138,14 @@ export default function DelegatedTodos() {
                   {delegatedTodos?.map((todo: DelegatedTodoRow) => (
                     <div
                       key={todo.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
+                      className="delegated-todo-item flex items-center justify-between rounded-lg border p-3"
                     >
                       <span>{todo.todo}</span>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger
+                          asChild
+                          data-testid="dropdown-trigger"
+                        >
                           <EllipsisVertical className="cursor-pointer" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent

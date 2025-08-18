@@ -65,14 +65,27 @@ export function DelegatedTodoForm({
                       ? t("delegatedTodoForm.writeYourTaskNameForDelegatedList")
                       : t("delegatedTodoForm.editYourDelegatedTodo")
                   }
+                  data-testid={
+                    type === "add"
+                      ? "add-delegated-todo-input"
+                      : "edit-delegated-todo-input"
+                  }
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage data-testid="delegated-todo-form-message" />
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isLoading}>
+        <Button
+          type="submit"
+          disabled={isLoading}
+          data-testid={
+            type === "add"
+              ? "add-delegated-todo-button"
+              : "edit-delegated-todo-button"
+          }
+        >
           {isLoading ? (
             <div className="flex gap-2">
               <Loader />
