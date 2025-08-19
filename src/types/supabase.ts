@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      cyclic_todos: {
+        Row: {
+          created_at: string
+          id: string
+          todo: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          todo: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          todo?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cyclic_todos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "db_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       db_users: {
         Row: {
           email: string
@@ -203,6 +235,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_cron_jobs_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active: boolean
+          command: string
+          job_name: string
+          last_run_started_at: string
+          last_run_status: string
+          schedule: string
+        }[]
+      }
       clean_test_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -211,11 +254,27 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      manually_process_cyclic_todos: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      process_cyclic_todos_internal: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       search_todos: {
         Args: { search_term: string; user_id_param: string }
         Returns: {
           like: Database["public"]["Tables"]["todos"]["Row"]
         }[]
+      }
+      setup_cyclic_todos_test_cron: {
+        Args: { interval_minutes?: number }
+        Returns: string
+      }
+      stop_cyclic_todos_test_cron: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
     }
     Enums: {
