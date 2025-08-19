@@ -94,7 +94,7 @@ export function CyclicTodoForm({
           ) : type === "add" ? (
             t("cyclicTodoForm.addCyclicTask")
           ) : (
-            t("cyclicTodoForm.updateCyclicTask")
+            t("cyclicTodoForm.updateTodo")
           )}
         </Button>
       </form>

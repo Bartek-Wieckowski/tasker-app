@@ -38,21 +38,6 @@ export async function addCyclicTodo(todo: { todo: string }, userId: string) {
       });
     }
     throw { code: "ADD_CYCLIC_TODO_ERROR" };
-  } else {
-    const { error: updateOriginalTodoIdError } = await supabase
-      .from("cyclic_todos")
-      .update({ todo: data.todo })
-      .eq("id", data.id);
-
-    if (updateOriginalTodoIdError) {
-      if (import.meta.env.DEV) {
-        console.error({
-          code: updateOriginalTodoIdError.code,
-          message: updateOriginalTodoIdError.message,
-        });
-      }
-      throw { code: "UPDATE_CYCLIC_TODO_ERROR" };
-    }
   }
 
   return data;
@@ -79,6 +64,26 @@ export async function editCyclicTodo(
       });
     }
     throw { code: "EDIT_CYCLIC_TODO_ERROR" };
+  }
+
+  // Update all related todos in the todos table that reference this cyclic todo
+  // Only update todos that haven't been independently edited
+  const { error: updateRelatedError } = await supabase
+    .from("todos")
+    .update({ todo: newTodoName })
+    .eq("original_todo_id", todoId)
+    .eq("user_id", accountId)
+    .eq("is_independent_edit", false);
+
+  if (updateRelatedError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: updateRelatedError.code,
+        message: updateRelatedError.message,
+      });
+    }
+    // Log warning but don't throw - the cyclic todo was updated successfully
+    console.warn("Failed to update related todos:", updateRelatedError.message);
   }
 
   return data;

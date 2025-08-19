@@ -117,6 +117,19 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Delete user from cyclic todos
+      const { error: deleteCyclicTodosError } = await supabase
+        .from("cyclic_todos")
+        .delete()
+        .eq("user_id", user_id);
+
+      if (deleteCyclicTodosError) {
+        console.warn(
+          "Failed to delete user cyclic todos:",
+          deleteCyclicTodosError
+        );
+      }
+
       // Delete user from auth
       const { error: deleteError } = await supabase.auth.admin.deleteUser(
         user_id

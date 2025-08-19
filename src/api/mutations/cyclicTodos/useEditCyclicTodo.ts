@@ -19,6 +19,7 @@ export const useEditCyclicTodo = (accountId: string) => {
       }) => editCyclicTodo(todoId, newTodoName, accountId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.cyclicTodos] });
+        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
         toast({ title: t("toastMsg.cyclicTodoUpdated") });
       },
       onError: () => {

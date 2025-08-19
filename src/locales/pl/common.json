@@ -129,8 +129,9 @@
     "delete": "Usuń",
     "deleting": "Usuwanie...",
     "edit": "Edytuj",
-    "adding": "Dodawanie...",
-    "updating": "Aktualizowanie..."
+    "updating": "Aktualizowanie...",
+    "add": "Dodaj",
+    "adding": "Dodawanie..."
   },
   "datePicker": {
     "pickDate": "Wybierz datę"

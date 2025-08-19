@@ -126,8 +126,9 @@
     "delete": "Delete",
     "deleting": "Deleting...",
     "edit": "Edit",
-    "adding": "Adding...",
-    "updating": "Updating..."
+    "updating": "Updating...",
+    "add": "Add",
+    "adding": "Adding..."
   },
   "datePicker": {
     "pickDate": "Pick a date"
@@ -254,6 +255,6 @@
     "writeYourTaskNameForCyclicList": "Write your task name for cyclic list",
     "editYourCyclicTodo": "Edit your cyclic todo",
     "addCyclicTask": "Add cyclic task",
-    "updateTodo": "Update todo"
+    "updateTodo": "Update cyclic todo"
   }
 }
