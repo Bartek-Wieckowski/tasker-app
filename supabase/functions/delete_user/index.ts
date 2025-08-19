@@ -107,16 +107,6 @@ Deno.serve(async (req) => {
         console.warn("Failed to delete user global todos:", globalTodosError);
       }
 
-      // Deactivate user in database
-      const { error: deactivateError } = await supabase.rpc("deactivate_user", {
-        p_user_id: user_id,
-      });
-      if (deactivateError) {
-        throw new Error(
-          `Database deactivation failed: ${deactivateError.message}`
-        );
-      }
-
       // Delete user from cyclic todos
       const { error: deleteCyclicTodosError } = await supabase
         .from("cyclic_todos")
@@ -127,6 +117,16 @@ Deno.serve(async (req) => {
         console.warn(
           "Failed to delete user cyclic todos:",
           deleteCyclicTodosError
+        );
+      }
+
+      // Deactivate user in database
+      const { error: deactivateError } = await supabase.rpc("deactivate_user", {
+        p_user_id: user_id,
+      });
+      if (deactivateError) {
+        throw new Error(
+          `Database deactivation failed: ${deactivateError.message}`
         );
       }
 
