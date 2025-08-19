@@ -106,7 +106,7 @@ export default function CyclicTodos() {
       <DrawerTrigger asChild>
         <ListRestart
           className="cursor-pointer"
-          data-testid="global-todos-trigger"
+          data-testid="cyclic-todos-trigger"
         />
       </DrawerTrigger>
       <DrawerContent ref={formContainerRef} className="min-h-[70vh]">
@@ -128,7 +128,7 @@ export default function CyclicTodos() {
                 cyclicTodos?.map((todo: CyclicTodoRow) => (
                   <div
                     key={todo.id}
-                    className="global-todo-item flex items-center justify-between rounded-lg border p-3"
+                    className="cyclic-todo-item flex items-center justify-between rounded-lg border p-3"
                   >
                     <span>{todo.todo}</span>
                     <DropdownMenu>
