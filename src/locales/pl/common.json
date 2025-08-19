@@ -94,7 +94,13 @@
     "delegatedTodoDeleted": "Delegowane zadanie zostało usunięte!",
     "delegatedTodoDeletedFailed": "Usuwanie delegowanego zadania nie powiodło się. Spróbuj ponownie.",
     "delegatedTodoUpdated": "Delegowane zadanie zostało zaktualizowane!",
-    "delegatedTodoUpdatedFailed": "Aktualizacja delegowanego zadania nie powiodła się. Spróbuj ponownie."
+    "delegatedTodoUpdatedFailed": "Aktualizacja delegowanego zadania nie powiodła się. Spróbuj ponownie.",
+    "cyclicTodoAdded": "Cykliczne zadanie zostało dodane!",
+    "cyclicTodoAddedFailed": "Dodawanie cyklicznego zadania nie powiodło się. Spróbuj ponownie.",
+    "cyclicTodoDeleted": "Cykliczne zadanie zostało usunięte!",
+    "cyclicTodoDeletedFailed": "Usuwanie cyklicznego zadania nie powiodło się. Spróbuj ponownie.",
+    "cyclicTodoUpdated": "Cykliczne zadanie zostało zaktualizowane!",
+    "cyclicTodoUpdatedFailed": "Aktualizacja cyklicznego zadania nie powiodła się. Spróbuj ponownie."
   },
   "todos": {
     "title": "Zadania",
@@ -236,6 +242,21 @@
     "writeYourTaskNameForGlobalList": "Wpisz nazwę zadania do globalnej listy",
     "editYourGlobalTodo": "Edytuj swoje globalne zadanie",
     "addGlobalTask": "Dodaj globalne zadanie",
+    "updateTodo": "Zaktualizuj zadanie"
+  },
+  "cyclicTodos": {
+    "title": "Cykliczne zadania",
+    "description": "Dodaj zadania do cyklicznej listy, aby móc przypisać konkretną datę do zadania, gdy tylko będziesz potrzebować",
+    "edit": "Edytuj",
+    "delete": "Usuń"
+  },
+  "cyclicTodoForm": {
+    "todoTaskIsRequired": "Nazwa zadania jest wymagana",
+    "newCyclicTaskName": "Nowa nazwa cyklicznego zadania",
+    "editCyclicTaskName": "Edytuj nazwę cyklicznego zadania",
+    "writeYourTaskNameForCyclicList": "Wpisz nazwę zadania do cyklicznej listy",
+    "editYourCyclicTodo": "Edytuj swoje cykliczne zadanie",
+    "addCyclicTask": "Dodaj cykliczne zadanie",
     "updateTodo": "Zaktualizuj zadanie"
   }
 }

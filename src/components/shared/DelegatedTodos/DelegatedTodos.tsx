@@ -8,7 +8,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ListRestart, EllipsisVertical } from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { DelegatedTodoRow, DelegatedTodoUpdate } from "@/types/types";
@@ -36,6 +36,7 @@ import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { localeMap } from "@/lib/helpers";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { DelegatedListIcon } from "../Icons";
 
 export default function DelegatedTodos() {
   const { t } = useTranslation();
@@ -113,10 +114,9 @@ export default function DelegatedTodos() {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <ListRestart
-          className="cursor-pointer"
-          data-testid="delegated-todos-trigger"
-        />
+        <div className="cursor-pointer" data-testid="delegated-todos-trigger">
+          <DelegatedListIcon />
+        </div>
       </DrawerTrigger>
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm py-3">

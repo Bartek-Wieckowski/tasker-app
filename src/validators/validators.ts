@@ -68,6 +68,13 @@ export const globalTodoFormSchema = (t: TFunction) =>
     }),
   });
 
+export const cyclicTodoFormSchema = (t: TFunction) =>
+  z.object({
+    todo: z.string().min(2, {
+      message: t("cyclicTodoForm.todoTaskIsRequired"),
+    }),
+  });
+
 export type RegisterFormValues = z.infer<ReturnType<typeof registerFormSchema>>;
 export type LoginFormValues = z.infer<ReturnType<typeof loginFormSchema>>;
 export type UserSettingsFormInfoValues = z.infer<
@@ -82,4 +89,7 @@ export type DelegatedTodoFormValues = z.infer<
 >;
 export type GlobalTodoFormValues = z.infer<
   ReturnType<typeof globalTodoFormSchema>
+>;
+export type CyclicTodoFormValues = z.infer<
+  ReturnType<typeof cyclicTodoFormSchema>
 >;
