@@ -103,7 +103,7 @@ export const GlobalListIcon = ({ size = 24 }) => (
   </svg>
 );
 
-const CooperativeListIcon = ({ size = 24 }) => (
+export const CooperativeListIcon = ({ size = 24 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -202,94 +202,3 @@ const CooperativeListIcon = ({ size = 24 }) => (
     />
   </svg>
 );
-
-// Komponent demonstracyjny
-const TaskIconsDemo = () => {
-  return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold text-gray-800 mb-8 text-center">
-        Ikony list zadań - styl Lucide
-      </h1>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-        <div className="flex flex-col items-center space-y-3">
-          <div className="p-4 bg-white rounded-lg shadow-sm">
-            <DelegatedListIcon size={48} />
-          </div>
-          <span className="text-sm text-gray-600 text-center">
-            Lista delegowana
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center space-y-3">
-          <div className="p-4 bg-white rounded-lg shadow-sm">
-            <GlobalListIcon size={48} />
-          </div>
-          <span className="text-sm text-gray-600 text-center">
-            Lista globalna
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center space-y-3">
-          <div className="p-4 bg-white rounded-lg shadow-sm">
-            <CyclicListIcon size={48} />
-          </div>
-          <span className="text-sm text-gray-600 text-center">
-            Lista cykliczna
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center space-y-3">
-          <div className="p-4 bg-white rounded-lg shadow-sm">
-            <CooperativeListIcon size={48} />
-          </div>
-          <span className="text-sm text-gray-600 text-center">
-            Lista kooperacyjna
-          </span>
-        </div>
-      </div>
-
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <div className="p-6 bg-white rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Rozmiary:</h2>
-          <div className="flex items-center space-x-4">
-            <DelegatedListIcon size={16} />
-            <DelegatedListIcon size={24} />
-            <DelegatedListIcon size={32} />
-            <DelegatedListIcon size={48} />
-          </div>
-        </div>
-
-        <div className="p-6 bg-white rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Kolory:</h2>
-          <div className="flex items-center space-x-4">
-            <div className="text-blue-500">
-              <GlobalListIcon size={32} />
-            </div>
-            <div className="text-green-500">
-              <GlobalListIcon size={32} />
-            </div>
-            <div className="text-red-500">
-              <GlobalListIcon size={32} />
-            </div>
-            <div className="text-purple-500">
-              <GlobalListIcon size={32} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8 p-6 bg-white rounded-lg shadow-sm max-w-2xl mx-auto">
-        <h2 className="text-lg font-semibold mb-4">Użycie komponentów:</h2>
-        <div className="bg-gray-100 p-4 rounded text-sm font-mono space-y-1">
-          <div>{"<DelegatedListIcon size={24} />"}</div>
-          <div>{"<GlobalListIcon size={24} />"}</div>
-          <div>{"<CyclicListIcon size={24} />"}</div>
-          <div>{"<CooperativeListIcon size={24} />"}</div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default TaskIconsDemo;
