@@ -69,6 +69,12 @@ export type GlobalTodoInsert =
 export type GlobalTodoUpdate =
   Database["public"]["Tables"]["global_todos"]["Update"];
 
+export type CyclicTodoRow = Database["public"]["Tables"]["cyclic_todos"]["Row"];
+export type CyclicTodoInsert =
+  Database["public"]["Tables"]["cyclic_todos"]["Insert"];
+export type CyclicTodoUpdate =
+  Database["public"]["Tables"]["cyclic_todos"]["Update"];
+
 export type SearchGlobalContextType = {
   searchValueGlobal: string;
   setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;

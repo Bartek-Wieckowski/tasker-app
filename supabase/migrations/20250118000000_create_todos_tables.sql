@@ -49,6 +49,16 @@ CREATE TABLE IF NOT EXISTS "public"."global_todos" (
     CONSTRAINT "global_todos_pkey" PRIMARY KEY ("id")
 );
 
+-- Create cyclic_todos table for future functionality
+CREATE TABLE IF NOT EXISTS "public"."cyclic_todos" (
+    "id" "uuid" DEFAULT gen_random_uuid() NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "todo" "text" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT now() NOT NULL,
+    "updated_at" timestamp with time zone,
+    CONSTRAINT "cyclic_todos_pkey" PRIMARY KEY ("id")
+);
+
 -- Add foreign key constraints
 ALTER TABLE ONLY "public"."todos"
     ADD CONSTRAINT "todos_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."db_users"("id") ON DELETE CASCADE;
@@ -59,6 +69,9 @@ ALTER TABLE ONLY "public"."delegated_todos"
 
 ALTER TABLE ONLY "public"."global_todos"
     ADD CONSTRAINT "global_todos_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."db_users"("id") ON DELETE CASCADE;
+
+ALTER TABLE ONLY "public"."cyclic_todos"
+    ADD CONSTRAINT "cyclic_todos_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."db_users"("id") ON DELETE CASCADE;
 
 -- Create indexes for better performance
 CREATE INDEX "idx_todos_user_id" ON "public"."todos" USING "btree" ("user_id");
@@ -72,10 +85,13 @@ CREATE INDEX "idx_delegated_todos_delegated_by" ON "public"."delegated_todos" US
 
 CREATE INDEX "idx_global_todos_user_id" ON "public"."global_todos" USING "btree" ("user_id");
 
+CREATE INDEX "idx_cyclic_todos_user_id" ON "public"."cyclic_todos" USING "btree" ("user_id");
+
 -- Enable Row Level Security
 ALTER TABLE "public"."todos" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."delegated_todos" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."global_todos" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "public"."cyclic_todos" ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for todos table
 CREATE POLICY "Users can view their own todos" ON "public"."todos"
@@ -116,6 +132,21 @@ CREATE POLICY "Users can update global todos they created or are assigned to" ON
 CREATE POLICY "Users can delete global todos they created" ON "public"."global_todos"
     FOR DELETE USING (auth.uid() = user_id);
 
+-- RLS Policies for cyclic_todos table
+CREATE POLICY "Users can view cyclic todos assigned to them" ON "public"."cyclic_todos"
+    FOR SELECT USING (auth.uid() = user_id);
+
+
+CREATE POLICY "Users can insert cyclic todos" ON "public"."cyclic_todos"
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update cyclic todos assigned to them" ON "public"."cyclic_todos"
+    FOR UPDATE USING (auth.uid() = user_id);
+
+
+CREATE POLICY "Users can delete cyclic todos assigned to them" ON "public"."cyclic_todos"
+    FOR DELETE USING (auth.uid() = user_id);
+
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -135,9 +166,13 @@ CREATE TRIGGER update_delegated_todos_updated_at BEFORE UPDATE ON "public"."dele
 CREATE TRIGGER update_global_todos_updated_at BEFORE UPDATE ON "public"."global_todos"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_cyclic_todos_updated_at BEFORE UPDATE ON "public"."cyclic_todos"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- Grant permissions
 GRANT ALL ON TABLE "public"."todos" TO "authenticated";
 GRANT ALL ON TABLE "public"."delegated_todos" TO "authenticated";
 GRANT ALL ON TABLE "public"."global_todos" TO "authenticated";
+GRANT ALL ON TABLE "public"."cyclic_todos" TO "authenticated";
 
 GRANT USAGE ON SCHEMA "public" TO "authenticated";

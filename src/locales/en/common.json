@@ -91,7 +91,13 @@
     "delegatedTodoDeleted": "Delegated todo deleted successfully!",
     "delegatedTodoDeletedFailed": "Deleting delegated todo failed. Please try again.",
     "delegatedTodoUpdated": "Delegated todo updated successfully!",
-    "delegatedTodoUpdatedFailed": "Updating delegated todo failed. Please try again."
+    "delegatedTodoUpdatedFailed": "Updating delegated todo failed. Please try again.",
+    "cyclicTodoAdded": "Cyclic todo added successfully!",
+    "cyclicTodoAddedFailed": "Adding cyclic todo failed. Please try again.",
+    "cyclicTodoDeleted": "Cyclic todo deleted successfully!",
+    "cyclicTodoDeletedFailed": "Deleting cyclic todo failed. Please try again.",
+    "cyclicTodoUpdated": "Cyclic todo updated successfully!",
+    "cyclicTodoUpdatedFailed": "Updating cyclic todo failed. Please try again."
   },
   "todos": {
     "title": "Tasks",
@@ -120,8 +126,9 @@
     "delete": "Delete",
     "deleting": "Deleting...",
     "edit": "Edit",
-    "adding": "Adding...",
-    "updating": "Updating..."
+    "updating": "Updating...",
+    "add": "Add",
+    "adding": "Adding..."
   },
   "datePicker": {
     "pickDate": "Pick a date"
@@ -234,5 +241,20 @@
     "editYourGlobalTodo": "Edit your global todo",
     "addGlobalTask": "Add global task",
     "updateTodo": "Update todo"
+  },
+  "cyclicTodos": {
+    "title": "Cyclic tasks",
+    "description": "Add tasks to a cyclic list that you can assign a specific date to a task when you need it",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "cyclicTodoForm": {
+    "todoTaskIsRequired": "Task name is required",
+    "newCyclicTaskName": "New cyclic task name",
+    "editCyclicTaskName": "Edit cyclic task name",
+    "writeYourTaskNameForCyclicList": "Write your task name for cyclic list",
+    "editYourCyclicTodo": "Edit your cyclic todo",
+    "addCyclicTask": "Add cyclic task",
+    "updateTodo": "Update cyclic todo"
   }
 }
