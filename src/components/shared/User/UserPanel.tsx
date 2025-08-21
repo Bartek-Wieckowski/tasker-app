@@ -21,6 +21,7 @@ import { Loader as LoaderIcon } from "lucide-react";
 import Loader from "../Loader";
 import UserSettingsFormInfo from "./UserSettingsFormInfo";
 import UserSettingsFormPassword from "./UserSettingsFormPassword";
+import { UserSettingsNotifications } from "./UserSettingsNotifications";
 import { useTranslation } from "react-i18next";
 
 const UserPanel = () => {
@@ -68,6 +69,7 @@ const UserPanel = () => {
                   <DialogTitle>{t("userSettingsForm.editProfile")}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-3 p-4">
+                  <UserSettingsNotifications />
                   <UserSettingsFormInfo />
                   <UserSettingsFormPassword />
                 </div>

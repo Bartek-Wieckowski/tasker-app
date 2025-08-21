@@ -12,7 +12,7 @@ const Homepage = lazy(() => import("./pages/Homepage"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const TodosList = lazy(() => import("./components/shared/Todos/TodosList"));
-const Todopage = lazy(() => import('./pages/Todopage'));
+const Todopage = lazy(() => import("./pages/Todopage"));
 
 const App = () => {
   return (
@@ -33,7 +33,10 @@ const App = () => {
                   <Route element={<AppLayout />}>
                     <Route path={ROUTES.home} element={<Homepage />}>
                       <Route index element={<TodosList />} />
-                      <Route path={ROUTES.todoDetails(':id')} element={<Todopage />} />
+                      <Route
+                        path={ROUTES.todoDetails(":id")}
+                        element={<Todopage />}
+                      />
                     </Route>
                   </Route>
                 </Route>

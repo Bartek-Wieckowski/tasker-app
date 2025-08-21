@@ -49,6 +49,18 @@
     "emailInvalid": "Wprowadź prawidłowy adres email",
     "passwordMinLength": "Hasło musi mieć co najmniej 8 znaków"
   },
+  "userSettingsNotifications": {
+    "loading": "Ładowanie...",
+    "browserNotSupported": "Powiadomienia nie są obsługiwane w tej przeglądarce",
+    "title": "Powiadomienia o zadaniach",
+    "descriptionTitle": "Co dają powiadomienia?",
+    "description": "Otrzymasz przypomnienia o niezrealizowanych zadaniach",
+    "description2": "Sprawdzanie odbywa się automatycznie codziennie",
+    "description3": "Powiadomienia tylko gdy masz aktywne zadania",
+    "description4": "Możesz je wyłączyć w każdej chwili",
+    "enabled": "Włączone",
+    "disabled": "Wyłączone"
+  },
   "toastMsg": {
     "welcomeMessage": "Witamy w Taskerze!",
     "createAccountSuccess": "Konto zostało utworzone!",
