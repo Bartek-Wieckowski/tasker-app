@@ -20,10 +20,10 @@ DECLARE
   processed_count integer DEFAULT 0;
   skipped_count integer DEFAULT 0;
 BEGIN
-  -- Get current date in YYYY-MM-DD format (same as dateCustomFormatting)
-  today_date := to_char(CURRENT_DATE, 'YYYY-MM-DD');
+  -- Get current date in YYYY-MM-DD format for Polish timezone (Europe/Warsaw)
+  today_date := to_char((now() at time zone 'Europe/Warsaw')::date, 'YYYY-MM-DD');
   
-  RAISE NOTICE '🔄 Starting cyclic todos processing for date: %', today_date;
+  RAISE NOTICE '🔄 Starting cyclic todos processing for local (Europe/Warsaw) date: %', today_date;
   
   -- Count total cyclic todos
   SELECT COUNT(*) INTO total_cyclic FROM cyclic_todos;
@@ -51,8 +51,7 @@ BEGIN
     RAISE NOTICE '🔍 Checking cyclic todo: "%" for user %', 
       cyclic_todo_record.todo, cyclic_todo_record.user_id;
     
-    -- Check if todo already exists for this user and today 
-    -- Either with same content OR with same original_todo_id (manually repeated)
+    -- Check if todo already exists for this user and today (local date)
     SELECT COUNT(*) INTO existing_todo_count
     FROM todos 
     WHERE user_id = cyclic_todo_record.user_id 
@@ -155,8 +154,7 @@ $$;
 GRANT EXECUTE ON FUNCTION process_cyclic_todos_internal() TO service_role;
 GRANT EXECUTE ON FUNCTION manually_process_cyclic_todos() TO authenticated;
 
--- Schedule the function to run daily at 00:01 (for production)
--- In local environment you can comment it out or change the time
+-- Schedule the function to run daily at 00:01 UTC (logic inside function converts to local time)
 SELECT cron.schedule(
   'process-cyclic-todos-daily',
   '1 0 * * *', -- Every day at 00:01 UTC

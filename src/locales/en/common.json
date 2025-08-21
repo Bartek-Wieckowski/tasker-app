@@ -46,6 +46,18 @@
     "emailInvalid": "Please enter a valid email address",
     "passwordMinLength": "Password must be at least 8 characters"
   },
+  "userSettingsNotifications": {
+    "loading": "Loading...",
+    "browserNotSupported": "Notifications are not supported in this browser",
+    "title": "Notifications",
+    "descriptionTitle": "What do notifications give you?",
+    "description": "You will receive reminders about uncompleted tasks",
+    "description2": "Checking is done automatically daily",
+    "description3": "Notifications only when you have active tasks",
+    "description4": "You can disable them at any time",
+    "enabled": "Enabled",
+    "disabled": "Disabled"
+  },
   "toastMsg": {
     "welcomeMessage": "Welcome to Tasker!",
     "createAccountSuccess": "Account created successfully!",

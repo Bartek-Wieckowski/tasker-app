@@ -177,6 +177,103 @@ export type Database = {
           },
         ]
       }
+      notification_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          incomplete_todos_count: number | null
+          message: string
+          notification_type: string
+          sent_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          incomplete_todos_count?: number | null
+          message: string
+          notification_type?: string
+          sent_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          incomplete_todos_count?: number | null
+          message?: string
+          notification_type?: string
+          sent_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "db_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          browser_name: string | null
+          created_at: string
+          device_type: string | null
+          endpoint: string
+          id: string
+          is_active: boolean
+          last_used_at: string | null
+          p256dh_key: string
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth_key: string
+          browser_name?: string | null
+          created_at?: string
+          device_type?: string | null
+          endpoint: string
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          p256dh_key: string
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth_key?: string
+          browser_name?: string | null
+          created_at?: string
+          device_type?: string | null
+          endpoint?: string
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          p256dh_key?: string
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "db_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
           created_at: string
@@ -246,15 +343,43 @@ export type Database = {
           schedule: string
         }[]
       }
+      check_daily_notifications_cron_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active: boolean
+          command: string
+          job_name: string
+          last_run_started_at: string
+          last_run_status: string
+          next_run_time: string
+          schedule: string
+        }[]
+      }
+      check_test_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       clean_test_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      cleanup_inactive_push_subscriptions: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      cleanup_old_notification_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       deactivate_user: {
         Args: { p_user_id: string }
         Returns: undefined
       }
       manually_process_cyclic_todos: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      manually_trigger_daily_notifications: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
@@ -274,6 +399,14 @@ export type Database = {
       }
       stop_cyclic_todos_test_cron: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      test_edge_function_health: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      toggle_daily_notifications_cron: {
+        Args: { enable_job?: boolean }
         Returns: string
       }
     }
