@@ -1,7 +1,7 @@
 // Utilities do obsługi Push Notifications
 import { supabase } from "./supabaseClient";
 
-// Pobierz klucz publiczny z .env
+// Pobierz klucz publiczny z .env!
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 if (!VAPID_PUBLIC_KEY) {
