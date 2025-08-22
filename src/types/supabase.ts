@@ -51,16 +51,19 @@ export type Database = {
           email: string
           id: string
           is_active: boolean
+          lang: string
         }
         Insert: {
           email: string
           id: string
           is_active?: boolean
+          lang?: string
         }
         Update: {
           email?: string
           id?: string
           is_active?: boolean
+          lang?: string
         }
         Relationships: []
       }
@@ -401,6 +404,7 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+<<<<<<< HEAD
       test_edge_function_health: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -409,6 +413,12 @@ export type Database = {
         Args: { enable_job?: boolean }
         Returns: string
       }
+=======
+      trigger_daily_notifications: {
+        Args: { is_production?: boolean }
+        Returns: Json
+      }
+>>>>>>> origin/main
     }
     Enums: {
       [_ in never]: never

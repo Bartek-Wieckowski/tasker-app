@@ -53,6 +53,10 @@ Deno.serve(async (req) => {
         `
         id,
         email,
+<<<<<<< HEAD
+=======
+        lang,
+>>>>>>> origin/main
         todos!inner(id, is_completed, todo_date)
       `
       )
@@ -110,14 +114,25 @@ Deno.serve(async (req) => {
     // Grupuj todos według użytkownika
     const userTodoCounts: Record<
       string,
+<<<<<<< HEAD
       { id: string; email: string; count: number }
     > = {};
     usersWithTodos.forEach(
       (user: { id: string; email: string; todos: unknown[] }) => {
+=======
+      { id: string; email: string; lang: string; count: number }
+    > = {};
+    usersWithTodos.forEach(
+      (user: { id: string; email: string; lang: string; todos: unknown[] }) => {
+>>>>>>> origin/main
         if (!userTodoCounts[user.id]) {
           userTodoCounts[user.id] = {
             id: user.id,
             email: user.email,
+<<<<<<< HEAD
+=======
+            lang: user.lang || "en",
+>>>>>>> origin/main
             count: 0,
           };
         }
@@ -182,6 +197,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
+<<<<<<< HEAD
         // Payload
         const notificationPayload = {
           title: "Niezrealizowane zadania",
@@ -190,6 +206,22 @@ Deno.serve(async (req) => {
               ? "niezrealizowane zadanie"
               : "niezrealizowanych zadań"
           } na dziś`,
+=======
+        // Payload z obsługą języków - defensywne sprawdzenie
+        const userLanguage = user.lang || "en"; // fallback na wypadek NULL/undefined
+        const isPolish = userLanguage === "pl";
+        const notificationPayload = {
+          title: isPolish ? "Niezrealizowane zadania" : "Incomplete tasks",
+          body: isPolish
+            ? `Masz ${user.count} ${
+                user.count === 1
+                  ? "niezrealizowane zadanie"
+                  : "niezrealizowanych zadań"
+              } na dziś`
+            : `You have ${user.count} incomplete ${
+                user.count === 1 ? "task" : "tasks"
+              } for today`,
+>>>>>>> origin/main
           icon: "/vite.svg",
           badge: "/vite.svg",
           data: { url: "/", user_id: user.id, date: today, count: user.count },

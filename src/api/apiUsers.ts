@@ -494,3 +494,27 @@ export async function updateUserPassword(passwordData: UpdateUserPassword) {
     throw { code: "UPDATE_PASSWORD_ERROR" };
   }
 }
+
+export async function updateUserLanguage(language: "en" | "pl") {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    throw { code: "NO_USER_FOUND" };
+  }
+
+  const { error } = await supabase
+    .from("db_users")
+    .update({ lang: language })
+    .eq("id", user.id)
+    .eq("is_active", true);
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "UPDATE_LANGUAGE_ERROR" };
+  }
+}
