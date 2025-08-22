@@ -3,10 +3,7 @@ import { supabase } from "./supabaseClient";
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 if (!VAPID_PUBLIC_KEY) {
-  if (import.meta.env.DEV) {
-    console.warn("⚠️ VITE_VAPID_PUBLIC_KEY doesn't exist in .env");
-  }
-  throw new Error("VITE_VAPID_PUBLIC_KEY doesn't exist in .env");
+  console.warn("⚠️ VITE_VAPID_PUBLIC_KEY doesn't exist in .env");
 }
 
 /**
