@@ -1,6 +1,13 @@
 -- POPRAWIONA migracja cron - zawsze 19:00 czasu Warsaw
 
+-- Włącz wymagane rozszerzenia
 CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Stwórz schemat net jeśli nie istnieje
+CREATE SCHEMA IF NOT EXISTS net;
+
+-- Dodaj rozszerzenie http do schematu net
+CREATE EXTENSION IF NOT EXISTS http WITH SCHEMA net;
 
 -- Usuń istniejący job
 DO $$
@@ -31,7 +38,7 @@ SELECT cron.schedule(
   $$
 );
 
--- ✅ Funkcja do manualnego testowania
+-- ✅ Funkcja do manualnego testowania (lokalnie)
 CREATE OR REPLACE FUNCTION manually_trigger_daily_notifications()
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -61,7 +68,56 @@ BEGIN
   
   RETURN jsonb_build_object(
     'success', true,
-    'message', 'Manual trigger executed',
+    'message', 'Manual trigger executed (LOCAL)',
+    'response_status', response_status,
+    'response_body', response_body,
+    'full_response', result,
+    'timestamp', (now() at time zone 'Europe/Warsaw')
+  );
+  
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'error', SQLERRM,
+      'error_detail', SQLSTATE,
+      'timestamp', (now() at time zone 'Europe/Warsaw')
+    );
+END;
+$$;
+
+-- ✅ Funkcja do manualnego testowania NA PRODUKCJI
+CREATE OR REPLACE FUNCTION manually_trigger_daily_notifications_in_production()
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  result jsonb;
+  response_status integer;
+  response_body text;
+BEGIN
+  SELECT 
+    net.http_post(
+      url := 'https://slktbcjeorvwagukcvmw.supabase.co/functions/v1/send_daily_notifications',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || current_setting('app.settings.default', true)
+      ),
+      body := jsonb_build_object(
+        'manual_trigger', true,
+        'test_mode', false,
+        'production_test', true,
+        'timestamp', (now() at time zone 'Europe/Warsaw')::text
+      )
+    ) INTO result;
+  
+  response_status := (result->'status')::integer;
+  response_body := result->>'body';
+  
+  RETURN jsonb_build_object(
+    'success', true,
+    'message', 'Manual trigger executed on PRODUCTION',
     'response_status', response_status,
     'response_body', response_body,
     'full_response', result,
@@ -213,6 +269,7 @@ $$;
 -- Uprawnienia
 GRANT EXECUTE ON FUNCTION check_daily_notifications_cron_status() TO authenticated;
 GRANT EXECUTE ON FUNCTION manually_trigger_daily_notifications() TO authenticated;
+GRANT EXECUTE ON FUNCTION manually_trigger_daily_notifications_in_production() TO authenticated;
 GRANT EXECUTE ON FUNCTION toggle_daily_notifications_cron(boolean) TO authenticated;
 GRANT EXECUTE ON FUNCTION test_edge_function_health() TO authenticated;
 GRANT EXECUTE ON FUNCTION check_test_data() TO authenticated;
@@ -222,8 +279,12 @@ DO $$
 BEGIN
   RAISE NOTICE '🔧 TESTING CHECKLIST:';
   RAISE NOTICE '1. SELECT check_test_data(); -- Sprawdź czy masz testowe dane';
-  RAISE NOTICE '2. SELECT test_edge_function_health(); -- Sprawdź czy Edge Function odpowiada';
-  RAISE NOTICE '3. SELECT manually_trigger_daily_notifications(); -- Przetestuj wysyłanie';
-  RAISE NOTICE '4. SELECT * FROM notification_logs ORDER BY created_at DESC; -- Sprawdź logi';
-  RAISE NOTICE '5. SELECT * FROM check_daily_notifications_cron_status(); -- Status cron';
+  RAISE NOTICE '2. SELECT test_edge_function_health(); -- Sprawdź czy Edge Function odpowiada (LOCAL)';
+  RAISE NOTICE '3. SELECT manually_trigger_daily_notifications(); -- Przetestuj wysyłanie (LOCAL)';
+  RAISE NOTICE '4. SELECT manually_trigger_daily_notifications_in_production(); -- Przetestuj wysyłanie (PRODUKCJA)';
+  RAISE NOTICE '5. SELECT * FROM notification_logs ORDER BY created_at DESC; -- Sprawdź logi';
+  RAISE NOTICE '6. SELECT * FROM check_daily_notifications_cron_status(); -- Status cron';
+  RAISE NOTICE '';
+  RAISE NOTICE '🚀 PRODUCTION TEST:';
+  RAISE NOTICE 'SELECT manually_trigger_daily_notifications_in_production(); -- Testuj na produkcji';
 END $$;
