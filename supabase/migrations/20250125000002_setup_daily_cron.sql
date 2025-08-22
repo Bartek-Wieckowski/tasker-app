@@ -3,11 +3,81 @@
 -- Włącz wymagane rozszerzenia
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
--- Stwórz schemat net jeśli nie istnieje
-CREATE SCHEMA IF NOT EXISTS net;
-
--- Dodaj rozszerzenie http do schematu net
-CREATE EXTENSION IF NOT EXISTS http WITH SCHEMA net;
+-- Skonfiguruj dostęp do funkcji HTTP - UPROSZCZONA WERSJA
+DO $$
+DECLARE
+  ext_schema text;
+  func_exists boolean := false;
+BEGIN
+  -- Stwórz schemat net jeśli nie istnieje
+  CREATE SCHEMA IF NOT EXISTS net;
+  
+  -- Znajdź w którym schemacie są funkcje http_post
+  SELECT n.nspname INTO ext_schema
+  FROM pg_proc p 
+  JOIN pg_namespace n ON p.pronamespace = n.oid
+  WHERE p.proname = 'http_post'
+  LIMIT 1;
+  
+  -- Sprawdź czy net.http_post już istnieje
+  SELECT EXISTS(
+    SELECT 1 FROM pg_proc p 
+    JOIN pg_namespace n ON p.pronamespace = n.oid
+    WHERE n.nspname = 'net' AND p.proname = 'http_post'
+  ) INTO func_exists;
+  
+  IF ext_schema IS NULL THEN
+    -- Brak funkcji http - spróbuj zainstalować rozszerzenie
+    BEGIN
+      CREATE EXTENSION IF NOT EXISTS http;
+      RAISE NOTICE 'Rozszerzenie http zainstalowane';
+      -- Sprawdź ponownie gdzie wylądowało
+      SELECT n.nspname INTO ext_schema
+      FROM pg_proc p 
+      JOIN pg_namespace n ON p.pronamespace = n.oid
+      WHERE p.proname = 'http_post'
+      LIMIT 1;
+    EXCEPTION
+      WHEN OTHERS THEN
+        RAISE NOTICE 'Nie udało się zainstalować rozszerzenia http: % %', SQLSTATE, SQLERRM;
+        RETURN; -- Wyjdź jeśli nie możemy zainstalować
+    END;
+  END IF;
+  
+  -- Jeśli funkcje nie są w net, stwórz aliasy
+  IF ext_schema IS NOT NULL AND ext_schema != 'net' AND NOT func_exists THEN
+    BEGIN
+      EXECUTE format('
+        CREATE OR REPLACE FUNCTION net.http_post(
+          url text,
+          headers jsonb DEFAULT NULL,
+          body jsonb DEFAULT NULL
+        ) RETURNS jsonb
+        LANGUAGE sql SECURITY DEFINER
+        AS $func$ SELECT %I.http_post($1, $2::text, $3::text)::jsonb $func$;
+      ', ext_schema);
+      
+      EXECUTE format('
+        CREATE OR REPLACE FUNCTION net.http_get(
+          url text,
+          headers jsonb DEFAULT NULL
+        ) RETURNS jsonb
+        LANGUAGE sql SECURITY DEFINER
+        AS $func$ SELECT %I.http_get($1, $2::text)::jsonb $func$;
+      ', ext_schema);
+      
+      RAISE NOTICE 'Funkcje proxy utworzone: net.http_post, net.http_get -> %.http_*', ext_schema;
+    EXCEPTION
+      WHEN OTHERS THEN
+        RAISE NOTICE 'Błąd podczas tworzenia funkcji proxy: % %', SQLSTATE, SQLERRM;
+    END;
+  ELSIF func_exists THEN
+    RAISE NOTICE 'Funkcje net.http_* już istnieją';
+  ELSE
+    RAISE NOTICE 'Funkcje http są już w schemacie net';
+  END IF;
+  
+END $$;
 
 -- Usuń istniejący job
 DO $$
