@@ -1,23 +1,53 @@
--- POPRAWIONA migracja cron - zawsze 19:00 czasu Warsaw
+-- ========================================
+-- POPRAWIONA migracja cron - zawsze 19:00 czasu Warsaw + diagnostyka HTTP
+-- ========================================
 
 -- Włącz wymagane rozszerzenia
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
--- Skonfiguruj dostęp do funkcji HTTP - UPROSZCZONA WERSJA
+-- Skonfiguruj dostęp do funkcji HTTP - ULEPSZONA WERSJA Z DIAGNOSTYKĄ
 DO $$
 DECLARE
   ext_schema text;
   func_exists boolean := false;
+  http_post_signature text;
+  http_get_signature text;
 BEGIN
   -- Stwórz schemat net jeśli nie istnieje
   CREATE SCHEMA IF NOT EXISTS net;
   
-  -- Znajdź w którym schemacie są funkcje http_post
-  SELECT n.nspname INTO ext_schema
+  -- DIAGNOSTYKA: Znajdź wszystkie funkcje HTTP
+  RAISE NOTICE '=== DIAGNOSTYKA FUNKCJI HTTP ===';
+  FOR ext_schema IN 
+    SELECT DISTINCT n.nspname
+    FROM pg_proc p 
+    JOIN pg_namespace n ON p.pronamespace = n.oid
+    WHERE p.proname ILIKE '%http%'
+  LOOP
+    RAISE NOTICE 'Znaleziono funkcje HTTP w schemacie: %', ext_schema;
+  END LOOP;
+  
+  -- Znajdź http_post z dokładną sygnaturą
+  SELECT 
+    n.nspname,
+    pg_get_function_identity_arguments(p.oid)
+  INTO ext_schema, http_post_signature
   FROM pg_proc p 
   JOIN pg_namespace n ON p.pronamespace = n.oid
   WHERE p.proname = 'http_post'
+  ORDER BY n.nspname = 'public' DESC, n.nspname  -- Preferuj public
   LIMIT 1;
+  
+  -- Znajdź http_get z dokładną sygnaturą
+  SELECT pg_get_function_identity_arguments(p.oid)
+  INTO http_get_signature
+  FROM pg_proc p 
+  JOIN pg_namespace n ON p.pronamespace = n.oid
+  WHERE p.proname = 'http_get' AND n.nspname = COALESCE(ext_schema, 'public')
+  LIMIT 1;
+  
+  RAISE NOTICE 'http_post znalezione w schemacie: % z sygnaturą: %', ext_schema, http_post_signature;
+  RAISE NOTICE 'http_get sygnatura: %', http_get_signature;
   
   -- Sprawdź czy net.http_post już istnieje
   SELECT EXISTS(
@@ -28,53 +58,106 @@ BEGIN
   
   IF ext_schema IS NULL THEN
     -- Brak funkcji http - spróbuj zainstalować rozszerzenie
+    RAISE NOTICE 'Funkcje HTTP nie znalezione, próbuję zainstalować rozszerzenie...';
     BEGIN
       CREATE EXTENSION IF NOT EXISTS http;
-      RAISE NOTICE 'Rozszerzenie http zainstalowane';
+      RAISE NOTICE '✅ Rozszerzenie http zainstalowane';
+      
       -- Sprawdź ponownie gdzie wylądowało
-      SELECT n.nspname INTO ext_schema
+      SELECT 
+        n.nspname,
+        pg_get_function_identity_arguments(p.oid)
+      INTO ext_schema, http_post_signature
       FROM pg_proc p 
       JOIN pg_namespace n ON p.pronamespace = n.oid
       WHERE p.proname = 'http_post'
       LIMIT 1;
+      
+      SELECT pg_get_function_identity_arguments(p.oid)
+      INTO http_get_signature
+      FROM pg_proc p 
+      JOIN pg_namespace n ON p.pronamespace = n.oid
+      WHERE p.proname = 'http_get' AND n.nspname = ext_schema
+      LIMIT 1;
+      
+      RAISE NOTICE '✅ Po instalacji - http_post w schemacie: % sygnatura: %', ext_schema, http_post_signature;
     EXCEPTION
       WHEN OTHERS THEN
-        RAISE NOTICE 'Nie udało się zainstalować rozszerzenia http: % %', SQLSTATE, SQLERRM;
+        RAISE NOTICE '❌ Nie udało się zainstalować rozszerzenia http: % %', SQLSTATE, SQLERRM;
         RETURN; -- Wyjdź jeśli nie możemy zainstalować
     END;
   END IF;
   
-  -- Jeśli funkcje nie są w net, stwórz aliasy
+  -- Jeśli funkcje nie są w net, stwórz aliasy z właściwą sygnaturą
   IF ext_schema IS NOT NULL AND ext_schema != 'net' AND NOT func_exists THEN
     BEGIN
-      EXECUTE format('
-        CREATE OR REPLACE FUNCTION net.http_post(
-          url text,
-          headers jsonb DEFAULT NULL,
-          body jsonb DEFAULT NULL
-        ) RETURNS jsonb
-        LANGUAGE sql SECURITY DEFINER
-        AS $func$ SELECT %I.http_post($1, $2::text, $3::text)::jsonb $func$;
-      ', ext_schema);
+      -- Różne warianty sygnatur - dostosuj do rzeczywistej
+      IF http_post_signature LIKE '%text, text, text%' THEN
+        -- Standardowa sygnatura: (url text, headers text, body text)
+        EXECUTE format('
+          CREATE OR REPLACE FUNCTION net.http_post(
+            url text,
+            headers jsonb DEFAULT NULL,
+            body jsonb DEFAULT NULL
+          ) RETURNS jsonb
+          LANGUAGE sql SECURITY DEFINER
+          AS $func$ SELECT %I.http_post($1, $2::text, $3::text)::jsonb $func$;
+        ', ext_schema);
+      ELSIF http_post_signature LIKE '%text, jsonb, jsonb%' THEN
+        -- Sygnatura z jsonb: (url text, headers jsonb, body jsonb)  
+        EXECUTE format('
+          CREATE OR REPLACE FUNCTION net.http_post(
+            url text,
+            headers jsonb DEFAULT NULL,
+            body jsonb DEFAULT NULL
+          ) RETURNS jsonb
+          LANGUAGE sql SECURITY DEFINER
+          AS $func$ SELECT %I.http_post($1, $2, $3)::jsonb $func$;
+        ', ext_schema);
+      ELSE
+        -- Fallback - spróbuj standardowego
+        EXECUTE format('
+          CREATE OR REPLACE FUNCTION net.http_post(
+            url text,
+            headers jsonb DEFAULT NULL,
+            body jsonb DEFAULT NULL
+          ) RETURNS jsonb
+          LANGUAGE sql SECURITY DEFINER
+          AS $func$ SELECT %I.http_post($1, COALESCE($2::text, ''''), COALESCE($3::text, ''''))::jsonb $func$;
+        ', ext_schema);
+      END IF;
       
-      EXECUTE format('
-        CREATE OR REPLACE FUNCTION net.http_get(
-          url text,
-          headers jsonb DEFAULT NULL
-        ) RETURNS jsonb
-        LANGUAGE sql SECURITY DEFINER
-        AS $func$ SELECT %I.http_get($1, $2::text)::jsonb $func$;
-      ', ext_schema);
+      -- http_get
+      IF http_get_signature LIKE '%text, text%' THEN
+        EXECUTE format('
+          CREATE OR REPLACE FUNCTION net.http_get(
+            url text,
+            headers jsonb DEFAULT NULL
+          ) RETURNS jsonb
+          LANGUAGE sql SECURITY DEFINER
+          AS $func$ SELECT %I.http_get($1, $2::text)::jsonb $func$;
+        ', ext_schema);
+      ELSE
+        EXECUTE format('
+          CREATE OR REPLACE FUNCTION net.http_get(
+            url text,
+            headers jsonb DEFAULT NULL
+          ) RETURNS jsonb
+          LANGUAGE sql SECURITY DEFINER
+          AS $func$ SELECT %I.http_get($1, COALESCE($2::text, ''''))::jsonb $func$;
+        ', ext_schema);
+      END IF;
       
-      RAISE NOTICE 'Funkcje proxy utworzone: net.http_post, net.http_get -> %.http_*', ext_schema;
+      RAISE NOTICE '✅ Funkcje proxy utworzone: net.http_post, net.http_get -> %.http_*', ext_schema;
     EXCEPTION
       WHEN OTHERS THEN
-        RAISE NOTICE 'Błąd podczas tworzenia funkcji proxy: % %', SQLSTATE, SQLERRM;
+        RAISE NOTICE '❌ Błąd podczas tworzenia funkcji proxy: % %', SQLSTATE, SQLERRM;
+        RAISE NOTICE 'Sygnatura http_post: %, http_get: %', http_post_signature, http_get_signature;
     END;
   ELSIF func_exists THEN
-    RAISE NOTICE 'Funkcje net.http_* już istnieją';
+    RAISE NOTICE '✅ Funkcje net.http_* już istnieją';
   ELSE
-    RAISE NOTICE 'Funkcje http są już w schemacie net';
+    RAISE NOTICE '✅ Funkcje http są już w schemacie net';
   END IF;
   
 END $$;
@@ -108,7 +191,7 @@ SELECT cron.schedule(
   $$
 );
 
--- ✅ Funkcja do manualnego testowania (lokalnie)
+-- ✅ Funkcja do manualnego testowania (lokalnie) - POPRAWIONA
 CREATE OR REPLACE FUNCTION manually_trigger_daily_notifications()
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -116,7 +199,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
   result jsonb;
-  response_status integer;
+  response_status text; -- POPRAWKA: zmienione z integer na text
   response_body text;
 BEGIN
   SELECT 
@@ -133,8 +216,22 @@ BEGIN
       )
     ) INTO result;
   
-  response_status := (result->'status')::integer;
-  response_body := result->>'body';
+  -- POPRAWKA: Bezpieczne wyciąganie statusu - różne możliwości
+  response_status := COALESCE(
+    result->>'status',           -- String status
+    (result->'status_code')::text, -- Numeric status_code as text
+    (result->'statusCode')::text,  -- camelCase variant
+    (result->'code')::text,      -- Alternative field name
+    'unknown'
+  );
+  
+  response_body := COALESCE(
+    result->>'body',
+    result->>'content', 
+    result->>'response',
+    result->>'data',
+    result::text
+  );
   
   RETURN jsonb_build_object(
     'success', true,
@@ -142,6 +239,7 @@ BEGIN
     'response_status', response_status,
     'response_body', response_body,
     'full_response', result,
+    'response_structure', (SELECT jsonb_agg(key) FROM jsonb_object_keys(result) key),
     'timestamp', (now() at time zone 'Europe/Warsaw')
   );
   
@@ -156,7 +254,7 @@ EXCEPTION
 END;
 $$;
 
--- ✅ Funkcja do manualnego testowania NA PRODUKCJI
+-- ✅ Funkcja do manualnego testowania NA PRODUKCJI - POPRAWIONA
 CREATE OR REPLACE FUNCTION manually_trigger_daily_notifications_in_production()
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -164,7 +262,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
   result jsonb;
-  response_status integer;
+  response_status text; -- POPRAWKA: zmienione z integer na text
   response_body text;
 BEGIN
   SELECT 
@@ -182,8 +280,22 @@ BEGIN
       )
     ) INTO result;
   
-  response_status := (result->'status')::integer;
-  response_body := result->>'body';
+  -- POPRAWKA: Bezpieczne wyciąganie statusu - różne możliwości
+  response_status := COALESCE(
+    result->>'status',           -- String status
+    (result->'status_code')::text, -- Numeric status_code as text
+    (result->'statusCode')::text,  -- camelCase variant
+    (result->'code')::text,      -- Alternative field name
+    'unknown'
+  );
+  
+  response_body := COALESCE(
+    result->>'body',
+    result->>'content', 
+    result->>'response',
+    result->>'data',
+    result::text
+  );
   
   RETURN jsonb_build_object(
     'success', true,
@@ -191,6 +303,7 @@ BEGIN
     'response_status', response_status,
     'response_body', response_body,
     'full_response', result,
+    'response_structure', (SELECT jsonb_agg(key) FROM jsonb_object_keys(result) key),
     'timestamp', (now() at time zone 'Europe/Warsaw')
   );
   
@@ -205,7 +318,7 @@ EXCEPTION
 END;
 $$;
 
--- ✅ Healthcheck Edge Function
+-- ✅ Healthcheck Edge Function - POPRAWIONA
 CREATE OR REPLACE FUNCTION test_edge_function_health()
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -226,6 +339,7 @@ BEGIN
     'success', true,
     'message', 'Health check completed',
     'response', result,
+    'response_structure', (SELECT jsonb_agg(key) FROM jsonb_object_keys(result) key),
     'timestamp', (now() at time zone 'Europe/Warsaw')
   );
   
@@ -336,6 +450,38 @@ BEGIN
 END;
 $$;
 
+-- ✅ Funkcja do debugowania HTTP response structure
+CREATE OR REPLACE FUNCTION debug_http_response()
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  result jsonb;
+BEGIN
+  SELECT 
+    net.http_get(
+      url := 'https://httpbin.org/get',
+      headers := jsonb_build_object('User-Agent', 'PostgreSQL-Test')
+    ) INTO result;
+  
+  RETURN jsonb_build_object(
+    'raw_response', result,
+    'response_keys', (SELECT jsonb_agg(key) FROM jsonb_object_keys(result) key),
+    'response_type', jsonb_typeof(result),
+    'timestamp', now()
+  );
+  
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+      'error', SQLERRM,
+      'error_code', SQLSTATE,
+      'message', 'Debug failed'
+    );
+END;
+$$;
+
 -- Uprawnienia
 GRANT EXECUTE ON FUNCTION check_daily_notifications_cron_status() TO authenticated;
 GRANT EXECUTE ON FUNCTION manually_trigger_daily_notifications() TO authenticated;
@@ -343,18 +489,23 @@ GRANT EXECUTE ON FUNCTION manually_trigger_daily_notifications_in_production() T
 GRANT EXECUTE ON FUNCTION toggle_daily_notifications_cron(boolean) TO authenticated;
 GRANT EXECUTE ON FUNCTION test_edge_function_health() TO authenticated;
 GRANT EXECUTE ON FUNCTION check_test_data() TO authenticated;
+GRANT EXECUTE ON FUNCTION debug_http_response() TO authenticated;
 
 -- ✅ Instrukcje testowania
 DO $$
 BEGIN
   RAISE NOTICE '🔧 TESTING CHECKLIST:';
   RAISE NOTICE '1. SELECT check_test_data(); -- Sprawdź czy masz testowe dane';
-  RAISE NOTICE '2. SELECT test_edge_function_health(); -- Sprawdź czy Edge Function odpowiada (LOCAL)';
-  RAISE NOTICE '3. SELECT manually_trigger_daily_notifications(); -- Przetestuj wysyłanie (LOCAL)';
-  RAISE NOTICE '4. SELECT manually_trigger_daily_notifications_in_production(); -- Przetestuj wysyłanie (PRODUKCJA)';
-  RAISE NOTICE '5. SELECT * FROM notification_logs ORDER BY created_at DESC; -- Sprawdź logi';
-  RAISE NOTICE '6. SELECT * FROM check_daily_notifications_cron_status(); -- Status cron';
+  RAISE NOTICE '2. SELECT debug_http_response(); -- Test podstawowych funkcji HTTP';
+  RAISE NOTICE '3. SELECT test_edge_function_health(); -- Sprawdź czy Edge Function odpowiada (LOCAL)';
+  RAISE NOTICE '4. SELECT manually_trigger_daily_notifications(); -- Przetestuj wysyłanie (LOCAL)';
+  RAISE NOTICE '5. SELECT manually_trigger_daily_notifications_in_production(); -- Przetestuj wysyłanie (PRODUKCJA)';
+  RAISE NOTICE '6. SELECT * FROM notification_logs ORDER BY created_at DESC; -- Sprawdź logi';
+  RAISE NOTICE '7. SELECT * FROM check_daily_notifications_cron_status(); -- Status cron';
   RAISE NOTICE '';
   RAISE NOTICE '🚀 PRODUCTION TEST:';
   RAISE NOTICE 'SELECT manually_trigger_daily_notifications_in_production(); -- Testuj na produkcji';
+  RAISE NOTICE '';
+  RAISE NOTICE '🔧 DEBUGGING:';
+  RAISE NOTICE 'SELECT debug_http_response(); -- Sprawdź strukturę odpowiedzi HTTP';
 END $$;
