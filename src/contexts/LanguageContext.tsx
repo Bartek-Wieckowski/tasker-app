@@ -1,5 +1,7 @@
+import { updateUserLanguage } from "@/api/apiUsers";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "./AuthContext";
 
 type Language = "en" | "pl";
 
@@ -29,6 +31,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
   const [currentLanguage, setCurrentLanguage] = useState<Language>("en");
   const [isLoading, setIsLoading] = useState(true);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const initializeLanguage = async () => {
@@ -52,6 +55,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setCurrentLanguage(lang);
     await i18n.changeLanguage(lang);
     localStorage.setItem("tasker-language", lang);
+
+    // If user is logged in, save language to database
+    if (currentUser) {
+      try {
+        await updateUserLanguage(lang);
+      } catch (error) {
+        console.error("Failed to update language in database:", error);
+        // Don't block language change if saving to database fails
+      }
+    }
   };
 
   return (

@@ -6,7 +6,7 @@ import { render, RenderOptions } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
-const mockSupabase = {
+const mockSupabase = vi.hoisted(() => ({
   auth: {
     signUp: vi.fn(),
     getUser: vi.fn(),
@@ -27,10 +27,6 @@ const mockSupabase = {
       getPublicUrl: vi.fn(() => ({ data: { publicUrl: "mock-url" } })),
     })),
   },
-};
-
-vi.mock("@/lib/supabaseClient", () => ({
-  supabase: mockSupabase,
 }));
 
 vi.mock("react-i18next", () => ({
@@ -38,6 +34,10 @@ vi.mock("react-i18next", () => ({
     t: (key: string) => key,
     i18n: { changeLanguage: vi.fn() },
   }),
+}));
+
+vi.mock("@/lib/supabaseClient", () => ({
+  supabase: mockSupabase,
 }));
 
 beforeAll(() => {

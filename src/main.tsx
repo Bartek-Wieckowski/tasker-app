@@ -8,28 +8,37 @@ import { Toaster } from "./components/ui/toaster";
 
 import "./lib/pushNotifications";
 
-// Prosta rejestracja service workera z push notifications
 if ("serviceWorker" in navigator) {
-  console.log("🔧 Service Worker is supported");
+  if (import.meta.env.DEV) {
+    console.log("🔧 Service Worker is supported");
+  }
 
   navigator.serviceWorker
     .register("/sw-custom.js")
     .then((registration) => {
-      console.log("✅ SW registered:", registration.scope);
+      if (import.meta.env.DEV) {
+        console.log("✅ SW registered:", registration.scope);
+      }
       return navigator.serviceWorker.ready;
     })
     .then((registration) => {
-      console.log("✅ SW ready and active:", registration.scope);
+      if (import.meta.env.DEV) {
+        console.log("✅ SW ready and active:", registration.scope);
+      }
     })
     .catch((error) => {
       console.error("❌ SW registration failed:", error);
     });
 
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    console.log("🔧 SW Controller changed");
+    if (import.meta.env.DEV) {
+      console.log("🔧 SW Controller changed");
+    }
   });
 } else {
-  console.log("❌ Service Worker not supported");
+  if (import.meta.env.DEV) {
+    console.log("❌ Service Worker not supported");
+  }
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

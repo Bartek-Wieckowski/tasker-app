@@ -1,15 +1,16 @@
-// Utilities do obsługi Push Notifications
 import { supabase } from "./supabaseClient";
 
-// Pobierz klucz publiczny z .env!
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 if (!VAPID_PUBLIC_KEY) {
-  console.warn("⚠️ VITE_VAPID_PUBLIC_KEY nie jest ustawiony w .env");
+  if (import.meta.env.DEV) {
+    console.warn("⚠️ VITE_VAPID_PUBLIC_KEY doesn't exist in .env");
+  }
+  throw new Error("VITE_VAPID_PUBLIC_KEY doesn't exist in .env");
 }
 
 /**
- * Konwertuje VAPID klucz do formatu Uint8Array
+ * Converts VAPID key to Uint8Array format
  */
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -25,7 +26,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 /**
- * Sprawdza czy browser obsługuje push notifications
+ * Checks if browser supports push notifications
  */
 export function isPushSupported(): boolean {
   return (
@@ -36,105 +37,141 @@ export function isPushSupported(): boolean {
 }
 
 /**
- * Sprawdza obecne uprawnienia do notyfikacji
+ * Checks current notification permissions
  */
 export function getNotificationPermission(): NotificationPermission {
   return Notification.permission;
 }
 
 /**
- * Prosi o uprawnienia do notyfikacji
+ * Requests notification permissions
  */
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
   if (!isPushSupported()) {
-    throw new Error("Push notifications nie są obsługiwane");
+    throw new Error("Push notifications are not supported");
   }
 
   return await Notification.requestPermission();
 }
 
 /**
- * Rejestruje push subscription
+ * Registers push subscription
  */
 export async function subscribeToPushNotifications(): Promise<PushSubscription | null> {
   try {
-    console.log("🔄 subscribeToPushNotifications started");
+    if (import.meta.env.DEV) {
+      console.log("🔄 subscribeToPushNotifications started");
+    }
 
-    // Sprawdź uprawnienia
-    console.log("🔐 Requesting notification permission...");
+    if (import.meta.env.DEV) {
+      console.log("🔐 Requesting notification permission...");
+    }
     const permission = await requestNotificationPermission();
-    console.log("🔐 Permission result:", permission);
+    if (import.meta.env.DEV) {
+      console.log("🔐 Permission result:", permission);
+    }
 
     if (permission !== "granted") {
-      console.log("❌ Permission not granted:", permission);
+      if (import.meta.env.DEV) {
+        console.log("❌ Permission not granted:", permission);
+      }
       return null;
     }
 
-    // Sprawdź klucz VAPID
-    console.log("🔑 Checking VAPID key...", { hasKey: !!VAPID_PUBLIC_KEY });
+    // Check VAPID key
+    if (import.meta.env.DEV) {
+      console.log("🔑 Checking VAPID key...", { hasKey: !!VAPID_PUBLIC_KEY });
+    }
     if (!VAPID_PUBLIC_KEY) {
-      throw new Error("VAPID public key nie jest skonfigurowany");
+      throw new Error("VAPID public key is not configured");
     }
 
-    // Zarejestruj service worker
-    console.log("🔧 Waiting for service worker...");
+    // Register s ervice worker
+    if (import.meta.env.DEV) {
+      console.log("🔧 Waiting for service worker...");
+    }
     const registration = await navigator.serviceWorker.ready;
-    console.log("🔧 Service worker ready:", registration.scope);
+    if (import.meta.env.DEV) {
+      console.log("🔧 Service worker ready:", registration.scope);
+    }
 
-    // Sprawdź czy już subskrybowany
-    console.log("📱 Checking existing subscription...");
+    // Check if already subscribed
+    if (import.meta.env.DEV) {
+      console.log("📱 Checking existing subscription...");
+    }
     let subscription = await registration.pushManager.getSubscription();
-    console.log("📱 Existing subscription:", !!subscription);
+    if (import.meta.env.DEV) {
+      console.log("📱 Existing subscription:", !!subscription);
+    }
 
     if (!subscription) {
-      // Stwórz nową subskrypcję
-      console.log("📝 Creating new subscription...");
+      // Create new subscription
+      if (import.meta.env.DEV) {
+        console.log("📝 Creating new subscription...");
+      }
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
-      console.log("📝 New subscription created:", !!subscription);
+      if (import.meta.env.DEV) {
+        console.log("📝 New subscription created:", !!subscription);
+      }
     }
 
     if (subscription) {
-      // Zapisz w Supabase
-      console.log("💾 Saving subscription to Supabase...");
+      // Save to Supabase
+      if (import.meta.env.DEV) {
+        console.log("💾 Saving subscription to Supabase...");
+      }
       await savePushSubscription(subscription);
-      console.log("✅ Push subscription saved successfully");
+      if (import.meta.env.DEV) {
+        console.log("✅ Push subscription saved successfully");
+      }
     }
 
     return subscription;
   } catch (error) {
-    console.error("❌ Error in subscribeToPushNotifications:", error);
+    if (import.meta.env.DEV) {
+      console.error("❌ Error in subscribeToPushNotifications:", error);
+    }
     throw error;
   }
 }
 
 /**
- * Zapisuje subscription w Supabase
+ * Saves subscription to Supabase
  */
 async function savePushSubscription(
   subscription: PushSubscription
 ): Promise<void> {
   try {
-    console.log("📝 savePushSubscription started", {
-      endpoint: subscription.endpoint,
-    });
+    if (import.meta.env.DEV) {
+      console.log("📝 savePushSubscription started", {
+        endpoint: subscription.endpoint,
+      });
+    }
 
-    // Pobierz aktualnego użytkownika
-    console.log("👤 Getting current user...");
+    // Get current user
+    if (import.meta.env.DEV) {
+      console.log("👤 Getting current user...");
+    }
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
 
-    console.log("👤 User result:", { hasUser: !!user, error: userError });
-
-    if (userError || !user) {
-      throw new Error("Użytkownik nie jest zalogowany");
+    if (import.meta.env.DEV) {
+      console.log("👤 User result:", {
+        hasUser: !!user,
+        error: userError,
+      });
     }
 
-    // Przygotuj dane subscription
+    if (userError || !user) {
+      throw new Error("User is not logged in");
+    }
+
+    // Prepare subscription data
     const keys = subscription.getKey
       ? {
           p256dh: subscription.getKey("p256dh"),
@@ -161,8 +198,10 @@ async function savePushSubscription(
       last_used_at: new Date().toISOString(),
     };
 
-    // Sprawdź czy subscription już istnieje
-    console.log("🔍 Checking for existing subscription...");
+    // Check if subscription already exists
+    if (import.meta.env.DEV) {
+      console.log("🔍 Checking for existing subscription...");
+    }
     const { data: existing, error: selectError } = await supabase
       .from("push_subscriptions")
       .select("id")
@@ -170,16 +209,20 @@ async function savePushSubscription(
       .eq("endpoint", subscription.endpoint)
       .single();
 
-    console.log("🔍 Existing subscription check:", {
-      hasExisting: !!existing,
-      selectError,
-    });
+    if (import.meta.env.DEV) {
+      console.log("🔍 Existing subscription check:", {
+        hasExisting: !!existing,
+        selectError,
+      });
+    }
 
     let error;
 
     if (existing) {
-      // Update istniejącej subscription
-      console.log("🔄 Updating existing subscription...");
+      // Update existing subscription
+      if (import.meta.env.DEV) {
+        console.log("🔄 Updating existing subscription...");
+      }
       const result = await supabase
         .from("push_subscriptions")
         .update({
@@ -193,32 +236,44 @@ async function savePushSubscription(
         .eq("endpoint", subscription.endpoint);
 
       error = result.error;
-      console.log("🔄 Update result:", { error });
+      if (import.meta.env.DEV) {
+        console.log("🔄 Update result:", { error });
+      }
     } else {
       // Insert nowej subscription
-      console.log("📝 Inserting new subscription...", subscriptionData);
+      if (import.meta.env.DEV) {
+        console.log("📝 Inserting new subscription...", subscriptionData);
+      }
       const result = await supabase
         .from("push_subscriptions")
         .insert(subscriptionData);
 
       error = result.error;
-      console.log("📝 Insert result:", { error, data: result.data });
+      if (import.meta.env.DEV) {
+        console.log("📝 Insert result:", { error, data: result.data });
+      }
     }
 
     if (error) {
-      console.error("❌ Database error:", error);
+      if (import.meta.env.DEV) {
+        console.error("❌ Database error:", error);
+      }
       throw error;
     }
 
-    console.log("✅ Subscription saved to Supabase successfully!");
+    if (import.meta.env.DEV) {
+      console.log("✅ Subscription saved to Supabase successfully!");
+    }
   } catch (error) {
-    console.error("❌ Błąd w savePushSubscription:", error);
+    if (import.meta.env.DEV) {
+      console.error("❌ Error in savePushSubscription:", error);
+    }
     throw error;
   }
 }
 
 /**
- * Pobiera nazwę przeglądarki
+ * Gets browser name
  */
 function getBrowserName(): string {
   const userAgent = navigator.userAgent;
@@ -230,21 +285,23 @@ function getBrowserName(): string {
 }
 
 /**
- * Testuje powiadomienie lokalne
+ * Shows test notification
  */
 export async function showTestNotification(): Promise<void> {
   const permission = await requestNotificationPermission();
 
   if (permission !== "granted") {
-    throw new Error("Brak uprawnień do powiadomień");
+    throw new Error("No permission to send notifications");
   }
 
-  // Testowe powiadomienie
-  new Notification("Test powiadomienia", {
+  // Test notification
+  new Notification("Test notification", {
     body: "To jest testowe powiadomienie z Tasker App!",
     icon: "/vite.svg",
     tag: "test-notification",
   });
 }
 
-console.log("📱 Push notifications utilities loaded");
+if (import.meta.env.DEV) {
+  console.log("📱 Push notifications utilities loaded");
+}

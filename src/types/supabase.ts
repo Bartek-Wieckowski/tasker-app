@@ -51,16 +51,19 @@ export type Database = {
           email: string
           id: string
           is_active: boolean
+          lang: string
         }
         Insert: {
           email: string
           id: string
           is_active?: boolean
+          lang?: string
         }
         Update: {
           email?: string
           id?: string
           is_active?: boolean
+          lang?: string
         }
         Relationships: []
       }
@@ -343,22 +346,6 @@ export type Database = {
           schedule: string
         }[]
       }
-      check_daily_notifications_cron_status: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          active: boolean
-          command: string
-          job_name: string
-          last_run_started_at: string
-          last_run_status: string
-          next_run_time: string
-          schedule: string
-        }[]
-      }
-      check_test_data: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
       clean_test_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -376,10 +363,6 @@ export type Database = {
         Returns: undefined
       }
       manually_process_cyclic_todos: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      manually_trigger_daily_notifications: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
@@ -401,13 +384,9 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
-      test_edge_function_health: {
-        Args: Record<PropertyKey, never>
+      trigger_daily_notifications: {
+        Args: { is_production?: boolean }
         Returns: Json
-      }
-      toggle_daily_notifications_cron: {
-        Args: { enable_job?: boolean }
-        Returns: string
       }
     }
     Enums: {

@@ -9,12 +9,12 @@ import {
   showTestNotification,
 } from "../lib/pushNotifications";
 
-interface NotificationState {
+type NotificationState = {
   isEnabled: boolean;
   permission: NotificationPermission | null;
   subscription: PushSubscription | null;
   isLoading: boolean;
-}
+};
 
 export const useNotifications = () => {
   const { currentUser } = useAuth();
@@ -25,28 +25,35 @@ export const useNotifications = () => {
     isLoading: true,
   });
 
-  // Inicjalizacja powiadomień
   const initializeNotifications = useCallback(async () => {
-    console.log("🔄 Starting notification initialization...", {
-      currentUser: !!currentUser,
-      isSupported: isPushSupported(),
-    });
+    if (import.meta.env.DEV) {
+      console.log("🔄 Starting notification initialization...", {
+        currentUser: !!currentUser,
+        isSupported: isPushSupported(),
+      });
+    }
 
     if (!currentUser) {
-      console.log("❌ No current user, skipping initialization");
+      if (import.meta.env.DEV) {
+        console.log("❌ No current user, skipping initialization");
+      }
       setState((prev) => ({ ...prev, isLoading: false }));
       return;
     }
 
     if (!isPushSupported()) {
-      console.log("❌ Push not supported, skipping initialization");
+      if (import.meta.env.DEV) {
+        console.log("❌ Push not supported, skipping initialization");
+      }
       setState((prev) => ({ ...prev, isLoading: false }));
       return;
     }
 
     try {
       const permission = getNotificationPermission();
-      console.log("🔐 Current permission:", permission);
+      if (import.meta.env.DEV) {
+        console.log("🔐 Current permission:", permission);
+      }
       let subscription: PushSubscription | null = null;
 
       if (permission === "granted") {
@@ -55,9 +62,13 @@ export const useNotifications = () => {
         );
         try {
           const registration = await navigator.serviceWorker.ready;
-          console.log("🔧 Service worker ready:", registration);
+          if (import.meta.env.DEV) {
+            console.log("🔧 Service worker ready:", registration);
+          }
           subscription = await registration.pushManager.getSubscription();
-          console.log("📱 Found subscription:", !!subscription);
+          if (import.meta.env.DEV) {
+            console.log("📱 Found subscription:", !!subscription);
+          }
         } catch (swError) {
           console.error("❌ Service worker error:", swError);
         }
@@ -70,24 +81,32 @@ export const useNotifications = () => {
         isLoading: false,
       };
 
-      console.log("📱 Setting final state:", newState);
+      if (import.meta.env.DEV) {
+        console.log("📱 Setting final state:", newState);
+      }
       setState(newState);
     } catch (error) {
-      console.error("❌ Error in initializeNotifications:", error);
+      if (import.meta.env.DEV) {
+        console.error("❌ Error in initializeNotifications:", error);
+      }
       setState((prev) => ({ ...prev, isLoading: false }));
     }
   }, [currentUser]);
 
-  // Włączanie powiadomień
   const enableNotifications = useCallback(async () => {
     try {
-      console.log("🔄 Starting enableNotifications...");
+      if (import.meta.env.DEV) {
+        console.log("🔄 Starting enableNotifications...");
+      }
       setState((prev) => ({ ...prev, isLoading: true }));
 
-      // Poproś o uprawnienia i zasubskrybuj
-      console.log("📝 Requesting push subscription...");
+      if (import.meta.env.DEV) {
+        console.log("📝 Requesting push subscription...");
+      }
       const subscription = await subscribeToPushNotifications();
-      console.log("📱 Subscription result:", !!subscription);
+      if (import.meta.env.DEV) {
+        console.log("📱 Subscription result:", !!subscription);
+      }
 
       if (subscription) {
         const newState = {
@@ -96,10 +115,14 @@ export const useNotifications = () => {
           subscription,
           isLoading: false,
         };
-        console.log("✅ Setting enabled state:", newState);
+        if (import.meta.env.DEV) {
+          console.log("✅ Setting enabled state:", newState);
+        }
         setState(newState);
 
-        console.log("✅ Push notifications enabled and saved to Supabase");
+        if (import.meta.env.DEV) {
+          console.log("✅ Push notifications enabled and saved to Supabase");
+        }
         return true;
       } else {
         const newState = {
@@ -108,7 +131,9 @@ export const useNotifications = () => {
           isLoading: false,
           subscription: null,
         };
-        console.log("❌ Failed to enable, setting state:", newState);
+        if (import.meta.env.DEV) {
+          console.log("❌ Failed to enable, setting state:", newState);
+        }
         setState((prev) => ({
           ...prev,
           ...newState,
@@ -116,20 +141,19 @@ export const useNotifications = () => {
         return false;
       }
     } catch (error) {
-      console.error("❌ Error in enableNotifications:", error);
+      if (import.meta.env.DEV) {
+        console.error("❌ Error in enableNotifications:", error);
+      }
       setState((prev) => ({ ...prev, isLoading: false }));
       return false;
     }
   }, []);
 
-  // Wyłączanie powiadomień
   const disableNotifications = useCallback(async () => {
     try {
       if (state.subscription) {
-        // Unsubscribe z push manager
         await state.subscription.unsubscribe();
 
-        // Oznacz jako nieaktywną w Supabase
         try {
           const {
             data: { user },
@@ -152,26 +176,32 @@ export const useNotifications = () => {
         subscription: null,
       }));
 
-      console.log("🚫 Push notifications disabled");
+      if (import.meta.env.DEV) {
+        console.log("🚫 Push notifications disabled");
+      }
       return true;
     } catch (error) {
-      console.error("Błąd wyłączania powiadomień:", error);
+      if (import.meta.env.DEV) {
+        console.error("Błąd wyłączania powiadomień:", error);
+      }
       return false;
     }
   }, [state.subscription]);
 
-  // Test powiadomienia (lokalne)
   const sendTestNotification = useCallback(async () => {
     try {
       await showTestNotification();
-      console.log("🧪 Test notification sent");
+      if (import.meta.env.DEV) {
+        console.log("🧪 Test notification sent");
+      }
     } catch (error) {
-      console.error("Błąd test notification:", error);
+      if (import.meta.env.DEV) {
+        console.error("Błąd test notification:", error);
+      }
       throw error;
     }
   }, []);
 
-  // Efekt inicjalizujący
   useEffect(() => {
     if (currentUser) {
       initializeNotifications();
@@ -179,16 +209,13 @@ export const useNotifications = () => {
   }, [currentUser, initializeNotifications]);
 
   return {
-    // Stan
     ...state,
     isSupported: isPushSupported(),
 
-    // Akcje
     enableNotifications,
     disableNotifications,
     sendTestNotification,
 
-    // Dodatkowe info
     canEnable: isPushSupported() && state.permission !== "denied",
   };
 };
