@@ -5,8 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { getInvitationStatus, formatExpirationMessage } from "@/lib/helpers";
+import { useTranslation } from "react-i18next";
 
 export default function CoopTodosPending() {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { currentLanguage } = useLanguage();
   const { data: pendingInvitations, isLoading: pendingLoading } =
@@ -19,7 +21,7 @@ export default function CoopTodosPending() {
   return (
     <>
       {pendingLoading ? (
-        <div className="text-center py-8">Ładowanie...</div>
+        <div className="text-center py-8">{t("app.loading")}</div>
       ) : pendingInvitations &&
         pendingInvitations.filter((inv) => {
           const actualStatus = getInvitationStatus(inv.status, inv.expires_at);
@@ -59,7 +61,7 @@ export default function CoopTodosPending() {
                   <div className="space-y-3">
                     <div>
                       <h3 className="font-medium text-sm">
-                        Zaproszenie do: {invitation.table_name}
+                        {t("coopTodos.invitationTo")}: {invitation.table_name}
                       </h3>
                       {invitation.description && (
                         <p className="text-xs text-muted-foreground mt-1">
@@ -68,7 +70,9 @@ export default function CoopTodosPending() {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground space-y-1">
-                      <div>Zaprasza: {invitation.inviter_email}</div>
+                      <div>
+                        {t("coopTodos.invitesFrom")}: {invitation.inviter_email}
+                      </div>
                       {expirationMessage && <div>{expirationMessage}</div>}
                     </div>
                     <div className="flex space-x-2">
@@ -81,7 +85,9 @@ export default function CoopTodosPending() {
                         }
                         disabled={isDecliningInvitation}
                       >
-                        {isDecliningInvitation ? "Odrzucanie..." : "Odrzuć"}
+                        {isDecliningInvitation
+                          ? t("common.declining")
+                          : t("common.decline")}
                       </Button>
                       <Button
                         size="sm"
@@ -89,7 +95,9 @@ export default function CoopTodosPending() {
                         onClick={() => acceptInvitationMutation(invitation.id!)}
                         disabled={isAcceptingInvitation}
                       >
-                        {isAcceptingInvitation ? "Akceptowanie..." : "Akceptuj"}
+                        {isAcceptingInvitation
+                          ? t("common.accepting")
+                          : t("common.accept")}
                       </Button>
                     </div>
                   </div>
@@ -99,7 +107,7 @@ export default function CoopTodosPending() {
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          Brak oczekujących zaproszeń
+          {t("coopTodos.noPendingInvitations")}
         </div>
       )}
     </>

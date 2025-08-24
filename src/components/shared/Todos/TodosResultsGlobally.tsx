@@ -5,7 +5,9 @@ type TodosResultsGloballyProps = {
   todos: TodoRow[];
 };
 
-const TodosResultsGlobally = ({ todos }: TodosResultsGloballyProps) => {
+export default function TodosResultsGlobally({
+  todos,
+}: TodosResultsGloballyProps) {
   return (
     <>
       {todos.map((data) => (
@@ -13,6 +15,4 @@ const TodosResultsGlobally = ({ todos }: TodosResultsGloballyProps) => {
       ))}
     </>
   );
-};
-
-export default TodosResultsGlobally;
+}

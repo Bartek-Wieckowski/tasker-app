@@ -3,8 +3,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getInvitationStatus, formatExpirationMessage } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export default function CoopTodosSent() {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { currentLanguage } = useLanguage();
   const { data: myInvitations, isLoading: invitationsLoading } =
@@ -13,7 +15,7 @@ export default function CoopTodosSent() {
     <>
       {" "}
       {invitationsLoading ? (
-        <div className="text-center py-8">Ładowanie...</div>
+        <div className="text-center py-8">{t("app.loading")}</div>
       ) : myInvitations &&
         myInvitations.filter(
           (inv) => inv.inviter_user_id === currentUser?.accountId
@@ -40,7 +42,7 @@ export default function CoopTodosSent() {
                   <div className="space-y-3">
                     <div>
                       <h3 className="font-medium text-sm">
-                        Zaproszenie do: {invitation.table_name}
+                        {t("coopTodos.invitationTo")}: {invitation.table_name}
                       </h3>
                       {invitation.description && (
                         <p className="text-xs text-muted-foreground mt-1">
@@ -49,7 +51,9 @@ export default function CoopTodosSent() {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground space-y-1">
-                      <div>Zaproszony: {invitation.invitee_email}</div>
+                      <div>
+                        {t("coopTodos.invitee")}: {invitation.invitee_email}
+                      </div>
                       {expirationMessage && (
                         <div
                           className={cn(
@@ -76,10 +80,12 @@ export default function CoopTodosSent() {
                             }
                           )}
                         >
-                          {actualStatus === "pending" && "Oczekuje"}
-                          {actualStatus === "accepted" && "Przyjęte"}
-                          {actualStatus === "expired" && "Wygasło"}
-                          {actualStatus === "declined" && "Odrzucone"}
+                          {actualStatus === "pending" && t("coopTodos.pending")}
+                          {actualStatus === "accepted" &&
+                            t("coopTodos.accepted")}
+                          {actualStatus === "expired" && t("coopTodos.expired")}
+                          {actualStatus === "declined" &&
+                            t("coopTodos.declined")}
                         </span>
                       </div>
                     </div>
@@ -90,7 +96,7 @@ export default function CoopTodosSent() {
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          Nie wysłałeś jeszcze żadnych zaproszeń
+          {t("coopTodos.noInvitationsSent")}
         </div>
       )}
     </>

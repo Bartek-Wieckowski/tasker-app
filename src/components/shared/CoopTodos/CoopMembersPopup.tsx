@@ -5,6 +5,8 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 type CoopMembersPopupProps = {
   memberEmails: string[];
@@ -17,6 +19,8 @@ export default function CoopMembersPopup({
   ownerEmail,
   memberCount,
 }: CoopMembersPopupProps) {
+  const { t } = useTranslation();
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -26,12 +30,12 @@ export default function CoopMembersPopup({
           className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
         >
           <Users className="w-3 h-3 mr-1" />
-          Członkowie: {memberCount}
+          {t("coopTodos.members")}: {memberCount}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-[400px] w-full" align="start">
         <div className="space-y-3">
-          <h4 className="font-medium text-sm">Lista członków</h4>
+          <h4 className="font-medium text-sm">{t("coopTodos.membersList")}</h4>
           <div className="space-y-2">
             {memberEmails.map((email) => (
               <div
@@ -40,13 +44,16 @@ export default function CoopMembersPopup({
               >
                 <span className="truncate">{email}</span>
                 <span
-                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                  className={cn(
+                    "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
                     email === ownerEmail
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-secondary-foreground"
-                  }`}
+                  )}
                 >
-                  {email === ownerEmail ? "Właściciel" : "Członek"}
+                  {email === ownerEmail
+                    ? t("coopTodos.owner")
+                    : t("coopTodos.member")}
                 </span>
               </div>
             ))}

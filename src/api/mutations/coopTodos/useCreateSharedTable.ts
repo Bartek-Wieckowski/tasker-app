@@ -22,17 +22,15 @@ export function useCreateSharedTable() {
       description?: string;
     }) => createSharedTodosTable(tableName, description),
     onSuccess: () => {
-      // Invalidate i refetch shared tables
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodosShared] });
 
       toast({
-        title: t("toastMsg.createSharedTableSuccess"),
-        description: t("toastMsg.createSharedTableSuccessDescription"),
+        title: t("toastMsg.todoAdded"),
       });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.createSharedTableFailed"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

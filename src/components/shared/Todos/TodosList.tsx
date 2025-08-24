@@ -1,11 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { DatePicker } from "../DatePicker";
-import TodosAdd from "./TodosAdd";
+import DatePicker from "../DatePicker";
+import { TodosAdd } from "./TodosAdd";
 import TodosTabs from "./TodosTabs";
 import GlobalSearchProvider from "@/contexts/GlobalSearchContext";
 import { useNotifications } from "@/hooks/useNotifications";
 
-const TodosList = () => {
+export default function TodosList() {
   const { isAuth } = useAuth();
 
   useNotifications();
@@ -27,6 +27,4 @@ const TodosList = () => {
       </>
     )
   );
-};
-
-export default TodosList;
+}

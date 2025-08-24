@@ -7,7 +7,10 @@ type TodosResultsTabProps = {
   tabValue: string;
 };
 
-const TodosResultsTab = ({ todos, tabValue }: TodosResultsTabProps) => {
+export default function TodosResultsTab({
+  todos,
+  tabValue,
+}: TodosResultsTabProps) {
   return (
     <TabsContent value={tabValue}>
       {todos.map((data) => (
@@ -15,6 +18,4 @@ const TodosResultsTab = ({ todos, tabValue }: TodosResultsTabProps) => {
       ))}
     </TabsContent>
   );
-};
-
-export default TodosResultsTab;
+}

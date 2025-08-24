@@ -22,19 +22,16 @@ export function useLeaveSharedTable() {
       emailToRemove?: string;
     }) => leaveSharedTable(sharedTableId, emailToRemove),
     onSuccess: () => {
-      // Invalidate shared tables and todos
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodosShared] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodos] });
 
       toast({
-        title: "Opuściłeś tabelę",
-        description: "Pomyślnie opuściłeś tabelę współdzielonych zadań",
+        title: t("toastMsg.leaveSharedTableSuccess"),
       });
     },
     onError: () => {
       toast({
-        title: "Błąd opuszczania tabeli",
-        description: "Nie udało się opuścić tabeli. Spróbuj ponownie.",
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

@@ -4,10 +4,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { editGlobalTodo } from "@/api/apiGlobalTodos";
 import { useTranslation } from "react-i18next";
 
-export const useEditGlobalTodo = (accountId: string) => {
+export function useEditGlobalTodo(accountId: string) {
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+
   const { mutateAsync: editGlobalTodoItem, isPending: isEditingGlobalTodo } =
     useMutation({
       mutationFn: ({
@@ -19,11 +20,11 @@ export const useEditGlobalTodo = (accountId: string) => {
       }) => editGlobalTodo(todoId, newTodoName, accountId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.globalTodos] });
-        toast({ title: t("toastMsg.globalTodoUpdated") });
+        toast({ title: t("toastMsg.todoUpdated") });
       },
       onError: () => {
         toast({
-          title: t("toastMsg.globalTodoUpdatedFailed"),
+          title: t("toastMsg.todosFailed"),
           variant: "destructive",
         });
       },
@@ -32,4 +33,4 @@ export const useEditGlobalTodo = (accountId: string) => {
     editGlobalTodoItem,
     isEditingGlobalTodo,
   };
-};
+}

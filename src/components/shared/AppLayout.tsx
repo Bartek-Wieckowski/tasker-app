@@ -8,7 +8,7 @@ import DelegatedTodos from "./DelegatedTodos/DelegatedTodos";
 import CyclicTodos from "./CyclicTodos/CyclicTodos";
 import CoopTodos from "./CoopTodos/CoopTodos";
 
-const AppLayout = () => {
+export default function AppLayout() {
   return (
     <section className="flex flex-col justify-center max-w-7xl w-full mx-auto py-2 px-4">
       <Container data-testid="container">
@@ -28,6 +28,4 @@ const AppLayout = () => {
       </Container>
     </section>
   );
-};
-
-export default AppLayout;
+}

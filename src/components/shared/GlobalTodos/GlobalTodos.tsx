@@ -150,7 +150,7 @@ export default function GlobalTodos() {
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className=" space-y-2 h-[50vh] overflow-auto custom-scrollbar">
+            <div className="space-y-2 h-[50vh] overflow-auto custom-scrollbar">
               {isLoading ? (
                 <Loader />
               ) : (
@@ -179,7 +179,7 @@ export default function GlobalTodos() {
                               setIsDialogOpen(true);
                             }}
                           >
-                            {t("globalTodos.assignToDay")}
+                            {t("common.assignToDay")}
                           </Button>
                           <Button
                             variant="outline"
@@ -188,7 +188,7 @@ export default function GlobalTodos() {
                               setEditDialogOpen(true);
                             }}
                           >
-                            {t("globalTodos.edit")}
+                            {t("common.edit")}
                           </Button>
                           <Button
                             variant="destructive"
@@ -201,7 +201,7 @@ export default function GlobalTodos() {
                                 {t("common.deleting")}
                               </div>
                             ) : (
-                              t("globalTodos.delete")
+                              t("common.delete")
                             )}
                           </Button>
                         </div>
@@ -227,9 +227,9 @@ export default function GlobalTodos() {
           >
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{t("globalTodos.assignToDayTitle")}</DialogTitle>
+                <DialogTitle>{t("common.assignToDayTitle")}</DialogTitle>
                 <DialogDescription>
-                  {t("globalTodos.assignToDayDescription")}
+                  {t("common.assignToDayDescription")}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-center p-4">
@@ -267,9 +267,7 @@ export default function GlobalTodos() {
           >
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>
-                  {t("globalTodoForm.editYourGlobalTodo")}
-                </DialogTitle>
+                <DialogTitle>{t("globalTodos.edit")}</DialogTitle>
                 <DialogDescription />
               </DialogHeader>
               {todoToEdit && (

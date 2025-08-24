@@ -16,19 +16,17 @@ export function useDeclineInvitation() {
   } = useMutation({
     mutationFn: (invitationId: string) => declineInvitation(invitationId),
     onSuccess: () => {
-      // Invalidate pending invitations
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.coopTodosInvitations],
       });
 
       toast({
         title: t("toastMsg.declineInvitationSuccess"),
-        description: t("toastMsg.declineInvitationSuccessDescription"),
       });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.declineInvitationFailed"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

@@ -26,10 +26,11 @@ export function useDeleteTodo() {
     }) => deleteTodo(todoId, selectedDate, currentUser),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
+      toast({ title: t("toastMsg.todoDeleted") });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.deletingTodosFailed"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

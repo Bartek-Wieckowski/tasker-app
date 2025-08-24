@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getCyclicTodos } from "@/api/apiCyclicTodos";
 import { QUERY_KEYS } from "@/api/constants";
 
-export const useCyclicTodos = (userId: string) => {
+export function useCyclicTodos(userId: string) {
   const {
     data: cyclicTodos = [],
     isLoading,
@@ -14,4 +14,4 @@ export const useCyclicTodos = (userId: string) => {
   });
 
   return { cyclicTodos, isLoading, isError };
-};
+}

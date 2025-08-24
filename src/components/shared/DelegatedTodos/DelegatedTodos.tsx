@@ -9,7 +9,6 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { EllipsisVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { DelegatedTodoRow, DelegatedTodoUpdate } from "@/types/types";
 import { Calendar } from "@/components/ui/calendar";
@@ -119,18 +118,27 @@ export default function DelegatedTodos() {
         </div>
       </DrawerTrigger>
       <DrawerContent>
-        <div className="mx-auto w-full max-w-sm py-3">
+        <div className="mx-auto w-full max-w-[90%] py-3">
           <div className="mb-6">
             <DrawerHeader className="mb-4 text-lg font-semibold">
-              <DrawerTitle>
+              <DrawerTitle className="text-center mb-5">
                 {t("delegatedTodos.title")} ({delegatedTodos?.length || 0})
               </DrawerTitle>
-              <DrawerDescription>
-                {t("delegatedTodos.description")}
-              </DrawerDescription>
+              <div className="flex justify-between gap-x-2">
+                <DrawerDescription className="flex-1">
+                  {t("delegatedTodos.description")}
+                </DrawerDescription>
+                <div className="grid items-start gap-4 px-4 flex-1">
+                  <DelegatedTodoForm
+                    type="add"
+                    onSubmit={handleAddSubmit}
+                    isLoading={isCreatingDelegatedTodo}
+                  />
+                </div>
+              </div>
             </DrawerHeader>
 
-            <div className="space-y-2 h-[50vh] overflow-auto custom-scrollbar">
+            <div className="space-y-2 h-[50vh] overflow-auto custom-scrollbar max-w-sm mx-auto">
               {isLoading ? (
                 <Loader />
               ) : (
@@ -160,7 +168,7 @@ export default function DelegatedTodos() {
                                 setIsDialogOpen(true);
                               }}
                             >
-                              {t("delegatedTodos.assignToDay")}
+                              {t("common.assignToDay")}
                             </Button>
                             <Button
                               variant="outline"
@@ -209,11 +217,9 @@ export default function DelegatedTodos() {
           >
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>
-                  {t("delegatedTodos.assignToDayTitle")}
-                </DialogTitle>
+                <DialogTitle>{t("common.assignToDayTitle")}</DialogTitle>
                 <DialogDescription>
-                  {t("delegatedTodos.assignToDayDescription")}
+                  {t("common.assignToDayDescription")}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-center p-4">
@@ -266,14 +272,6 @@ export default function DelegatedTodos() {
               )}
             </DialogContent>
           </Dialog>
-
-          <div className={cn("grid items-start gap-4 px-4")}>
-            <DelegatedTodoForm
-              type="add"
-              onSubmit={handleAddSubmit}
-              isLoading={isCreatingDelegatedTodo}
-            />
-          </div>
         </div>
       </DrawerContent>
     </Drawer>

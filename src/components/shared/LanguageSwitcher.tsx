@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-export function LanguageSwitcher() {
+export default function LanguageSwitcher() {
   const { currentLanguage, changeLanguage, availableLanguages, isLoading } =
     useLanguage();
   const [isOpen, setIsOpen] = useState(false);

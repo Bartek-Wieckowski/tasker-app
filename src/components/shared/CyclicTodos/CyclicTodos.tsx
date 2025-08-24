@@ -151,7 +151,7 @@ export default function CyclicTodos() {
                               setEditDialogOpen(true);
                             }}
                           >
-                            {t("cyclicTodos.edit")}
+                            {t("common.edit")}
                           </Button>
                           <Button
                             variant="destructive"
@@ -164,7 +164,7 @@ export default function CyclicTodos() {
                                 {t("common.deleting")}
                               </div>
                             ) : (
-                              t("cyclicTodos.delete")
+                              t("common.delete")
                             )}
                           </Button>
                         </div>
@@ -189,9 +189,7 @@ export default function CyclicTodos() {
           >
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>
-                  {t("cyclicTodoForm.editYourCyclicTodo")}
-                </DialogTitle>
+                <DialogTitle>{t("cyclicTodos.edit")}</DialogTitle>
                 <DialogDescription />
               </DialogHeader>
               {todoToEdit && (

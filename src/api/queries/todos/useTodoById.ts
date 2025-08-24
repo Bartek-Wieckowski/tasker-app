@@ -3,7 +3,7 @@ import { getTodoById } from "@/api/apiTodos";
 import { User } from "@/types/types";
 import { QUERY_KEYS } from "@/api/constants";
 
-export const useTodoById = (todoId: string, currentUser: User) => {
+export function useTodoById(todoId: string, currentUser: User) {
   const {
     data: todo,
     isLoading,
@@ -17,4 +17,4 @@ export const useTodoById = (todoId: string, currentUser: User) => {
   });
 
   return { todo, isLoading, isError, refetch };
-};
+}

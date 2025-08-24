@@ -1,11 +1,9 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from "react-router-dom";
 
-const Homepage = () => {
+export default function Homepage() {
   return (
     <>
       <Outlet />
     </>
   );
-};
-
-export default Homepage;
+}

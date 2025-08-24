@@ -11,7 +11,7 @@ import TodoForm from "./TodoForm";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const TodosAdd = () => {
+export function TodosAdd() {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -29,12 +29,10 @@ const TodosAdd = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
         <DialogHeader>
-          <DialogTitle>{t("todosAdd.addNewTodo")}</DialogTitle>
+          <DialogTitle>{t("common.addNewTodo")}</DialogTitle>
         </DialogHeader>
         <TodoForm action="Create" onCloseDialog={() => setDialogOpen(false)} />
       </DialogContent>
     </Dialog>
   );
-};
-
-export default TodosAdd;
+}

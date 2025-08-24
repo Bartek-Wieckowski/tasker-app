@@ -24,12 +24,11 @@ export function useAcceptInvitation() {
 
       toast({
         title: t("toastMsg.acceptInvitationSuccess"),
-        description: t("toastMsg.acceptInvitationSuccessDescription"),
       });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.acceptInvitationFailed"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

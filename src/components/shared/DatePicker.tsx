@@ -16,7 +16,7 @@ import { useGlobalSearch } from "@/contexts/GlobalSearchContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTranslation } from "react-i18next";
 
-export function DatePicker() {
+export default function DatePicker() {
   const { selectedDate, setSelectedDate } = useAuth();
   const [date, setDate] = useState<Date>(() => {
     return selectedDate ? new Date(selectedDate) : new Date();

@@ -127,7 +127,7 @@ describe("Add Todo()", () => {
     cy.login(email, password);
     cy.visit("/");
     cy.get('[data-testid="add-todo-button"]').click();
-    cy.get('input[placeholder*="todo"]').first().type(todoText);
+    cy.get('input[name*="todo"]').first().type(todoText);
     cy.get('button[type="submit"]').click();
 
     cy.contains(todoText).should("exist");

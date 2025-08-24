@@ -22,19 +22,17 @@ export function useInviteToSharedTable() {
       inviteeEmail: string;
     }) => inviteToSharedTable(sharedTableId, inviteeEmail),
     onSuccess: () => {
-      // Invalidate pending invitations
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.coopTodosInvitations],
       });
 
       toast({
         title: t("toastMsg.inviteToSharedTableSuccess"),
-        description: t("toastMsg.inviteToSharedTableSuccessDescription"),
       });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.inviteToSharedTableFailed"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

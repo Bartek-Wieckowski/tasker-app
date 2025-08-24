@@ -9,7 +9,10 @@ type FileUploaderProps = {
   mediaUrl: string;
 };
 
-const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
+export default function FileUploader({
+  fieldChange,
+  mediaUrl,
+}: FileUploaderProps) {
   const [fileUrl, setFileUrl] = useState<string>(mediaUrl || "");
   const { t } = useTranslation();
 
@@ -58,6 +61,4 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
       )}
     </div>
   );
-};
-
-export default FileUploader;
+}

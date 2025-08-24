@@ -22,14 +22,11 @@ export function useUpdateCoopTodoStatus() {
       isCompleted: boolean;
     }) => updateCoopTodoStatus(todoId, isCompleted),
     onSuccess: () => {
-      // Invalidate all coop todos queries
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodos] });
     },
     onError: () => {
       toast({
-        title: "Błąd aktualizacji statusu",
-        description:
-          "Nie udało się zaktualizować statusu zadania. Spróbuj ponownie.",
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },
@@ -37,4 +34,3 @@ export function useUpdateCoopTodoStatus() {
 
   return { isUpdatingCoopTodoStatus, isError, updateCoopTodoStatusMutation };
 }
-

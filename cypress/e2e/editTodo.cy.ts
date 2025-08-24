@@ -28,7 +28,7 @@ describe("Edit Todo()", () => {
       cy.contains("button", /edit/i).click();
 
       // Clear and type new text
-      cy.get('input[placeholder*="todo"]').first().clear().type(editedText);
+      cy.get('input[name*="todo"]').first().clear().type(editedText);
 
       cy.get('button[type="submit"]').click();
 

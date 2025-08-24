@@ -5,10 +5,10 @@ import { useLeaveSharedTable } from "@/api/mutations/coopTodos/useLeaveSharedTab
 import { Button } from "@/components/ui/button";
 import CoopMembersPopup from "./CoopMembersPopup";
 import CoopTodosDrawer from "./CoopTodosDrawer";
-
 import { MousePointerClick } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
-// Komponent do liczenia zadań w tabeli
 function TodoCount({ tableId }: { tableId: string }) {
   const { data: todos } = useCoopTodosByTableId(tableId);
   return <span>{todos?.length || 0}</span>;
@@ -23,6 +23,7 @@ export default function CoopListTodosWithActions({
   setEditingTableId,
   setInvitingTableId,
 }: CoopListTodosWithActionsProps) {
+  const { t } = useTranslation();
   const { data: sharedTables, isLoading: tablesLoading } = useMySharedTables();
   const { deleteSharedTableMutation, isDeletingSharedTable } =
     useDeleteSharedTable();
@@ -32,7 +33,11 @@ export default function CoopListTodosWithActions({
   const handleDeleteTable = async (tableId: string, tableName: string) => {
     if (
       window.confirm(
-        `Czy na pewno chcesz usunąć tabelę "${tableName}"? Ta operacja spowoduje usunięcie wszystkich zadań z tej tabeli i jest nieodwracalna.`
+        t("coopTodos.deleteTable") +
+          " " +
+          tableName +
+          " " +
+          t("coopTodos.deleteTableDescription")
       )
     ) {
       try {
@@ -44,7 +49,15 @@ export default function CoopListTodosWithActions({
   };
 
   const handleLeaveTable = async (tableId: string, tableName: string) => {
-    if (window.confirm(`Czy na pewno chcesz opuścić tabelę "${tableName}"?`)) {
+    if (
+      window.confirm(
+        t("coopTodos.areYouSureLeaveTable") +
+          " " +
+          tableName +
+          " " +
+          t("coopTodos.leaveTableDescription")
+      )
+    ) {
       try {
         await leaveSharedTableMutation({ sharedTableId: tableId });
       } catch (error) {
@@ -56,7 +69,7 @@ export default function CoopListTodosWithActions({
   return (
     <>
       {tablesLoading ? (
-        <div className="text-center py-8">Ładowanie...</div>
+        <div className="text-center py-8">{t("common.loading")}</div>
       ) : sharedTables && sharedTables.length > 0 ? (
         <div className="space-y-3 custom-scrollbar overflow-y-auto max-h-[500px]">
           {sharedTables.map((table) => (
@@ -82,9 +95,12 @@ export default function CoopListTodosWithActions({
                     <div className="flex items-start space-x-2 text-xs text-muted-foreground">
                       <div className="flex flex-col gap-y-2">
                         <span>
-                          Zadania: <TodoCount tableId={table.id || ""} />
+                          {t("coopTodos.tasks")}:{" "}
+                          <TodoCount tableId={table.id || ""} />
                         </span>
-                        <span>Właściciel: {table.owner_email}</span>
+                        <span>
+                          {t("coopTodos.owner")}: {table.owner_email}
+                        </span>
                       </div>
                       <span>•</span>
                       <CoopMembersPopup
@@ -95,13 +111,16 @@ export default function CoopListTodosWithActions({
                     </div>
                   </div>
                   <span
-                    className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
                       table.my_role === "owner"
                         ? "bg-primary text-primary-foreground"
                         : "bg-secondary text-secondary-foreground"
-                    }`}
+                    )}
                   >
-                    {table.my_role === "owner" ? "Właściciel" : "Członek"}
+                    {table.my_role === "owner"
+                      ? t("coopTodos.owner")
+                      : t("coopTodos.member")}
                   </span>
                 </div>
                 <div className="flex space-x-2">
@@ -114,7 +133,7 @@ export default function CoopListTodosWithActions({
                         onClick={() => setEditingTableId(table.id || "")}
                         disabled={isDeletingSharedTable}
                       >
-                        Edytuj
+                        {t("common.edit")}
                       </Button>
                       <Button
                         size="sm"
@@ -128,7 +147,9 @@ export default function CoopListTodosWithActions({
                         }
                         disabled={isDeletingSharedTable}
                       >
-                        {isDeletingSharedTable ? "Usuwanie..." : "Usuń"}
+                        {isDeletingSharedTable
+                          ? t("common.deleting")
+                          : t("common.delete")}
                       </Button>
                       <Button
                         size="sm"
@@ -136,7 +157,7 @@ export default function CoopListTodosWithActions({
                         onClick={() => setInvitingTableId(table.id || "")}
                         disabled={isDeletingSharedTable}
                       >
-                        Wyślij zaproszenie
+                        {t("coopTodos.sendInvitation")}
                       </Button>
                     </>
                   ) : (
@@ -149,7 +170,9 @@ export default function CoopListTodosWithActions({
                       }
                       disabled={isLeavingSharedTable}
                     >
-                      {isLeavingSharedTable ? "Opuszczanie..." : "Opuść tabelę"}
+                      {isLeavingSharedTable
+                        ? t("common.leaving")
+                        : t("coopTodos.leaveTable")}
                     </Button>
                   )}
                 </div>
@@ -159,7 +182,7 @@ export default function CoopListTodosWithActions({
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
-          Nie masz jeszcze żadnych współdzielonych tabel
+          {t("coopTodos.noTables")}
         </div>
       )}
     </>

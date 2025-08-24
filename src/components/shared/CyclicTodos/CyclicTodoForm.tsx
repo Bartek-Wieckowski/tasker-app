@@ -55,15 +55,15 @@ export function CyclicTodoForm({
             <FormItem>
               <FormLabel>
                 {type === "add"
-                  ? t("cyclicTodoForm.newCyclicTaskName")
-                  : t("cyclicTodoForm.editCyclicTaskName")}
+                  ? t("common.newTaskName")
+                  : t("common.editTaskName")}
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder={
                     type === "add"
-                      ? t("cyclicTodoForm.writeYourTaskNameForCyclicList")
-                      : t("cyclicTodoForm.editYourCyclicTodo")
+                      ? t("common.writeYourTaskNamePlaceholder")
+                      : t("common.editYourTaskPlaceholder")
                   }
                   data-testid={
                     type === "add"
@@ -92,9 +92,9 @@ export function CyclicTodoForm({
               {type === "add" ? t("common.adding") : t("common.updating")}
             </div>
           ) : type === "add" ? (
-            t("cyclicTodoForm.addCyclicTask")
+            t("common.add")
           ) : (
-            t("cyclicTodoForm.updateTodo")
+            t("common.edit")
           )}
         </Button>
       </form>

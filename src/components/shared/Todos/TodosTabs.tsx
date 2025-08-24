@@ -13,7 +13,7 @@ import TodosResultsGlobally from "./TodosResultsGlobally";
 import { useTranslation } from "react-i18next";
 import { TodoRow } from "@/types/types";
 
-const TodosTabs = () => {
+export default function TodosTabs() {
   const { t } = useTranslation();
   const [categoryTab, setCategoryTab] = useState("all");
   const [searchValue, setSearchValue] = useState("");
@@ -126,6 +126,4 @@ const TodosTabs = () => {
         )}
     </Tabs>
   );
-};
-
-export default TodosTabs;
+}

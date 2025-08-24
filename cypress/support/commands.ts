@@ -146,14 +146,14 @@ Cypress.Commands.add("createTestUserInDb", (userId: string) => {
 // commands to todo
 Cypress.Commands.add("createTodo", (todoText) => {
   cy.get('[data-testid="add-todo-button"]').click();
-  cy.get('input[placeholder*="todo"]').first().type(todoText);
+  cy.get('input[name*="todo"]').first().type(todoText);
   cy.get('button[type="submit"]').click();
   cy.contains(todoText).should("exist");
 });
 
 Cypress.Commands.add("createTodoWithImage", (todoText, imageFixture) => {
   cy.get('[data-testid="add-todo-button"]').click();
-  cy.get('input[placeholder*="todo"]').first().type(todoText);
+  cy.get('input[name*="todo"]').first().type(todoText);
 
   cy.get('[id="todoPhoto"]').click();
   cy.get('input[type="file"]').selectFile(`cypress/fixtures/${imageFixture}`, {

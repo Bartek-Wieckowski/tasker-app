@@ -16,18 +16,15 @@ export function useDeleteCoopTodo() {
   } = useMutation({
     mutationFn: (todoId: string) => deleteCoopTodo(todoId),
     onSuccess: () => {
-      // Invalidate all coop todos queries
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodos] });
 
       toast({
-        title: "Zadanie usunięte",
-        description: "Zadanie zostało pomyślnie usunięte",
+        title: t("toastMsg.todoDeleted"),
       });
     },
     onError: () => {
       toast({
-        title: "Błąd usuwania zadania",
-        description: "Nie udało się usunąć zadania. Spróbuj ponownie.",
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },
@@ -35,4 +32,3 @@ export function useDeleteCoopTodo() {
 
   return { isDeletingCoopTodo, isError, deleteCoopTodoMutation };
 }
-

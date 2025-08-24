@@ -45,14 +45,6 @@ export default function CoopTodos() {
       );
     }).length > 0;
 
-  //   const { editCyclicTodoItem, isEditingCyclicTodo } = useEditCyclicTodo(
-  //     currentUser.accountId
-  //   );
-  //   const { deleteCyclicTodo, isDeletingCyclicTodo } = useDeleteCyclicTodo(
-  //     currentUser.accountId
-  //   );
-
-  // Automatyczne przełączanie zakładek na podstawie oczekujących zaproszeń
   useEffect(() => {
     if (hasPendingInvitations) {
       setActiveTab("invitations");
@@ -122,9 +114,11 @@ export default function CoopTodos() {
                 className="w-full"
               >
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="coop-todos-list">Listy zadań</TabsTrigger>
+                  <TabsTrigger value="coop-todos-list">
+                    {t("coopTodos.listsOfTasks")}
+                  </TabsTrigger>
                   <TabsTrigger value="invitations" className="relative">
-                    Zaproszenia
+                    {t("coopTodos.invitations")}
                     <CoopTodosBadge />
                   </TabsTrigger>
                 </TabsList>
@@ -140,7 +134,7 @@ export default function CoopTodos() {
                   <Tabs defaultValue="pending" className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="pending">
-                        Oczekujące
+                        {t("coopTodos.pendingTab")}
                         {pendingInvitations &&
                           currentUser &&
                           pendingInvitations.filter(
@@ -156,13 +150,17 @@ export default function CoopTodos() {
                             </span>
                           )}
                       </TabsTrigger>
-                      <TabsTrigger value="sent">Wysłane</TabsTrigger>
-                      <TabsTrigger value="received">Otrzymane</TabsTrigger>
+                      <TabsTrigger value="sent">
+                        {t("coopTodos.sent")}
+                      </TabsTrigger>
+                      <TabsTrigger value="received">
+                        {t("coopTodos.received")}
+                      </TabsTrigger>
                     </TabsList>
 
                     {!currentUser ? (
                       <div className="text-center py-8 text-muted-foreground">
-                        Ładowanie danych użytkownika...
+                        {t("app.loading")}
                       </div>
                     ) : (
                       <>

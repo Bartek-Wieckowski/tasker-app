@@ -9,6 +9,7 @@ export function useMoveTodo() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
   const {
     isPending: isMovingTodo,
     isError,
@@ -41,14 +42,13 @@ export function useMoveTodo() {
         queryKey: [QUERY_KEYS.todos],
       });
       toast({
-        title: t("toastMsg.moveTodoTitle"),
-        description: `${t("toastMsg.moveTodoDescription")} ${newDate}`,
+        title: t("toastMsg.todoMoved"),
+        description: `${t("toastMsg.todoNewDate")} ${newDate}`,
       });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.moveTodoFailed"),
-        description: t("toastMsg.moveTodoFailedDescription"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

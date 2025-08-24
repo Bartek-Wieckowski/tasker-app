@@ -1,8 +1,8 @@
 import { ROUTES } from "@/routes/constants";
 import { Link } from "react-router-dom";
-import { LanguageSwitcher } from "./LanguageSwitcher";
+import LanguageSwitcher from "./LanguageSwitcher";
 
-const Logo = () => {
+export default function Logo() {
   return (
     <div className="font-['Mynerve'] font-bold text-lg md:text-3xl">
       <div className="flex items-center gap-1">
@@ -11,6 +11,4 @@ const Logo = () => {
       </div>
     </div>
   );
-};
-
-export default Logo;
+}

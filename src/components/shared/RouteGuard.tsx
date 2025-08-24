@@ -1,14 +1,17 @@
-import { useAuth } from '@/contexts/AuthContext';
-import { ROUTES } from '@/routes/constants';
-import { Navigate, Outlet } from 'react-router-dom';
-import Loader from './Loader';
+import { useAuth } from "@/contexts/AuthContext";
+import { ROUTES } from "@/routes/constants";
+import { Navigate, Outlet } from "react-router-dom";
+import Loader from "./Loader";
 
 type RouteGuardProps = {
   requireAuth?: boolean;
   children?: React.ReactNode;
-}
+};
 
-const RouteGuard = ({ requireAuth = false, children }: RouteGuardProps) => {
+export default function RouteGuard({
+  requireAuth = false,
+  children,
+}: RouteGuardProps) {
   const { isAuth, isLoading } = useAuth();
 
   if (isLoading) {
@@ -26,6 +29,4 @@ const RouteGuard = ({ requireAuth = false, children }: RouteGuardProps) => {
   }
 
   return children ? <>{children}</> : <Outlet />;
-};
-
-export default RouteGuard; 
+}

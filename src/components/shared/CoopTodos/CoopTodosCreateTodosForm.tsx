@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,34 +25,23 @@ import { useUpdateSharedTable } from "@/api/mutations/coopTodos/useUpdateSharedT
 import { useInviteToSharedTable } from "@/api/mutations/coopTodos/useInviteToSharedTable";
 import { useSharedTableById } from "@/api/queries/coopTodos/useCoopTodos";
 import { useToast } from "@/components/ui/use-toast";
-
-// Schematy walidacji
-const createTableSchema = z.object({
-  tableName: z
-    .string()
-    .min(2, "Nazwa tabeli musi mieć co najmniej 2 znaki")
-    .max(25, "Nazwa tabeli nie może przekroczyć 25 znaków"),
-  description: z
-    .string()
-    .max(75, "Opis nie może przekroczyć 75 znaków")
-    .optional(),
-});
-
-type CreateTableForm = z.infer<typeof createTableSchema>;
+import { createTableSchema, CreateTableValues } from "@/validators/validators";
+import { useTranslation } from "react-i18next";
 
 type Step = "create-table" | "invite-users";
 
-interface CoopTodosCreateTodosFormProps {
+type CoopTodosCreateTodosFormProps = {
   editingTableId?: string | null;
   invitingTableId?: string | null;
   onClose?: () => void;
-}
+};
 
 export default function CoopTodosCreateTodosForm({
   editingTableId = null,
   invitingTableId = null,
   onClose,
 }: CoopTodosCreateTodosFormProps = {}) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<Step>("create-table");
   const [createdTableId, setCreatedTableId] = useState<string | null>(null);
@@ -66,22 +54,18 @@ export default function CoopTodosCreateTodosForm({
   const { inviteToSharedTableMutation, isInvitingToSharedTable } =
     useInviteToSharedTable();
 
-  // Pobierz dane tabeli do edycji
   const { data: editingTableData } = useSharedTableById(editingTableId || "");
 
-  // Formularz dla tworzenia/edycji tabeli
-  const tableForm = useForm<CreateTableForm>({
-    resolver: zodResolver(createTableSchema),
+  const tableForm = useForm<CreateTableValues>({
+    resolver: zodResolver(createTableSchema(t)),
     defaultValues: {
       tableName: "",
       description: "",
     },
   });
 
-  // Stan dla emaili (prostsze rozwiązanie)
   const [emails, setEmails] = useState<string[]>([""]);
 
-  // Określ tryb działania i resetuj formularz
   const getMode = () => {
     if (invitingTableId) return "invite";
     if (editingTableId) return "edit";
@@ -90,16 +74,13 @@ export default function CoopTodosCreateTodosForm({
 
   const mode = getMode();
 
-  // Konfiguruj modal gdy się otwiera z propsami
   useEffect(() => {
     if (isOpen && (invitingTableId || editingTableId)) {
       if (invitingTableId) {
-        // Tryb zapraszania - od razu step 2
         setCurrentStep("invite-users");
         setCreatedTableId(invitingTableId);
         setEmails([""]);
       } else if (editingTableId && editingTableData) {
-        // Tryb edycji - step 1 z danymi
         setCurrentStep("create-table");
         setCreatedTableId(editingTableId);
         tableForm.reset({
@@ -111,18 +92,15 @@ export default function CoopTodosCreateTodosForm({
     }
   }, [isOpen, invitingTableId, editingTableId, editingTableData, tableForm]);
 
-  // Automatyczne otwieranie modala dla edycji/zapraszania
   useEffect(() => {
     if (editingTableId || invitingTableId) {
       setIsOpen(true);
     }
   }, [editingTableId, invitingTableId]);
 
-  // Handler dla tworzenia/edycji tabeli
-  const handleTableSubmit = async (data: CreateTableForm) => {
+  const handleTableSubmit = async (data: CreateTableValues) => {
     try {
       if (mode === "edit") {
-        // Edycja tabeli
         await updateSharedTableMutation({
           sharedTableId: editingTableId!,
           tableName: data.tableName.trim(),
@@ -130,14 +108,12 @@ export default function CoopTodosCreateTodosForm({
         });
 
         toast({
-          title: "Sukces",
-          description: "Tabela została zaktualizowana",
+          title: t("coopTodos.tableUpdated"),
         });
 
         setIsOpen(false);
         onClose?.();
       } else {
-        // Tworzenie nowej tabeli
         const tableId = await createSharedTableMutation({
           tableName: data.tableName.trim(),
           description: data.description?.trim() || undefined,
@@ -147,23 +123,18 @@ export default function CoopTodosCreateTodosForm({
         setCurrentStep("invite-users");
 
         toast({
-          title: "Sukces",
-          description: "Tabela została utworzona pomyślnie",
+          title: t("coopTodos.tableCreated"),
         });
       }
     } catch (error) {
       toast({
-        title: "Błąd",
-        description:
-          mode === "edit"
-            ? "Nie udało się zaktualizować tabeli"
-            : "Nie udało się utworzyć tabeli",
+        title: t("toastMsg.todosFailed"),
+
         variant: "destructive",
       });
     }
   };
 
-  // Handler dla zaproszeń
   const handleInviteSubmit = async () => {
     const tableId = createdTableId || invitingTableId;
     if (!tableId) return;
@@ -172,15 +143,13 @@ export default function CoopTodosCreateTodosForm({
 
     if (validEmails.length === 0) {
       toast({
-        title: "Błąd",
-        description: "Dodaj przynajmniej jeden email",
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
       return;
     }
 
     try {
-      // Wysyłaj zaproszenia równolegle
       await Promise.all(
         validEmails.map((email) =>
           inviteToSharedTableMutation({
@@ -191,18 +160,20 @@ export default function CoopTodosCreateTodosForm({
       );
 
       toast({
-        title: "Sukces",
-        description: `Wysłano ${validEmails.length} zaproszeń`,
+        title:
+          t("coopTodos.send") +
+          " " +
+          validEmails.length +
+          " " +
+          t("coopTodos.invitationsSent"),
       });
 
-      // Reset emaili i zamknij modal
       setEmails([""]);
       setIsOpen(false);
       onClose?.();
     } catch (error) {
       toast({
-        title: "Błąd",
-        description: "Nie udało się wysłać zaproszeń",
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     }
@@ -239,12 +210,10 @@ export default function CoopTodosCreateTodosForm({
       onOpenChange={(open) => {
         setIsOpen(open);
         if (!open) {
-          // Reset stanu przy zamykaniu
           setCurrentStep("create-table");
           setCreatedTableId(null);
           setEmails([""]);
           tableForm.reset({ tableName: "", description: "" });
-          // WAŻNE: Wywołaj onClose żeby parent zresetował propsy
           onClose?.();
         }
       }}
@@ -252,7 +221,6 @@ export default function CoopTodosCreateTodosForm({
       <DialogTrigger asChild>
         <Button
           onClick={() => {
-            // Resetuj stan przed otwarciem nowej tabeli
             setCurrentStep("create-table");
             setCreatedTableId(null);
             setEmails([""]);
@@ -260,7 +228,7 @@ export default function CoopTodosCreateTodosForm({
             setIsOpen(true);
           }}
         >
-          Stwórz wspólną listę zadań
+          {t("coopTodos.createTable")}
         </Button>
       </DialogTrigger>
 
@@ -269,11 +237,11 @@ export default function CoopTodosCreateTodosForm({
           <DialogTitle>
             {currentStep === "create-table"
               ? mode === "edit"
-                ? "Edytuj tabelę"
-                : "Stwórz nową tabelę"
+                ? t("coopTodos.editTable")
+                : t("coopTodos.createTable")
               : mode === "invite"
-              ? "Wyślij zaproszenia"
-              : "Zaproś użytkowników"}
+              ? t("coopTodos.sendInvitations")
+              : t("coopTodos.inviteUsers")}
           </DialogTitle>
         </DialogHeader>
 
@@ -288,10 +256,10 @@ export default function CoopTodosCreateTodosForm({
                 name="tableName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nazwa tabeli *</FormLabel>
+                    <FormLabel>{t("coopTodos.tableName")} *</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="np. Projekt marketingowy"
+                        placeholder={t("coopTodos.tableNamePlaceholder")}
                         disabled={
                           isCreatingSharedTable || isUpdatingSharedTable
                         }
@@ -308,10 +276,10 @@ export default function CoopTodosCreateTodosForm({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Opis (opcjonalnie)</FormLabel>
+                    <FormLabel>{t("coopTodos.tableDescription")}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Krótki opis tabeli..."
+                        placeholder={t("coopTodos.descriptionPlaceholder")}
                         rows={3}
                         disabled={
                           isCreatingSharedTable || isUpdatingSharedTable
@@ -331,7 +299,7 @@ export default function CoopTodosCreateTodosForm({
                   onClick={handleClose}
                   disabled={isCreatingSharedTable || isUpdatingSharedTable}
                 >
-                  Anuluj
+                  {t("common.cancel")}
                 </Button>
                 {mode === "edit" && (
                   <Button
@@ -340,7 +308,7 @@ export default function CoopTodosCreateTodosForm({
                     onClick={handleGoToInviteUsers}
                     disabled={isCreatingSharedTable || isUpdatingSharedTable}
                   >
-                    Dodaj zaproszenia
+                    {t("coopTodos.addInvitations")}
                   </Button>
                 )}
                 <Button
@@ -349,11 +317,11 @@ export default function CoopTodosCreateTodosForm({
                 >
                   {mode === "edit"
                     ? isUpdatingSharedTable
-                      ? "Aktualizowanie..."
-                      : "Zaktualizuj"
+                      ? t("common.updating")
+                      : t("common.update")
                     : isCreatingSharedTable
-                    ? "Tworzenie..."
-                    : "Stwórz"}
+                    ? t("common.creating")
+                    : t("common.create")}
                 </Button>
               </div>
             </form>
@@ -363,11 +331,11 @@ export default function CoopTodosCreateTodosForm({
         {currentStep === "invite-users" && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Zaproś użytkowników (opcjonalnie)</Label>
+              <Label>{t("coopTodos.inviteUsersOptional")}</Label>
               <p className="text-sm text-muted-foreground">
                 {mode === "create"
-                  ? "Możesz zaprosić użytkowników do współpracy nad tą tabelą"
-                  : "Dodaj kolejnych użytkowników do współpracy"}
+                  ? t("coopTodos.inviteUsersOptionalDescription")
+                  : t("coopTodos.addInvitationsDescription")}
               </p>
             </div>
 
@@ -388,7 +356,7 @@ export default function CoopTodosCreateTodosForm({
                     onClick={() => removeEmailField(index)}
                     disabled={isInvitingToSharedTable}
                   >
-                    Usuń
+                    {t("common.delete")}
                   </Button>
                 )}
               </div>
@@ -401,7 +369,7 @@ export default function CoopTodosCreateTodosForm({
               disabled={isInvitingToSharedTable}
               className="w-full"
             >
-              + Dodaj email
+              {t("common.add")} {t("common.email")}
             </Button>
 
             <div className="flex justify-end space-x-2 pt-4">
@@ -412,7 +380,7 @@ export default function CoopTodosCreateTodosForm({
                   onClick={() => setCurrentStep("create-table")}
                   disabled={isInvitingToSharedTable}
                 >
-                  Wstecz
+                  {t("common.back")}
                 </Button>
               )}
               <Button
@@ -420,8 +388,8 @@ export default function CoopTodosCreateTodosForm({
                 disabled={isInvitingToSharedTable}
               >
                 {isInvitingToSharedTable
-                  ? "Wysyłanie..."
-                  : "Wyślij zaproszenia"}
+                  ? t("common.sending")
+                  : t("coopTodos.sendInvitations")}
               </Button>
             </div>
           </div>

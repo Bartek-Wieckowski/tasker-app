@@ -45,7 +45,7 @@ const UserSettingsFormInfo = () => {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("userSettingsForm.username")}</FormLabel>
+              <FormLabel>{t("common.username")}</FormLabel>
               <FormControl>
                 <Input type="text" {...field} />
               </FormControl>
@@ -58,7 +58,7 @@ const UserSettingsFormInfo = () => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("userSettingsForm.email")}</FormLabel>
+              <FormLabel>{t("common.email")}</FormLabel>
               <FormControl>
                 <Input type="email" {...field} />
               </FormControl>

@@ -21,10 +21,10 @@ import { Loader as LoaderIcon } from "lucide-react";
 import Loader from "../Loader";
 import UserSettingsFormInfo from "./UserSettingsFormInfo";
 import UserSettingsFormPassword from "./UserSettingsFormPassword";
-import { UserSettingsNotifications } from "./UserSettingsNotifications";
+import UserSettingsNotifications from "./UserSettingsNotifications";
 import { useTranslation } from "react-i18next";
 
-const UserPanel = () => {
+export default function UserPanel() {
   const { deleteUser, isDeleting } = useDeleteAccount();
   const { logoutUser, isLogouting } = useLogoutAccount();
   const { currentUser } = useAuth();
@@ -36,8 +36,8 @@ const UserPanel = () => {
       <PopoverTrigger asChild className="cursor-pointer">
         <Avatar>
           <AvatarImage
-            src={currentUser?.imageUrl}
-            alt={currentUser?.username}
+            src={currentUser.imageUrl}
+            alt={currentUser.username}
             data-testid="user-avatar"
           />
           <AvatarFallback>
@@ -49,9 +49,7 @@ const UserPanel = () => {
         <div className="flex flex-col gap-2">
           <p className="text-center text-sm">
             {t("app.userPanel.welcomeText")}{" "}
-            <span className="text-teal-600 italic">
-              {currentUser?.username}
-            </span>{" "}
+            <span className="text-teal-600 italic">{currentUser.username}</span>{" "}
             !
           </p>
           {currentUser.providerId !== "google.com" && (
@@ -101,6 +99,4 @@ const UserPanel = () => {
       </PopoverContent>
     </Popover>
   );
-};
-
-export default UserPanel;
+}

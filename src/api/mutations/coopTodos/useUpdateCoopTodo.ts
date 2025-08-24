@@ -2,8 +2,10 @@ import { updateCoopTodo } from "@/api/apiCoopTodos";
 import { QUERY_KEYS } from "@/api/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 export function useUpdateCoopTodo() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -22,18 +24,15 @@ export function useUpdateCoopTodo() {
       todoMoreContent?: string;
     }) => updateCoopTodo(todoId, todo, todoMoreContent),
     onSuccess: () => {
-      // Invalidate all coop todos queries
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodos] });
 
       toast({
-        title: "Zadanie zaktualizowane",
-        description: "Zadanie zostało pomyślnie zaktualizowane",
+        title: t("toastMsg.todoUpdated"),
       });
     },
     onError: () => {
       toast({
-        title: "Błąd aktualizacji zadania",
-        description: "Nie udało się zaktualizować zadania. Spróbuj ponownie.",
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

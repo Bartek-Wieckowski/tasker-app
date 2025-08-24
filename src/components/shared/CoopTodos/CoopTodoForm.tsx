@@ -59,10 +59,10 @@ export default function CoopTodoForm({
           name="todo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Zadanie</FormLabel>
+              <FormLabel>{t("common.todoContent")}</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Wprowadź zadanie..."
+                  placeholder={t("common.todoContentPlaceholder")}
                   disabled={isSubmitting}
                   {...field}
                 />
@@ -77,10 +77,10 @@ export default function CoopTodoForm({
           name="todo_more_content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Dodatkowe szczegóły (opcjonalne)</FormLabel>
+              <FormLabel>{t("common.todoMoreContent")}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Dodatkowe informacje o zadaniu..."
+                  placeholder={t("common.todoMoreContentPlaceholder")}
                   disabled={isSubmitting}
                   rows={3}
                   {...field}
@@ -100,19 +100,19 @@ export default function CoopTodoForm({
               disabled={isSubmitting}
               className="flex-1"
             >
-              Anuluj
+              {t("common.cancel")}
             </Button>
           )}
           <Button type="submit" disabled={isSubmitting} className="flex-1">
             {isSubmitting ? (
               <div className="flex items-center gap-2">
                 <Loader />
-                {initialData ? "Aktualizowanie..." : "Dodawanie..."}
+                {initialData ? t("common.updating") : t("common.adding")}
               </div>
             ) : initialData ? (
-              "Zaktualizuj zadanie"
+              t("common.update")
             ) : (
-              "Dodaj zadanie"
+              t("common.add")
             )}
           </Button>
         </div>

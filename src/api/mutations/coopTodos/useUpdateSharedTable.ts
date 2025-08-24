@@ -24,18 +24,15 @@ export function useUpdateSharedTable() {
       description?: string;
     }) => updateSharedTable(sharedTableId, tableName, description),
     onSuccess: () => {
-      // Invalidate shared tables
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodosShared] });
 
       toast({
-        title: "Tabela zaktualizowana",
-        description: "Nazwa i opis tabeli zostały pomyślnie zaktualizowane",
+        title: t("toastMsg.todoUpdated"),
       });
     },
     onError: () => {
       toast({
-        title: "Błąd aktualizacji tabeli",
-        description: "Nie udało się zaktualizować tabeli. Spróbuj ponownie.",
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

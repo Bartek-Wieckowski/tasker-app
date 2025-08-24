@@ -1,4 +1,4 @@
-import { AllTheProviders } from "./../src/AllTheProviders";
+import AllTheProviders from "./../src/AllTheProviders";
 import "@testing-library/jest-dom/vitest";
 import "@testing-library/jest-dom";
 import { ReactElement } from "react";

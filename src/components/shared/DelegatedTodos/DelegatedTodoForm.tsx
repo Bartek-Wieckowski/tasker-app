@@ -55,15 +55,15 @@ export function DelegatedTodoForm({
             <FormItem>
               <FormLabel>
                 {type === "add"
-                  ? t("delegatedTodoForm.newDelegatedTaskName")
-                  : t("delegatedTodoForm.editDelegatedTaskName")}
+                  ? t("common.newTaskName")
+                  : t("common.editTaskName")}
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder={
                     type === "add"
-                      ? t("delegatedTodoForm.writeYourTaskNameForDelegatedList")
-                      : t("delegatedTodoForm.editYourDelegatedTodo")
+                      ? t("common.writeYourTaskNamePlaceholder")
+                      : t("common.editYourTaskPlaceholder")
                   }
                   data-testid={
                     type === "add"
@@ -92,9 +92,9 @@ export function DelegatedTodoForm({
               {type === "add" ? t("common.adding") : t("common.updating")}
             </div>
           ) : type === "add" ? (
-            t("delegatedTodoForm.addDelegatedTask")
+            t("common.add")
           ) : (
-            t("delegatedTodoForm.updateTodo")
+            t("common.edit")
           )}
         </Button>
       </form>

@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { AllTheProviders } from "./AllTheProviders";
 import { ROUTES } from "./routes/constants";
+import AllTheProviders from "./AllTheProviders";
 import AppLayout from "./components/shared/AppLayout";
 import StarterLayout from "./components/shared/StarterLayout";
 import AuthProvider from "./contexts/AuthContext";
@@ -14,7 +14,7 @@ const Register = lazy(() => import("./pages/Register"));
 const TodosList = lazy(() => import("./components/shared/Todos/TodosList"));
 const Todopage = lazy(() => import("./pages/Todopage"));
 
-const App = () => {
+export default function App() {
   return (
     <main className="flex min-h-screen">
       <AllTheProviders>
@@ -47,6 +47,4 @@ const App = () => {
       </AllTheProviders>
     </main>
   );
-};
-
-export default App;
+}

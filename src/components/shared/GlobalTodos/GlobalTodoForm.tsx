@@ -55,15 +55,15 @@ export function GlobalTodoForm({
             <FormItem>
               <FormLabel>
                 {type === "add"
-                  ? t("globalTodoForm.newGlobalTaskName")
-                  : t("globalTodoForm.editGlobalTaskName")}
+                  ? t("common.newTaskName")
+                  : t("common.editTaskName")}
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder={
                     type === "add"
-                      ? t("globalTodoForm.writeYourTaskNameForGlobalList")
-                      : t("globalTodoForm.editYourGlobalTodo")
+                      ? t("common.writeYourTaskNamePlaceholder")
+                      : t("common.editYourTaskPlaceholder")
                   }
                   data-testid={
                     type === "add"
@@ -92,9 +92,9 @@ export function GlobalTodoForm({
               {type === "add" ? t("common.adding") : t("common.updating")}
             </div>
           ) : type === "add" ? (
-            t("globalTodoForm.addGlobalTask")
+            t("common.add")
           ) : (
-            t("globalTodoForm.updateTodo")
+            t("common.edit")
           )}
         </Button>
       </form>

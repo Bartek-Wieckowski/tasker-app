@@ -7,13 +7,14 @@ import {
 import { ROUTES } from "@/routes/constants";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 type userNavigationLink = {
   name: string;
   path: string;
 };
 
-const UserNavigation = () => {
+export default function UserNavigation() {
   const { pathname } = useLocation();
   const { t } = useTranslation();
 
@@ -33,15 +34,17 @@ const UserNavigation = () => {
               <NavigationMenuLink asChild>
                 <Link
                   to={link.path}
-                  className={`${
+                  className={cn(
+                    "relative inline-block",
                     isActive &&
-                    "before:block before:absolute before:-inset-1 before:-skew-y-3  before:bg-pink-500 relative inline-block"
-                  }`}
+                      "before:block before:absolute before:-inset-1 before:-skew-y-3  before:bg-pink-500"
+                  )}
                 >
                   <span
-                    className={`${
-                      isActive ? "relative text-white" : "text-black"
-                    }`}
+                    className={cn(
+                      "relative",
+                      isActive ? "text-white" : "text-black"
+                    )}
                   >
                     {link.name}
                   </span>
@@ -53,6 +56,4 @@ const UserNavigation = () => {
       </NavigationMenuList>
     </NavigationMenu>
   );
-};
-
-export default UserNavigation;
+}

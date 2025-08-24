@@ -2,7 +2,10 @@ import { deleteSharedTable } from "@/api/apiCoopTodos";
 import { QUERY_KEYS } from "@/api/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+
 export function useDeleteSharedTable() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -13,22 +16,16 @@ export function useDeleteSharedTable() {
   } = useMutation({
     mutationFn: (sharedTableId: string) => deleteSharedTable(sharedTableId),
     onSuccess: () => {
-      // Invalidate shared tables and todos
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodosShared] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.coopTodos] });
 
       toast({
-        title: "Tabela usunięta",
-        description: "Tabela i wszystkie zadania zostały pomyślnie usunięte",
+        title: t("toastMsg.todoDeleted"),
       });
     },
-    onError: (error: any) => {
-      console.error("Delete table mutation error:", error);
+    onError: () => {
       toast({
-        title: "Błąd usuwania tabeli",
-        description:
-          error?.error?.message ||
-          "Nie udało się usunąć tabeli. Spróbuj ponownie.",
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

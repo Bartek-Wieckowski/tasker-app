@@ -159,10 +159,10 @@ const TodoForm = ({
             name="todo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("todoForm.todoContent")}</FormLabel>
+                <FormLabel>{t("common.todoContent")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder={t("todoForm.todoContentPlaceholder")}
+                    placeholder={t("common.todoContentPlaceholder")}
                     {...field}
                   />
                 </FormControl>
@@ -175,11 +175,11 @@ const TodoForm = ({
             name="todo_more_content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("todoForm.todoMoreContent")}</FormLabel>
+                <FormLabel>{t("common.todoMoreContent")}</FormLabel>
                 <FormControl>
                   <Textarea
                     className="custom-scrollbar"
-                    placeholder={t("todoForm.todoMoreContentPlaceholder")}
+                    placeholder={t("common.todoMoreContentPlaceholder")}
                     {...field}
                   />
                 </FormControl>
@@ -375,15 +375,11 @@ const TodoForm = ({
             {isAddingNewItemTodo || isTodoChanging ? (
               <div className="flex gap-2">
                 <Loader />
-                {action === "Create" && t("todoForm.creating")}
-                {action === "Update" && t("todoForm.updating")}
+                {action === "Create" && t("common.creating")}
+                {action === "Update" && t("common.updating")}
               </div>
             ) : (
-              `${
-                action === "Create"
-                  ? t("todoForm.createTodo")
-                  : t("todoForm.updateTodo")
-              }`
+              `${action === "Create" ? t("common.create") : t("common.edit")}`
             )}
           </Button>
         </form>

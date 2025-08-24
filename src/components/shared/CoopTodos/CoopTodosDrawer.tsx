@@ -20,6 +20,7 @@ import CoopTodoForm from "./CoopTodoForm";
 import { Plus, ArrowLeft } from "lucide-react";
 import { useCreateCoopTodo } from "@/api/mutations/coopTodos/useCreateCoopTodo";
 import { useUpdateCoopTodo } from "@/api/mutations/coopTodos/useUpdateCoopTodo";
+import { useTranslation } from "react-i18next";
 
 type CoopTodosDrawerProps = {
   tableId: string;
@@ -32,6 +33,7 @@ export default function CoopTodosDrawer({
   tableName,
   children,
 }: CoopTodosDrawerProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTodo, setEditingTodo] = useState<{
@@ -110,7 +112,7 @@ export default function CoopTodosDrawer({
               {tableName}
             </DrawerTitle>
             <DrawerDescription>
-              Współdzielone zadania ({todos?.length || 0})
+              {t("coopTodos.sharedTasks")} ({todos?.length || 0})
             </DrawerDescription>
           </DrawerHeader>
 
@@ -122,18 +124,20 @@ export default function CoopTodosDrawer({
                 size="sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Dodaj nowe zadanie
+                {t("common.addNewTodo")}
               </Button>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium">Nowe zadanie</h3>
+                  <h3 className="text-sm font-medium">
+                    {t("common.addNewTodo")}
+                  </h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowAddForm(false)}
                   >
-                    Anuluj
+                    {t("common.cancel")}
                   </Button>
                 </div>
                 <CoopTodoForm
@@ -147,7 +151,7 @@ export default function CoopTodosDrawer({
             <div className="space-y-3 custom-scrollbar overflow-y-auto max-h-[500px]">
               {isLoading ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  Ładowanie zadań...
+                  {t("app.loading")}
                 </div>
               ) : todos && todos.length > 0 ? (
                 todos.map((todo) => (
@@ -159,7 +163,7 @@ export default function CoopTodosDrawer({
                 ))
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  Brak zadań w tej tabeli
+                  {t("coopTodos.noTasksInTable")}
                 </div>
               )}
             </div>
@@ -171,7 +175,7 @@ export default function CoopTodosDrawer({
       <Dialog open={!!editingTodo} onOpenChange={() => setEditingTodo(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edytuj zadanie</DialogTitle>
+            <DialogTitle>{t("coopTodos.editTask")}</DialogTitle>
           </DialogHeader>
           {editingTodo && (
             <CoopTodoForm

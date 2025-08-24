@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const Todopage = () => {
+export default function Todopage() {
   const { t } = useTranslation();
   const { id } = useParams();
   const { selectedDate, currentUser } = useAuth();
@@ -106,6 +106,4 @@ const Todopage = () => {
       </div>
     </div>
   );
-};
-
-export default Todopage;
+}

@@ -7,7 +7,9 @@ type TodosTabsListProps = {
   categorySetHandler: (value: string) => void;
 };
 
-const TodosTabsList = ({ categorySetHandler }: TodosTabsListProps) => {
+export default function TodosTabsList({
+  categorySetHandler,
+}: TodosTabsListProps) {
   const [isMobile, setIsMobile] = useState(false);
   const { t } = useTranslation();
   useEffect(() => {
@@ -59,6 +61,4 @@ const TodosTabsList = ({ categorySetHandler }: TodosTabsListProps) => {
       </TabsTrigger>
     </TabsList>
   );
-};
-
-export default TodosTabsList;
+}

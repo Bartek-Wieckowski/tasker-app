@@ -12,10 +12,10 @@ type TodosGlobalSearchProps = {
   currentUser: User;
 };
 
-const TodosGlobalSearch = ({
+export default function TodosGlobalSearch({
   isGlobalSearch,
   currentUser,
-}: TodosGlobalSearchProps) => {
+}: TodosGlobalSearchProps) {
   const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = useState("");
   const { searchValueGlobal, setSearchValueGlobal, setGlobalSearchResult } =
@@ -67,6 +67,4 @@ const TodosGlobalSearch = ({
       )}
     </>
   );
-};
-
-export default TodosGlobalSearch;
+}
