@@ -6,6 +6,7 @@ import UserPanel from "./User/UserPanel";
 import GlobalTodos from "./GlobalTodos/GlobalTodos";
 import DelegatedTodos from "./DelegatedTodos/DelegatedTodos";
 import CyclicTodos from "./CyclicTodos/CyclicTodos";
+import CoopTodos from "./CoopTodos/CoopTodos";
 
 const AppLayout = () => {
   return (
@@ -14,6 +15,7 @@ const AppLayout = () => {
         <Header>
           <Logo />
           <div className="flex gap-2 items-center">
+            <CoopTodos />
             <CyclicTodos />
             <DelegatedTodos />
             <GlobalTodos />

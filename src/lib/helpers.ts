@@ -63,3 +63,59 @@ export const localeMap = {
   en: enUS,
   pl: pl,
 };
+
+export function getInvitationStatus(
+  status: string | null,
+  expiresAt: string | null | undefined
+): "pending" | "accepted" | "declined" | "expired" {
+  // Default to pending if status is null
+  const actualStatus = status || "pending";
+
+  if (actualStatus === "accepted" || actualStatus === "declined") {
+    return actualStatus as "accepted" | "declined";
+  }
+
+  if (actualStatus === "pending" && expiresAt) {
+    const now = new Date();
+    const expirationDate = new Date(expiresAt);
+    return now >= expirationDate ? "expired" : "pending";
+  }
+
+  return "pending";
+}
+
+export function formatExpirationMessage(
+  expiresAt: string | null | undefined,
+  language: "en" | "pl",
+  status: "pending" | "accepted" | "declined" | "expired"
+): string | null {
+  if (!expiresAt || status === "accepted" || status === "declined") {
+    return null;
+  }
+
+  const date = new Date(expiresAt);
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  };
+
+  const locale = language === "pl" ? "pl-PL" : "en-US";
+  const formattedDate = date.toLocaleDateString(locale, dateOptions);
+  const formattedTime = date.toLocaleTimeString(locale, timeOptions);
+
+  if (status === "expired") {
+    return language === "pl"
+      ? `Wygasło: ${formattedDate} o ${formattedTime}`
+      : `Expired: ${formattedDate} at ${formattedTime}`;
+  }
+
+  return language === "pl"
+    ? `Wygasa: ${formattedDate} o ${formattedTime}`
+    : `Expires: ${formattedDate} at ${formattedTime}`;
+}

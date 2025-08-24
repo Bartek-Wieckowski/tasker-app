@@ -112,7 +112,13 @@
     "cyclicTodoDeleted": "Cykliczne zadanie zostało usunięte!",
     "cyclicTodoDeletedFailed": "Usuwanie cyklicznego zadania nie powiodło się. Spróbuj ponownie.",
     "cyclicTodoUpdated": "Cykliczne zadanie zostało zaktualizowane!",
-    "cyclicTodoUpdatedFailed": "Aktualizacja cyklicznego zadania nie powiodła się. Spróbuj ponownie."
+    "cyclicTodoUpdatedFailed": "Aktualizacja cyklicznego zadania nie powiodła się. Spróbuj ponownie.",
+    "coopTodoAdded": "Współdzielone zadanie zostało dodane!",
+    "coopTodoAddedFailed": "Dodawanie współdzielonego zadania nie powiodło się. Spróbuj ponownie.",
+    "coopTodoDeleted": "Współdzielone zadanie zostało usunięte!",
+    "coopTodoDeletedFailed": "Usuwanie współdzielonego zadania nie powiodło się. Spróbuj ponownie.",
+    "coopTodoUpdated": "Współdzielone zadanie zostało zaktualizowane!",
+    "coopTodoUpdatedFailed": "Aktualizacja współdzielonego zadania nie powiodła się. Spróbuj ponownie."
   },
   "todos": {
     "title": "Zadania",
@@ -125,7 +131,8 @@
     "noTasks": "Nie znaleziono zadań",
     "createTask": "Utwórz nowe zadanie",
     "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
-    "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
+    "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu",
+    "todoMoreContentMaxLength": "Dodatkowe informacje nie mogą przekroczyć 500 znaków"
   },
   "common": {
     "save": "Zapisz",
@@ -181,7 +188,8 @@
     "imageWillBeDeleted": "Obecne zdjęcie zostanie usunięte",
     "selectNewImage": "Wybierz nowe zdjęcie aby zastąpić obecne",
     "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
-    "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu"
+    "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu",
+    "todoMoreContentMaxLength": "Dodatkowe informacje nie mogą przekroczyć 500 znaków"
   },
   "fileUploader": {
     "dragPhotoHere": "Przeciągnij zdjęcie tutaj",
@@ -271,5 +279,9 @@
     "editYourCyclicTodo": "Edytuj swoje cykliczne zadanie",
     "addCyclicTask": "Dodaj cykliczne zadanie",
     "updateTodo": "Zaktualizuj zadanie"
+  },
+  "coopTodos": {
+    "title": "Współdzielone zadania",
+    "description": "Twórz i zarządzaj zadaniami w zespołach"
   }
 }

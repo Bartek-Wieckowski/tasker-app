@@ -1,4 +1,4 @@
-import { Database, TablesInsert } from "./supabase";
+import { Database, Tables, TablesInsert } from "./supabase";
 
 export type NewUser = {
   username: string;
@@ -74,6 +74,11 @@ export type CyclicTodoInsert =
   Database["public"]["Tables"]["cyclic_todos"]["Insert"];
 export type CyclicTodoUpdate =
   Database["public"]["Tables"]["cyclic_todos"]["Update"];
+
+// Typy dla cooperative todos
+export type CoopTodoShared = Tables<"coop_todos_shared">;
+export type CoopTodo = Tables<"coop_todos">;
+export type CoopInvitation = Tables<"coop_invitations">;
 
 export type SearchGlobalContextType = {
   searchValueGlobal: string;

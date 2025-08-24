@@ -109,7 +109,13 @@
     "cyclicTodoDeleted": "Cyclic todo deleted successfully!",
     "cyclicTodoDeletedFailed": "Deleting cyclic todo failed. Please try again.",
     "cyclicTodoUpdated": "Cyclic todo updated successfully!",
-    "cyclicTodoUpdatedFailed": "Updating cyclic todo failed. Please try again."
+    "cyclicTodoUpdatedFailed": "Updating cyclic todo failed. Please try again.",
+    "coopTodoAdded": "Coop todo added successfully!",
+    "coopTodoAddedFailed": "Adding coop todo failed. Please try again.",
+    "coopTodoDeleted": "Coop todo deleted successfully!",
+    "coopTodoDeletedFailed": "Deleting coop todo failed. Please try again.",
+    "coopTodoUpdated": "Coop todo updated successfully!",
+    "coopTodoUpdatedFailed": "Updating coop todo failed. Please try again."
   },
   "todos": {
     "title": "Tasks",
@@ -122,7 +128,8 @@
     "noTasks": "No tasks found",
     "createTask": "Create new task",
     "todoMinLength": "Todo item must be at least 2 characters",
-    "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field"
+    "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field",
+    "todoMoreContentMaxLength": "Additional information cannot exceed 500 characters"
   },
   "common": {
     "save": "Save",
@@ -178,7 +185,8 @@
     "imageWillBeDeleted": "Current image will be deleted",
     "selectNewImage": "Select a new image to replace current one",
     "todoMinLength": "Todo item must be at least 2 characters",
-    "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field"
+    "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field",
+    "todoMoreContentMaxLength": "Additional information cannot exceed 500 characters"
   },
   "fileUploader": {
     "dragPhotoHere": "Drag photo here",
@@ -268,5 +276,9 @@
     "editYourCyclicTodo": "Edit your cyclic todo",
     "addCyclicTask": "Add cyclic task",
     "updateTodo": "Update cyclic todo"
+  },
+  "coopTodos": {
+    "title": "Shared Tasks",
+    "description": "Create and manage tasks in teams"
   }
 }

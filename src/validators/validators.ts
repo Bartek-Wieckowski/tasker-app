@@ -50,7 +50,11 @@ export const todoFormSchema = (t: TFunction) =>
       .max(70, {
         message: t("todoForm.todoMaxLength"),
       }),
-    todo_more_content: z.optional(z.string()),
+    todo_more_content: z.optional(
+      z.string().max(500, {
+        message: t("todoForm.todoMoreContentMaxLength"),
+      })
+    ),
     imageFile: z.optional(z.custom<File>()),
   });
 
