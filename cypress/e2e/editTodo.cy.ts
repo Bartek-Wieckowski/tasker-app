@@ -1,9 +1,6 @@
 describe("Edit Todo()", () => {
   const email = "taskertestuser@developedbybart.pl";
   const password = "password123";
-  //   const targetYear = new Date().getFullYear();
-  //   const targetMonth = new Date().getMonth() + 1;
-  //   const targetDay = 25;
   const currentDate = new Date();
   const nextDay = new Date(currentDate);
   nextDay.setDate(currentDate.getDate() + 1);
@@ -27,12 +24,10 @@ describe("Edit Todo()", () => {
 
       cy.contains("button", /edit/i).click();
 
-      // Clear and type new text
       cy.get('input[name*="todo"]').first().clear().type(editedText);
 
       cy.get('button[type="submit"]').click();
 
-      // Verify the change
       cy.contains(editedText).should("exist");
       cy.contains(originalText).should("not.exist");
     });
@@ -92,7 +87,6 @@ describe("Edit Todo()", () => {
       );
       cy.get('button[type="submit"]').click();
 
-      // Verify image was added
       cy.contains(todoText)
         .closest('div[class*="todo-item-card"]')
         .find('[data-testid="todo-item-has-image"]')
@@ -229,7 +223,6 @@ describe("Edit Todo()", () => {
       );
       cy.get('button[type="submit"]').click();
 
-      // Verify both changes
       cy.contains(editedText).should("exist");
       cy.contains(originalText).should("not.exist");
       cy.contains(editedText)
@@ -258,7 +251,6 @@ describe("Edit Todo()", () => {
         currentDate
       );
 
-      // Go back to original date and edit the original todo
       const today = new Date();
       cy.navigateToDate(
         today.getDate(),
@@ -277,10 +269,8 @@ describe("Edit Todo()", () => {
 
       cy.get('button[type="submit"]').click();
 
-      // Verify original changed
       cy.contains(editedText).should("exist");
 
-      // Navigate back to future date and verify repeated todo also changed
       cy.navigateToDate(
         nextDay.getDate(),
         nextDay.getMonth() + 1,
@@ -307,7 +297,6 @@ describe("Edit Todo()", () => {
         currentDate
       );
 
-      // Navigate to previous date
       cy.navigateToDate(
         nextDay.getDate(),
         nextDay.getMonth() + 1,
@@ -325,10 +314,8 @@ describe("Edit Todo()", () => {
 
       cy.get('button[type="submit"]').click();
 
-      // Verify this instance changed
       cy.contains(independentText).should("exist");
 
-      // Go back to original date and verify original didn't change
       cy.navigateToDate(
         currentDate.getDate(),
         currentDate.getMonth() + 1,
@@ -344,10 +331,8 @@ describe("Edit Todo()", () => {
       cy.login(email, password);
       cy.visit("/");
 
-      // Create todo with image
       cy.createTodoWithImage(todoText, "test-image.jpg");
 
-      // Repeat the todo to next day
       cy.repeatTodo(
         todoText,
         nextDay.getDate(),
@@ -356,14 +341,12 @@ describe("Edit Todo()", () => {
         currentDate
       );
 
-      // Navigate back to original date
       cy.navigateToDate(
         currentDate.getDate(),
         currentDate.getMonth() + 1,
         currentDate.getFullYear()
       );
 
-      // Get the original image URL for comparison
       cy.contains(todoText)
         .closest('div[class*="todo-item-card"]')
         .find('[data-testid="todo-item-has-image"]')
@@ -371,7 +354,6 @@ describe("Edit Todo()", () => {
         .then(($img) => {
           const originalImageSrc = $img.attr("data-image-url");
 
-          // Edit the original todo and replace image
           cy.contains(todoText)
             .closest('div[class*="todo-item-card"]')
             .find('[data-testid="popover-trigger"]')
@@ -388,7 +370,6 @@ describe("Edit Todo()", () => {
           cy.get('[data-testid="image-preview"]').should("be.visible");
           cy.get('button[type="submit"]').click();
 
-          // Verify original todo has new image (different src)
           cy.contains(todoText)
             .closest('div[class*="todo-item-card"]')
             .find('[data-testid="todo-item-has-image"]')
@@ -396,14 +377,12 @@ describe("Edit Todo()", () => {
             .should("have.attr", "data-image-url")
             .and("not.equal", originalImageSrc);
 
-          // Navigate to repeated todo date
           cy.navigateToDate(
             nextDay.getDate(),
             nextDay.getMonth() + 1,
             nextDay.getFullYear()
           );
 
-          // Verify repeated todo also has the new image (same new src as original)
           cy.contains(todoText)
             .closest('div[class*="todo-item-card"]')
             .find('[data-testid="todo-item-has-image"]')
@@ -429,7 +408,6 @@ describe("Edit Todo()", () => {
         currentDate
       );
 
-      // Navigate back to original date and delete image
       cy.navigateToDate(
         currentDate.getDate(),
         currentDate.getMonth() + 1,
@@ -447,13 +425,11 @@ describe("Edit Todo()", () => {
 
       cy.get('button[type="submit"]').click();
 
-      // Verify original todo no longer has image
       cy.contains(todoText)
         .closest('div[class*="todo-item-card"]')
         .find('[data-testid="todo-item-has-image"]')
         .should("not.exist");
 
-      // Navigate to repeated todo date and verify image is also deleted
       cy.navigateToDate(
         nextDay.getDate(),
         nextDay.getMonth() + 1,

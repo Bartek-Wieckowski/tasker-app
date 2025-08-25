@@ -1,8 +1,8 @@
 -- Enable pg_cron extension (może już być włączone w Supabase)
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
--- Funkcja która bezpośrednio przetwarza cyclic todos (bez wywołania Edge Function)
--- Ta wersja używa dokładnie tej samej logiki co Edge Function ale działa wewnątrz bazy
+-- Function that directly processes cyclic todos (without calling Edge Function)
+-- This version uses exactly the same logic as Edge Function but runs inside the database
 CREATE OR REPLACE FUNCTION process_cyclic_todos_internal()
 RETURNS jsonb
 LANGUAGE plpgsql

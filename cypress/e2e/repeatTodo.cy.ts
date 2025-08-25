@@ -85,7 +85,6 @@ describe("Repeat Todo()", () => {
 
     cy.contains("button", /repeat/i).click();
 
-    // Check if past dates are disabled
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayDay = yesterday.getDate();

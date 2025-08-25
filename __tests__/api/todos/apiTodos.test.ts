@@ -11,7 +11,7 @@ import {
   updateTodoCompletionStatus,
 } from "@/api/apiTodos";
 import { mockSupabase } from "../../setup";
-import { TodoRow, TodoSearchResult } from "@/types/types";
+import { TodoSearchResult } from "@/types/types";
 
 describe("apiTodos", () => {
   describe("getUserTodos()", () => {

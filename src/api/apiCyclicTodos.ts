@@ -66,8 +66,6 @@ export async function editCyclicTodo(
     throw { code: "EDIT_CYCLIC_TODO_ERROR" };
   }
 
-  // Update all related todos in the todos table that reference this cyclic todo
-  // Only update todos that haven't been independently edited
   const { error: updateRelatedError } = await supabase
     .from("todos")
     .update({ todo: newTodoName })
@@ -82,7 +80,6 @@ export async function editCyclicTodo(
         message: updateRelatedError.message,
       });
     }
-    // Log warning but don't throw - the cyclic todo was updated successfully
     console.warn("Failed to update related todos:", updateRelatedError.message);
   }
 

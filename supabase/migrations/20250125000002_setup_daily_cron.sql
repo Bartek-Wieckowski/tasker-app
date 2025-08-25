@@ -1,17 +1,17 @@
--- 1️⃣ Rozszerzenia
+-- 1️⃣ Extensions
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
 CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA vault;
 
--- 2️⃣ Usuń stary cron (jeśli istnieje)
+-- 2️⃣ Delete old cron (if exists)
 DO $$
 BEGIN
   PERFORM cron.unschedule('daily-todo-notifications');
 EXCEPTION WHEN OTHERS THEN
-  RAISE NOTICE 'Job daily-todo-notifications nie istnieje, pomijam';
+  RAISE NOTICE 'Job daily-todo-notifications does not exist, skipping';
 END $$;
 
--- 3️⃣ Funkcja triggerująca Edge Function
+-- 3️⃣ Function to trigger Edge Function
 CREATE OR REPLACE FUNCTION trigger_daily_notifications(is_production boolean DEFAULT true)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -23,11 +23,11 @@ DECLARE
   auth_header text;
   vault_secret text;
 BEGIN
-  -- Wybór URL i klucza w zależności od środowiska
+  -- Choose URL and key depending on environment
   IF is_production THEN
     target_url := 'https://slktbcjeorvwagukcvmw.supabase.co/functions/v1/send_daily_notifications';
     
-    -- Pobierz secret z Supabase Vault
+    -- Get secret from Supabase Vault
     SELECT decrypted_secret INTO vault_secret 
     FROM vault.decrypted_secrets 
     WHERE name = 'notification-send' 
@@ -48,7 +48,7 @@ BEGIN
     auth_header := 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
   END IF;
   
-  -- HTTP request z Authorization header
+  -- HTTP request with Authorization header
   SELECT INTO resp * FROM net.http_post(
     url := target_url,
     headers := jsonb_build_object(
@@ -81,15 +81,15 @@ SELECT cron.schedule(
   'SELECT trigger_daily_notifications(true);'
 );
 
--- 5️⃣ Granty dla authenticated
+-- 5️⃣ Grants for authenticated
 GRANT EXECUTE ON FUNCTION trigger_daily_notifications(boolean) TO authenticated;
 
--- 6️⃣ Instrukcje testowe
--- Test manualny:
+-- 6️⃣ Test instructions
+-- Test manual:
 -- SELECT trigger_daily_notifications(true);
 
--- Sprawdzenie logów powiadomień:
+-- Check notification logs:
 -- SELECT * FROM notification_logs ORDER BY sent_at DESC;
 
--- Cron status:
+-- Check cron status: 
 -- SELECT * FROM cron.job WHERE jobname = 'daily-todo-notifications';

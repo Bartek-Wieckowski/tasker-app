@@ -37,6 +37,17 @@ export type UpdateUserPassword = {
   password: string;
 };
 
+export type SearchGlobalContextType = {
+  searchValueGlobal: string;
+  setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;
+  isGlobalSearch: boolean;
+  setIsGlobalSearch: React.Dispatch<React.SetStateAction<boolean>>;
+  globalSearchResult: TodoSearchResult[];
+  setGlobalSearchResult: React.Dispatch<
+    React.SetStateAction<TodoSearchResult[]>
+  >;
+};
+
 export type TodoRow = Database["public"]["Tables"]["todos"]["Row"];
 export type TodoInsert = Database["public"]["Tables"]["todos"]["Insert"];
 export type TodoUpdate = Database["public"]["Tables"]["todos"]["Update"];
@@ -79,14 +90,3 @@ export type CyclicTodoUpdate =
 export type CoopTodoShared = Tables<"coop_todos_shared">;
 export type CoopTodo = Tables<"coop_todos">;
 export type CoopInvitation = Tables<"coop_invitations">;
-
-export type SearchGlobalContextType = {
-  searchValueGlobal: string;
-  setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;
-  isGlobalSearch: boolean;
-  setIsGlobalSearch: React.Dispatch<React.SetStateAction<boolean>>;
-  globalSearchResult: TodoSearchResult[];
-  setGlobalSearchResult: React.Dispatch<
-    React.SetStateAction<TodoSearchResult[]>
-  >;
-};

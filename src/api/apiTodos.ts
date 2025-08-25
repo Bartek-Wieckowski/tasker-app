@@ -47,7 +47,6 @@ export async function getTodosFromDay(selectedDate: string, currentUser: User) {
   }
 
   return todos;
-  //   return todos || [];
 }
 
 export async function getTodoById(todoId: string, currentUser: User) {
@@ -88,7 +87,6 @@ export async function searchTodos(searchTerm: string, currentUser: User) {
   }
 
   return todos;
-  //   return todos || []
 }
 
 export async function uploadImageAndGetUrl(
@@ -130,7 +128,6 @@ export async function addTodo(
 ) {
   let imageUrl = "";
 
-  // Przygotuj obiekt do insert - pomijamy id, żeby Supabase sam je wygenerował
   const insertData: TodoInsert = {
     user_id: currentUser.accountId,
     todo: todoDetails.todo,
@@ -140,7 +137,6 @@ export async function addTodo(
     is_completed: false,
   };
 
-  // Jeśli jest obrazek, najpierw wstawiamy todo żeby dostać ID, potem uploadujemy obrazek
   if (todoDetails.imageFile) {
     const { data: todo, error } = await supabase
       .from("todos")
@@ -158,14 +154,12 @@ export async function addTodo(
       throw { code: "CREATE_TODO_ERROR" };
     }
 
-    // Teraz mamy ID, możemy uploadować obrazek
     imageUrl = await uploadImageAndGetUrl(
       currentUser.accountId,
       todo.id,
       todoDetails.imageFile
     );
 
-    // Aktualizujemy todo z URL obrazka
     const { error: updateError } = await supabase
       .from("todos")
       .update({ image_url: imageUrl })
@@ -198,7 +192,6 @@ export async function addTodo(
 
     return todo;
   } else {
-    // Bez obrazka - prosty insert
     const { data: todo, error } = await supabase
       .from("todos")
       .insert(insertData)
@@ -321,7 +314,7 @@ export async function updateRelatedTodos(
     .eq("user_id", accountId)
     .eq("original_todo_id", originalTodoId)
     .eq("is_independent_edit", false)
-    .neq("id", originalTodoId); // Exclude the original todo itself
+    .neq("id", originalTodoId);
 
   if (findError) {
     if (import.meta.env.DEV) {

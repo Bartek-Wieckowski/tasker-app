@@ -97,7 +97,6 @@ describe("Add Todo()", () => {
     cy.visit("/");
     cy.createTodo(todoText);
 
-    // Verify todo appears on current date
     cy.get('[data-testid="date-picker-button"]').click();
     cy.get(`[role="gridcell"]`)
       .contains(currentDay)

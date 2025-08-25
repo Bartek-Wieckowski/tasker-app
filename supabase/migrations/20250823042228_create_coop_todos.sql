@@ -1,26 +1,26 @@
--- 1. Główna tabela współdzielonych todos
+-- 1. Main table for shared todos
 CREATE TABLE IF NOT EXISTS "public"."coop_todos_shared" (
     "id" "uuid" DEFAULT gen_random_uuid() NOT NULL,
     "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
     
-    -- Nazwa tabeli/grupy todos
+    -- Name of the table/group of todos
     "table_name" "text" NOT NULL,
     "description" "text",
     
-    -- Właściciel tabeli (reference do db_users)
+    -- Owner of the table (reference to db_users)
     "owner_user_id" "uuid" REFERENCES "public"."db_users"("id") ON DELETE CASCADE NOT NULL,
     
-    -- Array emailów które mają dostęp (włącznie z owner email)
+    -- Array emails that have access (including owner email)
     "member_emails" "text"[] NOT NULL DEFAULT '{}',
     
-    -- Czy tabela jest aktywna
+    -- Whether the table is active
     "is_active" boolean DEFAULT true NOT NULL,
     
     CONSTRAINT "coop_todos_shared_pkey" PRIMARY KEY ("id")
 );
 
--- 2. Tabela todos powiązana z shared table
+-- 2. Table of todos associated with shared table
 CREATE TABLE IF NOT EXISTS "public"."coop_todos" (
     "id" "uuid" DEFAULT gen_random_uuid() NOT NULL,
     "shared_table_id" "uuid" REFERENCES coop_todos_shared(id) ON DELETE CASCADE NOT NULL,
@@ -36,22 +36,22 @@ CREATE TABLE IF NOT EXISTS "public"."coop_todos" (
     CONSTRAINT "coop_todos_pkey" PRIMARY KEY ("id")
 );
 
--- 3. Tabela zaproszeń (tymczasowa, do czasu akceptacji)
+-- 3. Table of invitations (temporary, until acceptance)
 CREATE TABLE IF NOT EXISTS "public"."coop_invitations" (
     "id" "uuid" DEFAULT gen_random_uuid() NOT NULL,
     "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     
-    -- Do jakiej tabeli zaproszenie
+    -- To which table is the invitation
     "shared_table_id" "uuid" REFERENCES coop_todos_shared(id) ON DELETE CASCADE NOT NULL,
     
-    -- Kto zaprasza (reference do db_users)
+    -- Who invites (reference to db_users)
     "inviter_user_id" "uuid" REFERENCES "public"."db_users"("id") ON DELETE CASCADE NOT NULL,
     
-    -- Kogo zaprasza (przez email)
+    -- Who is invited (by email)
     "invitee_email" "text" NOT NULL,
     "invitee_user_id" "uuid" REFERENCES "public"."db_users"("id") ON DELETE SET NULL,
     
-    -- Status
+    -- Status (pending, accepted, declined)
     "status" "text" CHECK (status IN ('pending', 'accepted', 'declined')) DEFAULT 'pending' NOT NULL,
     "expires_at" timestamp with time zone DEFAULT (now() + interval '7 days') NOT NULL,
     
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS "public"."coop_invitations" (
     CONSTRAINT "unique_pending_invitation" UNIQUE ("shared_table_id", "invitee_email")
 );
 
--- 4. Indeksy
+-- 4. Indexes
 CREATE INDEX IF NOT EXISTS "idx_coop_todos_shared_table_id" ON "coop_todos"("shared_table_id");
 CREATE INDEX IF NOT EXISTS "idx_coop_todos_creator_user_id" ON "coop_todos"("creator_user_id");
 CREATE INDEX IF NOT EXISTS "idx_coop_todos_is_completed" ON "coop_todos"("is_completed");
@@ -76,7 +76,7 @@ CREATE INDEX IF NOT EXISTS "idx_invitations_invitee_email" ON "coop_invitations"
 CREATE INDEX IF NOT EXISTS "idx_invitations_invitee_user" ON "coop_invitations"("invitee_user_id");
 CREATE INDEX IF NOT EXISTS "idx_invitations_status" ON "coop_invitations"("status");
 
--- 5. Triggery do updated_at i śledzenia zmian
+-- 5. Triggers for updated_at and tracking changes
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -85,20 +85,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger do automatycznego ustawiania who_updated
+-- Trigger for automatically setting who_updated
 CREATE OR REPLACE FUNCTION set_who_updated()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Ustaw who_updated przy każdej aktualizacji
+    -- Set who_updated on each update
     NEW.who_updated = auth.uid();
     
-    -- Jeśli zmieniono is_completed na true, ustaw who_completed i completed_at
+    -- If is_completed is changed to true, set who_completed and completed_at
     IF OLD.is_completed = false AND NEW.is_completed = true THEN
         NEW.who_completed = auth.uid();
         NEW.completed_at = NOW();
     END IF;
     
-    -- Jeśli zmieniono is_completed z true na false, wyczyść who_completed i completed_at
+    -- If is_completed is changed from true to false, clear who_completed and completed_at
     IF OLD.is_completed = true AND NEW.is_completed = false THEN
         NEW.who_completed = NULL;
         NEW.completed_at = NULL;
@@ -121,12 +121,12 @@ CREATE TRIGGER update_coop_todos_shared_updated_at
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- 6. RLS (Row Level Security)
--- Zakładając że używasz auth.uid() do identyfikacji aktualnego użytkownika w RLS
+-- Assuming you use auth.uid() to identify the current user in RLS
 ALTER TABLE coop_todos_shared ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coop_todos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coop_invitations ENABLE ROW LEVEL SECURITY;
 
--- Funkcja pomocnicza do pobrania emaila aktualnego użytkownika
+-- Helper function to get the email of the current user
 CREATE OR REPLACE FUNCTION current_user_email()
 RETURNS TEXT AS $$
 BEGIN
@@ -134,7 +134,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
--- Polityki dla coop_todos_shared - widzi tylko te tabele gdzie jest członkiem
+-- Policies for coop_todos_shared - only sees tables where it is a member
 CREATE POLICY "Users can view tables they are members of" ON coop_todos_shared
     FOR SELECT USING (
         current_user_email() = ANY(member_emails) AND is_active = true
@@ -152,7 +152,7 @@ CREATE POLICY "Owners can update their tables" ON coop_todos_shared
 CREATE POLICY "Owners can delete their tables" ON coop_todos_shared
     FOR DELETE USING (owner_user_id = auth.uid());
 
--- Polityki dla coop_todos - widzi tylko todos z tabel gdzie jest członkiem
+-- Policies for coop_todos - only sees todos from tables where it is a member
 CREATE POLICY "Users can view todos from accessible tables" ON coop_todos
     FOR SELECT USING (
         EXISTS (
@@ -184,7 +184,7 @@ CREATE POLICY "Users can update todos in accessible tables" ON coop_todos
         )
     );
 
--- Brakująca polityka DELETE
+-- DELETE policy
 CREATE POLICY "Users can delete todos in accessible tables" ON coop_todos
     FOR DELETE USING (
         EXISTS (
@@ -195,7 +195,7 @@ CREATE POLICY "Users can delete todos in accessible tables" ON coop_todos
         )
     );
 
--- Polityki dla coop_invitations
+-- Policies for coop_invitations
 CREATE POLICY "Users can view relevant invitations" ON coop_invitations
     FOR SELECT USING (
         inviter_user_id = auth.uid() OR 
@@ -219,9 +219,9 @@ CREATE POLICY "Invitees can update invitations" ON coop_invitations
         invitee_email = current_user_email()
     );
 
--- 7. Funkcje pomocnicze
+-- 7. Helper functions
 
--- Tworzenie nowej shared tabeli
+-- Create a new shared table
 CREATE OR REPLACE FUNCTION create_shared_todos_table(
     p_table_name TEXT,
     p_description TEXT DEFAULT NULL
@@ -233,7 +233,7 @@ BEGIN
     SELECT email INTO user_email FROM db_users WHERE id = auth.uid();
     
     IF user_email IS NULL THEN
-        RAISE EXCEPTION 'Użytkownik nie jest zalogowany lub nie istnieje';
+        RAISE EXCEPTION 'User is not logged in or does not exist';
     END IF;
     
     INSERT INTO coop_todos_shared (
@@ -245,14 +245,14 @@ BEGIN
         p_table_name,
         p_description,
         auth.uid(),
-        ARRAY[user_email]  -- owner automatycznie jest członkiem
+        ARRAY[user_email]  -- owner automatically becomes a member
     ) RETURNING id INTO table_id;
     
     RETURN table_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Zapraszanie do shared tabeli
+-- Inviting to shared table
 CREATE OR REPLACE FUNCTION invite_to_shared_table(
     p_shared_table_id UUID,
     p_invitee_email TEXT
@@ -265,40 +265,40 @@ DECLARE
 BEGIN
     SELECT email INTO current_user_email FROM db_users WHERE id = auth.uid();
     
-    -- Sprawdź czy zapraszający ma dostęp do tabeli
+    -- Check if the inviting user has access to the table
     IF NOT EXISTS (
         SELECT 1 FROM coop_todos_shared 
         WHERE id = p_shared_table_id 
         AND current_user_email = ANY(member_emails)
         AND is_active = true
     ) THEN
-        RAISE EXCEPTION 'Nie masz dostępu do tej tabeli';
+        RAISE EXCEPTION 'You do not have access to this table';
     END IF;
     
-    -- Sprawdź czy email już nie jest członkiem
+    -- Check if the email is already a member
     IF EXISTS (
         SELECT 1 FROM coop_todos_shared 
         WHERE id = p_shared_table_id 
         AND p_invitee_email = ANY(member_emails)
     ) THEN
-        RAISE EXCEPTION 'Ten email już ma dostęp do tabeli';
+        RAISE EXCEPTION 'This email already has access to the table';
     END IF;
     
-    -- Sprawdź czy użytkownik o tym emailu istnieje w db_users
+    -- Check if the user with this email exists in db_users
     SELECT id INTO invitee_user_id FROM db_users WHERE email = p_invitee_email;
     
     IF invitee_user_id IS NULL THEN
-        RAISE EXCEPTION 'Użytkownik o emailu % nie istnieje w systemie', p_invitee_email;
+        RAISE EXCEPTION 'User with email % does not exist in the system', p_invitee_email;
     END IF;
     
-    -- Sprawdź czy już istnieje zaproszenie dla tego emaila i tabeli
+    -- Check if there is already an invitation for this email and table
     SELECT id INTO existing_invitation_id 
     FROM coop_invitations 
     WHERE shared_table_id = p_shared_table_id 
     AND invitee_email = p_invitee_email;
     
     IF existing_invitation_id IS NOT NULL THEN
-        -- Aktualizuj istniejące zaproszenie
+        -- Update existing invitation
         UPDATE coop_invitations 
         SET 
             status = 'pending',
@@ -308,7 +308,7 @@ BEGIN
         WHERE id = existing_invitation_id
         RETURNING id INTO invitation_id;
     ELSE
-        -- Utwórz nowe zaproszenie
+        -- Create a new invitation
         INSERT INTO coop_invitations (
             shared_table_id,
             inviter_user_id,
@@ -326,7 +326,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Akceptacja zaproszenia
+-- Accepting an invitation
 CREATE OR REPLACE FUNCTION accept_invitation(
     p_invitation_id UUID
 ) RETURNS BOOLEAN AS $$
@@ -336,7 +336,7 @@ DECLARE
 BEGIN
     SELECT email INTO user_email FROM db_users WHERE id = auth.uid();
     
-    -- Pobierz zaproszenie
+    -- Get the invitation
     SELECT * INTO invitation_record
     FROM coop_invitations 
     WHERE id = p_invitation_id 
@@ -345,15 +345,15 @@ BEGIN
     AND expires_at > NOW();
     
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Zaproszenie nie zostało znalezione lub wygasło';
+        RAISE EXCEPTION 'Invitation not found or expired';
     END IF;
     
-    -- KLUCZOWA CZĘŚĆ: Dodaj email do member_emails w shared table
+    -- KEY PART: Add email to member_emails in shared table
     UPDATE coop_todos_shared 
     SET member_emails = array_append(member_emails, user_email)
     WHERE id = invitation_record.shared_table_id;
     
-    -- Oznacz zaproszenie jako zaakceptowane i ustaw user_id jeśli nie był ustawiony
+    -- Mark the invitation as accepted and set user_id if not set
     UPDATE coop_invitations 
     SET 
         status = 'accepted',
@@ -364,7 +364,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Odrzucenie zaproszenia
+-- Decline an invitation
 CREATE OR REPLACE FUNCTION decline_invitation(
     p_invitation_id UUID
 ) RETURNS BOOLEAN AS $$
@@ -380,14 +380,14 @@ BEGIN
     AND status = 'pending';
     
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Zaproszenie nie zostało znalezione';
+        RAISE EXCEPTION 'Invitation not found';
     END IF;
     
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Opuszczenie tabeli / usunięcie członka
+-- Leaving a table / deleting a member
 CREATE OR REPLACE FUNCTION leave_shared_table(
     p_shared_table_id UUID,
     p_email_to_remove TEXT DEFAULT NULL
@@ -399,10 +399,10 @@ DECLARE
 BEGIN
     SELECT email INTO current_user_email FROM db_users WHERE id = auth.uid();
     
-    -- Jeśli nie podano emaila, użyj swojego
+    -- If no email is provided, use your own
     target_email := COALESCE(p_email_to_remove, current_user_email);
     
-    -- Pobierz informacje o tabeli
+    -- Get information about the table
     SELECT cts.*, du.email as owner_email 
     INTO table_record
     FROM coop_todos_shared cts
@@ -410,20 +410,20 @@ BEGIN
     WHERE cts.id = p_shared_table_id;
     
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Tabela nie została znaleziona';
+        RAISE EXCEPTION 'Table not found';
     END IF;
     
-    -- Sprawdź uprawnienia
+    -- Check permissions
     IF target_email != current_user_email AND table_record.owner_user_id != auth.uid() THEN
-        RAISE EXCEPTION 'Nie masz uprawnień do usunięcia tego użytkownika';
+        RAISE EXCEPTION 'You do not have permission to delete this user';
     END IF;
     
-    -- Nie pozwól właścicielowi opuścić własnej tabeli
+    -- Do not allow the owner to leave their own table
     IF target_email = table_record.owner_email THEN
-        RAISE EXCEPTION 'Właściciel nie może opuścić własnej tabeli';
+        RAISE EXCEPTION 'Owner cannot leave their own table';
     END IF;
     
-    -- Usuń email z member_emails
+    -- Remove email from member_emails
     UPDATE coop_todos_shared 
     SET member_emails = array_remove(member_emails, target_email)
     WHERE id = p_shared_table_id;
@@ -432,9 +432,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 8. Widoki pomocnicze
+-- 8. Helper views
 
--- Tabele dostępne dla użytkownika
+-- Tables available for the user
 CREATE OR REPLACE VIEW my_shared_tables AS
 SELECT 
     cts.*,
@@ -449,7 +449,7 @@ JOIN db_users du ON du.id = cts.owner_user_id
 WHERE current_user_email() = ANY(cts.member_emails)
 AND cts.is_active = true;
 
--- Todos z wszystkich dostępnych tabel
+-- Todos from all accessible tables
 CREATE OR REPLACE VIEW my_accessible_todos AS
 SELECT 
     ct.*,
@@ -471,7 +471,7 @@ LEFT JOIN db_users completed_du ON completed_du.id = ct.who_completed
 WHERE current_user_email() = ANY(cts.member_emails)
 AND cts.is_active = true;
 
--- Pending zaproszenia
+-- Pending invitations
 CREATE OR REPLACE VIEW my_pending_invitations AS
 SELECT 
     ci.*,
@@ -485,7 +485,7 @@ WHERE (ci.invitee_user_id = auth.uid() OR ci.invitee_email = current_user_email(
 AND ci.status = 'pending'
 AND ci.expires_at > NOW();
 
--- Moje wysłane zaproszenia (wszystkie statusy)
+-- My sent invitations (all statuses)
 CREATE OR REPLACE VIEW my_sent_invitations AS
 SELECT 
     ci.id,
@@ -504,7 +504,7 @@ JOIN coop_todos_shared cts ON cts.id = ci.shared_table_id
 LEFT JOIN db_users invitee_du ON invitee_du.id = ci.invitee_user_id
 WHERE ci.inviter_user_id = auth.uid();
 
--- Moje otrzymane zaproszenia (wszystkie statusy)
+-- My received invitations (all statuses)
 CREATE OR REPLACE VIEW my_received_invitations AS
 SELECT 
     ci.id,
