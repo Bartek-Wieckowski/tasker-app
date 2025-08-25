@@ -12,6 +12,7 @@ export default function TodosTabsList({
 }: TodosTabsListProps) {
   const [isMobile, setIsMobile] = useState(false);
   const { t } = useTranslation();
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 574) {
