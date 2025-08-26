@@ -173,7 +173,7 @@ export default function CoopTodosDrawer({
 
       {/* Dialog edycji poza Drawer żeby uniknąć problemów z z-index */}
       <Dialog open={!!editingTodo} onOpenChange={() => setEditingTodo(null)}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("coopTodos.editTask")}</DialogTitle>
           </DialogHeader>

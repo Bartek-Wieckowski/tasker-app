@@ -42,15 +42,15 @@ export default function FileUploader({
             <img
               src={fileUrl}
               alt="Uploaded Image"
-              className="h-[30px] w-[30px] rounded-[24px]"
+              className="max-h-24 rounded cursor-pointer"
               data-testid="image-preview"
             />
           </div>
         </>
       ) : (
         <div className="flex justify-center items-center flex-col p-7 min-h-20">
-          <ImagePlus width={96} height={77} />
-          <h3 className="text-light-2 text-sm mb-2 mt-6">
+          <ImagePlus width={76} height={57} />
+          <h3 className="text-light-2 text-sm mb-1 mt-6">
             {t("fileUploader.dragPhotoHere")}
           </h3>
           <p className="text-light-4 text-sm mb-6">SVG, PNG, JPG</p>

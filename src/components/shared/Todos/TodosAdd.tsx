@@ -27,7 +27,7 @@ export function TodosAdd() {
           <Plus className="h-8 w-8 text-white group-hover:rotate-180 transition-transform duration-1000 group-active:rotate-180" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
+      <DialogContent className="overflow-y-auto max-h-screen custom-scrollbar">
         <DialogHeader>
           <DialogTitle>{t("common.addNewTodo")}</DialogTitle>
         </DialogHeader>

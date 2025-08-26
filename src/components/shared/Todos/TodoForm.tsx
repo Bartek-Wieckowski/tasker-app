@@ -178,9 +178,10 @@ const TodoForm = ({
                 <FormLabel>{t("common.todoMoreContent")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    className="custom-scrollbar"
+                    className="custom-scrollbar resize-y h-[80px] max-h-[calc(1.5rem*9+1rem)]"
                     placeholder={t("common.todoMoreContentPlaceholder")}
                     {...field}
+                    rows={13}
                   />
                 </FormControl>
                 <FormMessage />
@@ -196,12 +197,13 @@ const TodoForm = ({
                 htmlFor="todoPhoto"
                 className="text-sm font-medium leading-none"
               >
-                <ImagePlus className="text-indigo-600" />
+                <ImagePlus className="text-indigo-600 w-[28px] h-[28px]" />
               </label>
               <CollapsibleTrigger asChild>
                 <Checkbox
                   id="todoPhoto"
                   checked={isOpenCollapsible}
+                  className="w-6 h-6"
                   disabled={
                     action === "Update" &&
                     !!singleTodoData?.image_url &&

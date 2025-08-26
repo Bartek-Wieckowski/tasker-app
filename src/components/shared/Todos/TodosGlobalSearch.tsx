@@ -50,7 +50,7 @@ export default function TodosGlobalSearch({
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-2">
         <Input
           type="text"
           name="searchGlobal"

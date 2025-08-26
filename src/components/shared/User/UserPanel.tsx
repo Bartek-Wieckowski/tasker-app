@@ -65,7 +65,7 @@ export default function UserPanel() {
                   </span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
+              <DialogContent className="overflow-y-auto max-h-screen custom-scrollbar">
                 <DialogHeader>
                   <DialogTitle>{t("userSettingsForm.editProfile")}</DialogTitle>
                 </DialogHeader>

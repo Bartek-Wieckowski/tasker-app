@@ -284,7 +284,7 @@ export default function TodosItemCard({
                 <DialogTrigger asChild>
                   <Button variant="outline">{t("common.edit")}</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
+                <DialogContent className=" overflow-y-auto max-h-screen custom-scrollbar">
                   <DialogHeader>
                     <DialogTitle>{t("common.editTodo")}</DialogTitle>
                   </DialogHeader>
@@ -328,7 +328,7 @@ export default function TodosItemCard({
                     {t("common.move")}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>{t("todosItemCard.moveTodoDate")}</DialogTitle>
                   </DialogHeader>
@@ -369,7 +369,7 @@ export default function TodosItemCard({
                 <DialogTrigger asChild>
                   <Button variant="outline">{t("common.repeat")}</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>
                       {t("todosItemCard.repeatTodoDate")}
