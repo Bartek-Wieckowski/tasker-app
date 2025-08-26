@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Info } from "lucide-react";
-import { useNotifications } from "../../../hooks/useNotifications";
+import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import { Button } from "../../ui/button";
 import { useTranslation } from "react-i18next";
@@ -13,7 +13,7 @@ export default function UserSettingsNotifications() {
     canEnable,
     enableNotifications,
     disableNotifications,
-  } = useNotifications();
+  } = useNotificationContext();
   const { t } = useTranslation();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
