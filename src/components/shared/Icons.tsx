@@ -97,7 +97,7 @@ export const GlobalListIcon = ({ size = 24 }) => (
     {/* Kontynenty */}
     <path d="M13 10l2 2-1 2-1-1z" fill="currentColor" />
     <path d="M17 9l2 1 1 2-1 2-2-1-1-1 1-2z" fill="currentColor" />
-    <path d="M13 16l2 1 1-1 0 2-1 1z" fill="currentColor" />
+    {/* <path d="M13 15l2 1 1-1 0 2-1 1z" fill="currentColor" /> */}
     <circle cx="15" cy="11" r="0.5" fill="currentColor" />
     <circle cx="18" cy="15" r="0.3" fill="currentColor" />
   </svg>

@@ -4,9 +4,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Globe } from "lucide-react";
+import { TextSearch } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Switch } from "@/components/ui/switch";
 
 type TodosSearchTogglerProps = {
   isGlobalSearch: boolean;
@@ -21,16 +21,19 @@ export default function TodosSearchToggler({
 
   return (
     <div className="flex items-center gap-2 my-2">
-      <Checkbox
+      <Switch
         id="globalSearch"
         checked={isGlobalSearch}
         onClick={toggleGlobalSearch}
       />
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <label htmlFor="globalSearch">
-              <Globe className="cursor-pointer" data-testid="globe-icon" />
+              <TextSearch
+                className="cursor-pointer w-[28px] h-[28px]"
+                data-testid="globe-icon"
+              />
             </label>
           </TooltipTrigger>
           <TooltipContent>

@@ -10,7 +10,7 @@ export default function Container({
   "data-testid": dataTestId,
 }: ContainerProps) {
   return (
-    <div className="max-w-2xl w-full mx-auto" data-testid={dataTestId}>
+    <div className="w-full" data-testid={dataTestId}>
       {children}
     </div>
   );

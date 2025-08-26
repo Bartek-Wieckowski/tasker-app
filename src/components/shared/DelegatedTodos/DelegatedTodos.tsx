@@ -114,7 +114,7 @@ export default function DelegatedTodos() {
     <Drawer>
       <DrawerTrigger asChild>
         <div className="cursor-pointer" data-testid="delegated-todos-trigger">
-          <DelegatedListIcon />
+          <DelegatedListIcon size={30} />
         </div>
       </DrawerTrigger>
       <DrawerContent>

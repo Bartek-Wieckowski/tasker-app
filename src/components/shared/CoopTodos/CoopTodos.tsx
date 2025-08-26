@@ -82,7 +82,7 @@ export default function CoopTodos() {
           className="cursor-pointer relative"
           data-testid="coop-todos-trigger"
         >
-          <CooperativeListIcon />
+          <CooperativeListIcon size={30} />
           <CoopTodosBadge badgeAbsolutePosition />
         </div>
       </DrawerTrigger>

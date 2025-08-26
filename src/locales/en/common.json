@@ -154,7 +154,7 @@
     }
   },
   "todosGlobalSearch": {
-    "searchPlaceholder": "Search task and press enter",
+    "searchPlaceholder": "Search task and press enter or click the icon",
     "noResults": "Nothing of this value was found"
   },
   "todosSearchToggler": {
@@ -162,11 +162,11 @@
   },
   "todopage": {
     "errorText": "Item don't exist!",
-    "createTodo": "Todo created",
-    "updateTodo": "Todo updated",
-    "currentTodoDate": "Todo assigned on date",
-    "todoStatus": "Todo status",
-    "todoTitle": "Todo title",
+    "createTodo": "Task created",
+    "updateTodo": "Task updated",
+    "currentTodoDate": "Task assigned on date",
+    "todoStatus": "Task status",
+    "todoTitle": "Task title",
     "todoMoreContent": "Todo more content"
   },
   "delegatedTodos": {

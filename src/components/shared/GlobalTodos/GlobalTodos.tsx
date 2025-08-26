@@ -135,7 +135,7 @@ export default function GlobalTodos() {
     <Drawer>
       <DrawerTrigger asChild>
         <div className="cursor-pointer" data-testid="global-todos-trigger">
-          <GlobalListIcon />
+          <GlobalListIcon size={30} />
         </div>
       </DrawerTrigger>
       <DrawerContent ref={formContainerRef} className="min-h-[70vh]">

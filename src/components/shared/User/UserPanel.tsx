@@ -33,7 +33,10 @@ export default function UserPanel() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild className="cursor-pointer">
+      <PopoverTrigger
+        asChild
+        className="cursor-pointer xs:w-10 xs:h-10 w-8 h-8"
+      >
         <Avatar>
           <AvatarImage
             src={currentUser.imageUrl}

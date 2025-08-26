@@ -105,7 +105,7 @@ export default function CyclicTodos() {
     <Drawer>
       <DrawerTrigger asChild>
         <ListRestart
-          className="cursor-pointer"
+          className="cursor-pointer w-[30px] h-[30px]"
           data-testid="cyclic-todos-trigger"
         />
       </DrawerTrigger>

@@ -154,11 +154,11 @@
     }
   },
   "todosGlobalSearch": {
-    "searchPlaceholder": "Szukaj zadania i wciśnij enter",
+    "searchPlaceholder": "Szukaj zadania i wciśnij enter lub kliknij ikonę",
     "noResults": "Nie znaleziono niczego o tej wartości."
   },
   "todosSearchToggler": {
-    "searchDescription": "Sprawdź, czy chcesz znaleźć zadanie globalnie"
+    "searchDescription": "Zaznacz, aby wyszukiwać zadania globalnie"
   },
   "todopage": {
     "errorText": "Zadanie nie istnieje!",

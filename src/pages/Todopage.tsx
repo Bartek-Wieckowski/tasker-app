@@ -8,6 +8,13 @@ import { ChevronLeftCircle, CopyCheck, CopyX } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Info } from "lucide-react";
 
 export default function Todopage() {
   const { t } = useTranslation();
@@ -15,6 +22,7 @@ export default function Todopage() {
   const { selectedDate, currentUser } = useAuth();
   const { isLoading, isError, todo } = useTodoById(id as string, currentUser);
   const [openLightBoxImage, setOpenLightBoxImage] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const handleCloseLightbox = () => {
     setOpenLightBoxImage(false);
@@ -34,33 +42,46 @@ export default function Todopage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <nav>
+      <nav className="mt-3 md:mt-0">
         <Link to={ROUTES.home}>
           <ChevronLeftCircle />
         </Link>
       </nav>
-      <div className="max-5xl w-full border border-slate-200 p-3 rounded-md shadow">
+      <div className="max-5xl w-full border border-slate-200 p-3 rounded-md shadow-md">
         <div className="flex flex-col items-start justify-between mb-4">
-          <div className="text-sm text-slate-700">
-            <span>{t("todopage.currentTodoDate")}: </span>
-            <span className="font-semibold italic">{selectedDate}</span>
-          </div>
+          <Popover open={isInfoOpen} onOpenChange={setIsInfoOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 text-blue-600 hover:text-blue-800 ml-auto"
+              >
+                <Info className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4">
+              <div className="text-sm text-slate-700">
+                <span>{t("todopage.currentTodoDate")}: </span>
+                <span className="font-semibold italic">{selectedDate}</span>
+              </div>
 
-          <div className="text-sm text-slate-700">
-            <span>{t("todopage.createTodo")}: </span>
-            <span className="font-semibold italic">
-              {dateCustomFormatting(createAtDate)}
-            </span>
-          </div>
+              <div className="text-sm text-slate-700">
+                <span>{t("todopage.createTodo")}: </span>
+                <span className="font-semibold italic">
+                  {dateCustomFormatting(createAtDate)}
+                </span>
+              </div>
 
-          {updateAtDate.getTime() !== createAtDate.getTime() && (
-            <div className="text-sm text-slate-700">
-              <span>{t("todopage.updateTodo")}: </span>
-              <span className="font-semibold italic">
-                {dateCustomFormatting(updateAtDate)}
-              </span>
-            </div>
-          )}
+              {updateAtDate.getTime() !== createAtDate.getTime() && (
+                <div className="text-sm text-slate-700">
+                  <span>{t("todopage.updateTodo")}: </span>
+                  <span className="font-semibold italic">
+                    {dateCustomFormatting(updateAtDate)}
+                  </span>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="flex flex-col gap-4">
           <div className="text-sm text-slate-700 flex item-center gap-3">

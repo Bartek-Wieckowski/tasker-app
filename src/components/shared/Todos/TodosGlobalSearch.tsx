@@ -53,8 +53,10 @@ export default function TodosGlobalSearch({
       <div className="flex items-center gap-2">
         <Input
           type="text"
+          name="searchGlobal"
+          id="searchGlobal"
           placeholder={t("todosGlobalSearch.searchPlaceholder")}
-          className="my-2"
+          className="my-2 "
           onChange={handleChange}
           onKeyDown={handleKeyPress}
         />

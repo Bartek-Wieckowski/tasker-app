@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
@@ -38,6 +37,7 @@ import { searchTodos } from "@/api/apiTodos";
 import { useGlobalSearch } from "@/contexts/GlobalSearchContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 
 type TodosItemCardProps = {
   data: TodoRow;
@@ -217,16 +217,16 @@ export default function TodosItemCard({
   return (
     <div
       className={cn(
-        "todo-item-card flex justify-between border border-stone-200 rounded-lg mb-3 p-3",
+        "todo-item-card flex justify-between min-h-20 rounded-lg mb-3 p-3 mr-2 bg-white shadow-md",
         shortTimeToFinishTask(
           isGlobalSearch ? (data.todo_date as string) : selectedDate,
           data.is_completed
         )
       )}
     >
-      <div className="flex flex-col gap-1 relative">
+      <div className="flex flex-col gap-1 relative justify-center">
         <div className="flex items-center space-x-2 w-full">
-          <Checkbox
+          <Switch
             data-testid="checkbox-to-change-status-todo"
             id={data.id}
             checked={data.is_completed}
@@ -256,17 +256,17 @@ export default function TodosItemCard({
         <small className="text-slate-400">
           {multiFormatDateString(data.created_at)}
         </small>
-        {data.image_url && (
-          <Image
-            data-testid="todo-item-has-image"
-            data-image-url={data.image_url}
-            className="absolute -right-6 -top-1 text-slate-400 w-[12px] h-[12px] cursor-zoom-in"
-            onClick={() => setOpenLightBoxImage(true)}
-          />
-        )}
       </div>
       <Popover>
-        <div className="flex items-center justify-between space-x-4 px-4">
+        <div className="relative flex items-center justify-between space-x-4 pl-4">
+          {data.image_url && (
+            <Image
+              data-testid="todo-item-has-image"
+              data-image-url={data.image_url}
+              className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 w-[24px] h-[24px] cursor-zoom-in"
+              onClick={() => setOpenLightBoxImage(true)}
+            />
+          )}
           <PopoverTrigger asChild data-testid="popover-trigger">
             <EllipsisVertical className="cursor-pointer" />
           </PopoverTrigger>
