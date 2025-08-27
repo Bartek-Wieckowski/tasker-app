@@ -5,9 +5,15 @@ import { useLeaveSharedTable } from "@/api/mutations/coopTodos/useLeaveSharedTab
 import { Button } from "@/components/ui/button";
 import CoopMembersPopup from "./CoopMembersPopup";
 import CoopTodosDrawer from "./CoopTodosDrawer";
-import { MousePointerClick } from "lucide-react";
+import { Edit, Trash2, Send } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function TodoCount({ tableId }: { tableId: string }) {
   const { data: todos } = useCoopTodosByTableId(tableId);
@@ -71,11 +77,12 @@ export default function CoopListTodosWithActions({
       {tablesLoading ? (
         <div className="text-center py-8">{t("common.loading")}</div>
       ) : sharedTables && sharedTables.length > 0 ? (
-        <div className="space-y-3 custom-scrollbar overflow-y-auto max-h-[500px]">
+        <div className="space-y-3 custom-scrollbar overflow-y-auto pb-2">
           {sharedTables.map((table) => (
             <div
               key={table.id}
-              className="rounded-lg border bg-card p-4 hover:shadow-md transition-shadow"
+              data-testid="coop-table-task-item"
+              className="rounded-lg shadow-md bg-white p-4 hover:shadow-md transition-shadow"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
@@ -84,14 +91,15 @@ export default function CoopListTodosWithActions({
                       tableId={table.id || ""}
                       tableName={table.table_name || ""}
                     >
-                      <h3 className="font-semibold text-base cursor-pointer hover:text-primary transition-colors flex items-center gap-2">
+                      <h3 className="font-semibold text-base cursor-pointer hover:text-primary transition-colors flex items-center gap-2 underline text-indigo-600">
                         {table.table_name}
-                        <MousePointerClick className="w-4 h-4" />
                       </h3>
                     </CoopTodosDrawer>
-                    <p className="text-sm text-muted-foreground">
-                      {table.description || "Brak opisu"}
-                    </p>
+                    {table.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {table.description}
+                      </p>
+                    )}
                     <div className="flex items-start space-x-2 text-xs text-muted-foreground">
                       <div className="flex flex-col gap-y-2">
                         <span>
@@ -123,42 +131,68 @@ export default function CoopListTodosWithActions({
                       : t("coopTodos.member")}
                   </span>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 justify-end">
                   {table.my_role === "owner" ? (
                     <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => setEditingTableId(table.id || "")}
-                        disabled={isDeletingSharedTable}
-                      >
-                        {t("common.edit")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="flex-1"
-                        onClick={() =>
-                          handleDeleteTable(
-                            table.id || "",
-                            table.table_name || ""
-                          )
-                        }
-                        disabled={isDeletingSharedTable}
-                      >
-                        {isDeletingSharedTable
-                          ? t("common.deleting")
-                          : t("common.delete")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => setInvitingTableId(table.id || "")}
-                        disabled={isDeletingSharedTable}
-                      >
-                        {t("coopTodos.sendInvitation")}
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="group flex-shrink-0 transition-colors"
+                              onClick={() => setEditingTableId(table.id || "")}
+                              disabled={isDeletingSharedTable}
+                            >
+                              <Edit className="text-purple-400 group-hover:text-purple-600 transition-colors" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t("common.edit")}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="group flex-shrink-0 transition-colors"
+                              onClick={() =>
+                                handleDeleteTable(
+                                  table.id || "",
+                                  table.table_name || ""
+                                )
+                              }
+                              disabled={isDeletingSharedTable}
+                            >
+                              <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t("common.delete")}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="group flex-shrink-0 transition-colors"
+                              onClick={() => setInvitingTableId(table.id || "")}
+                              disabled={isDeletingSharedTable}
+                            >
+                              <Send className="text-teal-400 group-hover:text-teal-600 transition-colors" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t("coopTodos.sendInvitation")}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </>
                   ) : (
                     <Button

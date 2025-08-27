@@ -1,5 +1,6 @@
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MutableRefObject } from "react";
 import {
   Form,
   FormControl,
@@ -25,6 +26,7 @@ type DelegatedTodoFormProps = {
   isLoading: boolean;
   type: "add" | "edit";
   defaultValues?: DelegatedTodoFormValues;
+  inputRef?: MutableRefObject<HTMLInputElement | null>;
 };
 
 export function DelegatedTodoForm({
@@ -32,6 +34,7 @@ export function DelegatedTodoForm({
   isLoading,
   type,
   defaultValues,
+  inputRef,
 }: DelegatedTodoFormProps) {
   const { t } = useTranslation();
   const form = useForm<DelegatedTodoFormValues>({
@@ -71,6 +74,12 @@ export function DelegatedTodoForm({
                       : "edit-delegated-todo-input"
                   }
                   {...field}
+                  ref={(e) => {
+                    field.ref(e);
+                    if (type === "add" && inputRef) {
+                      inputRef.current = e;
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage data-testid="delegated-todo-form-message" />

@@ -109,7 +109,7 @@
     scroll-behavior: smooth;
     scrollbar-width: thin;
     scrollbar-color: #5c5c7b #09090a;
-    padding-right: 10px;
+    padding-right: 8px;
   }
 
   .custom-scrollbar::-webkit-scrollbar {

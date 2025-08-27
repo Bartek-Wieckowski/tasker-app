@@ -57,7 +57,8 @@
     "accept": "Akceptuj",
     "decline": "Odrzuć",
     "accepting": "Akceptowanie...",
-    "declining": "Odrzucanie..."
+    "declining": "Odrzucanie...",
+    "todosListEmpty": "Lista zadań jest pusta"
   },
   "loginPage": {
     "dontHaveAccount": "Nie masz jeszcze konta?",

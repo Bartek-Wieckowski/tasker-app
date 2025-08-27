@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -8,8 +8,13 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { EllipsisVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  CalendarClock,
+  EllipsisVertical,
+  Info,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlobalTodoRow, GlobalTodoUpdate } from "@/types/types";
 import { Calendar } from "@/components/ui/calendar";
@@ -31,22 +36,37 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { GlobalTodoForm } from "./GlobalTodoForm";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { localeMap } from "@/lib/helpers";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { GlobalListIcon } from "../Icons";
+import { useViewportKeyboard } from "@/hooks/useViewportKeyboard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function GlobalTodos() {
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
   const formContainerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [selectedTodo, setSelectedTodo] = useState<GlobalTodoRow | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [todoToEdit, setTodoToEdit] = useState<GlobalTodoUpdate | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+  const keyboardHeight = useViewportKeyboard(inputRef);
   const { currentUser } = useAuth();
   const { globalTodos, isLoading } = useGlobalTodos(currentUser.accountId);
   const { createGlobalTodo, isCreatingGlobalTodo } = useAddGlobalTodo(
@@ -61,28 +81,6 @@ export default function GlobalTodos() {
   const { deleteGlobalTodo, isDeletingGlobalTodo } = useDeleteGlobalTodo(
     currentUser.accountId
   );
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (formContainerRef.current) {
-        formContainerRef.current.style.setProperty(
-          "bottom",
-          `env(safe-area-inset-bottom)`
-        );
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleResize);
-      handleResize();
-    }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", handleResize);
-      }
-    };
-  }, []);
 
   const handleAddSubmit = (
     data: { todo: string },
@@ -138,77 +136,152 @@ export default function GlobalTodos() {
           <GlobalListIcon size={30} />
         </div>
       </DrawerTrigger>
-      <DrawerContent ref={formContainerRef} className="min-h-[70vh]">
-        <div className="mx-auto w-full max-w-sm py-3">
-          <div className="mb-6">
-            <DrawerHeader className="mb-4 text-lg font-semibold">
-              <DrawerTitle>
+      <DrawerContent
+        ref={formContainerRef}
+        className="h-[90svh] bg-stone-50"
+        style={{
+          paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
+        }}
+      >
+        <div className="mx-auto w-full max-w-md h-full relative">
+          {/* Header with title and info icon */}
+          <DrawerHeader className="absolute top-0 left-0 right-0 pb-4 bg-stone-50 z-10">
+            <div className="flex items-center justify-between">
+              <DrawerTitle className="text-lg font-semibold">
                 {t("globalTodos.title")} ({globalTodos?.length || 0})
               </DrawerTitle>
-              <DrawerDescription>
-                {t("globalTodos.description")}
-              </DrawerDescription>
-            </DrawerHeader>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-blue-600 hover:text-blue-800"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      {t("globalTodos.description")}
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <DrawerDescription className="sr-only">
+              {t("globalTodos.description")}
+            </DrawerDescription>
+          </DrawerHeader>
 
-            <div className="space-y-2 h-[50vh] overflow-auto custom-scrollbar">
+          {/* Scrollable content area with calculated height */}
+          <div
+            className="px-2 overflow-hidden"
+            style={{
+              height: `calc(90svh - 240px - ${keyboardHeight}px)` /* 240px for header + form */,
+              marginTop: "80px" /* space for header */,
+            }}
+          >
+            <div className="h-full overflow-y-auto custom-scrollbar space-y-2 pr-2 pb-24">
               {isLoading ? (
-                <Loader />
-              ) : (
-                globalTodos?.map((todo: GlobalTodoRow) => (
+                <div className="flex justify-center py-8">
+                  <Loader />
+                </div>
+              ) : globalTodos && globalTodos.length > 0 ? (
+                globalTodos.map((todo: GlobalTodoRow) => (
                   <div
                     key={todo.id}
-                    className="global-todo-item flex items-center justify-between rounded-lg border p-3"
+                    className="global-todo-item flex items-center justify-between rounded-lg shadow-md p-3 bg-white min-h-[70px] mr-2"
                   >
-                    <span>{todo.todo}</span>
+                    <span className="flex-1 pr-2 break-words">{todo.todo}</span>
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         asChild
                         data-testid="dropdown-trigger"
                       >
-                        <EllipsisVertical className="cursor-pointer" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 flex-shrink-0"
+                        >
+                          <EllipsisVertical className="cursor-pointer" />
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         className="z-50"
                         side="left"
                         align="start"
                       >
-                        <div className="flex flex-col gap-2 p-2">
-                          <Button
-                            onClick={() => {
-                              setSelectedTodo(todo);
-                              setIsDialogOpen(true);
-                            }}
-                          >
-                            {t("common.assignToDay")}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setTodoToEdit(todo);
-                              setEditDialogOpen(true);
-                            }}
-                          >
-                            {t("common.edit")}
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => deleteGlobalTodo(todo.id)}
-                            disabled={isDeletingGlobalTodo}
-                          >
-                            {isDeletingGlobalTodo ? (
-                              <div className="flex gap-2">
-                                <Loader />
-                                {t("common.deleting")}
-                              </div>
-                            ) : (
-                              t("common.delete")
-                            )}
-                          </Button>
+                        <div className="flex items-center gap-2 p-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="group flex-shrink-0 transition-colors"
+                                  onClick={() => {
+                                    setSelectedTodo(todo);
+                                    setIsDialogOpen(true);
+                                  }}
+                                >
+                                  <CalendarClock className="text-blue-400 group-hover:text-blue-600 transition-colors" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t("common.assignToDay")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="group flex-shrink-0 transition-colors"
+                                  onClick={() => {
+                                    setTodoToEdit(todo);
+                                    setEditDialogOpen(true);
+                                  }}
+                                >
+                                  <Pencil className="text-purple-400 group-hover:text-purple-600 transition-colors" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t("common.edit")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="group flex-shrink-0 transition-colors"
+                                  onClick={() => deleteGlobalTodo(todo.id)}
+                                  disabled={isDeletingGlobalTodo}
+                                >
+                                  <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t("common.delete")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>{t("common.todosListEmpty")}</p>
+                </div>
               )}
             </div>
           </div>
@@ -283,11 +356,13 @@ export default function GlobalTodos() {
             </DialogContent>
           </Dialog>
 
-          <div className={cn("grid items-start gap-4 px-4")}>
+          {/* Fixed bottom form area */}
+          <div className="absolute bottom-1 md:bottom-2 left-0 right-0 bg-white backdrop-blur-sm p-4 rounded-lg shadow-md border-t border-stone-200 z-10">
             <GlobalTodoForm
               type="add"
               onSubmit={handleAddSubmit}
               isLoading={isCreatingGlobalTodo}
+              inputRef={inputRef}
             />
           </div>
         </div>

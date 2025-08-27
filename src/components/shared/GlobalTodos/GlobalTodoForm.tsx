@@ -1,5 +1,6 @@
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MutableRefObject } from "react";
 import {
   Form,
   FormControl,
@@ -25,6 +26,7 @@ type GlobalTodoFormProps = {
   isLoading: boolean;
   type: "add" | "edit";
   defaultValues?: GlobalTodoFormValues;
+  inputRef?: MutableRefObject<HTMLInputElement | null>;
 };
 
 export function GlobalTodoForm({
@@ -32,6 +34,7 @@ export function GlobalTodoForm({
   isLoading,
   type,
   defaultValues,
+  inputRef,
 }: GlobalTodoFormProps) {
   const { t } = useTranslation();
   const form = useForm<GlobalTodoFormValues>({
@@ -71,6 +74,12 @@ export function GlobalTodoForm({
                       : "edit-global-todo-input"
                   }
                   {...field}
+                  ref={(e) => {
+                    field.ref(e);
+                    if (type === "add" && inputRef) {
+                      inputRef.current = e;
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage data-testid="global-todo-form-message" />

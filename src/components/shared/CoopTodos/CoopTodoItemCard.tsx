@@ -3,17 +3,21 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
-import { EllipsisVertical, Edit } from "lucide-react";
+import { EllipsisVertical, Pencil, Trash2 } from "lucide-react";
 import { multiFormatDateString } from "@/lib/helpers";
-import Loader from "../Loader";
 import { useUpdateCoopTodoStatus } from "@/api/mutations/coopTodos/useUpdateCoopTodoStatus";
 import { useDeleteCoopTodo } from "@/api/mutations/coopTodos/useDeleteCoopTodo";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type CoopTodoData = {
   id: string | null;
@@ -45,7 +49,6 @@ export default function CoopTodoItemCard({
   const { updateCoopTodoStatusMutation } = useUpdateCoopTodoStatus();
   const { deleteCoopTodoMutation, isDeletingCoopTodo } = useDeleteCoopTodo();
 
-  // Return early if essential data is missing
   if (!data.id || !data.todo) {
     return null;
   }
@@ -95,13 +98,13 @@ export default function CoopTodoItemCard({
   return (
     <div
       className={cn(
-        "todo-item-card flex justify-between border border-stone-200 rounded-lg mb-3 p-3",
-        data.is_completed ? "bg-green-50" : ""
+        "coop-todo-item-card flex justify-between shadow-md rounded-lg mb-3 p-3 min-h-24 items-center mr-2",
+        data.is_completed ? "bg-green-50" : "bg-white"
       )}
     >
-      <div className="flex flex-col gap-1 relative flex-1">
+      <div className="flex flex-col gap-3 relative flex-1 justify-center">
         <div className="flex items-center space-x-2 w-full">
-          <Checkbox
+          <Switch
             id={data.id}
             checked={data.is_completed || false}
             onClick={handleCheckboxClick}
@@ -129,12 +132,12 @@ export default function CoopTodoItemCard({
         </div>
 
         {data.todo_more_content && (
-          <div className="text-xs text-muted-foreground ml-6">
+          <div className="text-xs text-muted-foreground">
             {data.todo_more_content}
           </div>
         )}
 
-        <div className="text-xs text-slate-400 ml-6 space-y-1">
+        <div className="text-xs text-slate-400  space-y-1">
           <div>
             {t("coopTodos.createdBy")}:{" "}
             {data.created_at
@@ -172,33 +175,46 @@ export default function CoopTodoItemCard({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8">
-            <EllipsisVertical className="h-4 w-4" />
+            <EllipsisVertical className="cursor-pointer" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuItem
-            onClick={handleEditClick}
-            disabled={isDeletingCoopTodo}
-            className="cursor-pointer"
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            {t("common.edit")}
-          </DropdownMenuItem>
+        <DropdownMenuContent
+          align="end"
+          className="flex items-center justify-around"
+        >
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleEditClick}
+                  disabled={isDeletingCoopTodo}
+                  className="group flex-shrink-0 transition-colors cursor-pointer"
+                >
+                  <Pencil className="text-purple-400 group-hover:text-purple-600 transition-colors" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("common.edit")}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-          <DropdownMenuItem
-            onClick={handleDeleteClick}
-            disabled={isDeletingCoopTodo}
-            className="cursor-pointer text-red-600 focus:text-red-600"
-          >
-            {isDeletingCoopTodo ? (
-              <>
-                <Loader />
-                <span className="ml-2">{t("common.deleting")}...</span>
-              </>
-            ) : (
-              t("common.delete")
-            )}
-          </DropdownMenuItem>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleDeleteClick}
+                  disabled={isDeletingCoopTodo}
+                  className="group flex-shrink-0 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("common.delete")}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

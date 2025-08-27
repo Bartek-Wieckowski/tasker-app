@@ -91,26 +91,26 @@ export default function CoopTodoForm({
           )}
         />
 
-        <div className="flex space-x-2">
+        <div className="block">
           {onCancel && (
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="flex-1"
+              className="mr-2"
             >
               {t("common.cancel")}
             </Button>
           )}
-          <Button type="submit" disabled={isSubmitting} className="flex-1">
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
               <div className="flex items-center gap-2">
                 <Loader />
                 {initialData ? t("common.updating") : t("common.adding")}
               </div>
             ) : initialData ? (
-              t("common.update")
+              t("common.edit")
             ) : (
               t("common.add")
             )}

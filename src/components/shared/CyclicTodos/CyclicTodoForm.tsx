@@ -1,5 +1,6 @@
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MutableRefObject } from "react";
 import {
   Form,
   FormControl,
@@ -25,6 +26,7 @@ type CyclicTodoFormProps = {
   isLoading: boolean;
   type: "add" | "edit";
   defaultValues?: CyclicTodoFormValues;
+  inputRef?: MutableRefObject<HTMLInputElement | null>;
 };
 
 export function CyclicTodoForm({
@@ -32,6 +34,7 @@ export function CyclicTodoForm({
   isLoading,
   type,
   defaultValues,
+  inputRef,
 }: CyclicTodoFormProps) {
   const { t } = useTranslation();
   const form = useForm<CyclicTodoFormValues>({
@@ -71,6 +74,12 @@ export function CyclicTodoForm({
                       : "edit-cyclic-todo-input"
                   }
                   {...field}
+                  ref={(e) => {
+                    field.ref(e);
+                    if (type === "add" && inputRef) {
+                      inputRef.current = e;
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage data-testid="cyclic-todo-form-message" />

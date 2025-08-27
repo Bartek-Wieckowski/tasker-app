@@ -256,7 +256,7 @@ export default function CoopTodosCreateTodosForm({
                 name="tableName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("coopTodos.tableName")} *</FormLabel>
+                    <FormLabel>{t("coopTodos.tableName")}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder={t("coopTodos.tableNamePlaceholder")}
@@ -292,7 +292,7 @@ export default function CoopTodosCreateTodosForm({
                 )}
               />
 
-              <div className="flex justify-end space-x-2 pt-4">
+              <div className="flex space-x-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -318,7 +318,7 @@ export default function CoopTodosCreateTodosForm({
                   {mode === "edit"
                     ? isUpdatingSharedTable
                       ? t("common.updating")
-                      : t("common.update")
+                      : t("common.edit")
                     : isCreatingSharedTable
                     ? t("common.creating")
                     : t("common.create")}
@@ -372,7 +372,7 @@ export default function CoopTodosCreateTodosForm({
               {t("common.add")} {t("common.email")}
             </Button>
 
-            <div className="flex justify-end space-x-2 pt-4">
+            <div className="flex space-x-2 pt-4">
               {mode === "create" && (
                 <Button
                   type="button"

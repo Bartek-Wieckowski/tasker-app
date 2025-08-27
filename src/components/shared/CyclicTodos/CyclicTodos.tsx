@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -8,8 +8,13 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ListRestart, EllipsisVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  ListRestart,
+  EllipsisVertical,
+  Info,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { CyclicTodoRow, CyclicTodoUpdate } from "@/types/types";
 import {
@@ -25,6 +30,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CyclicTodoForm } from "./CyclicTodoForm";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -32,46 +42,33 @@ import { useCyclicTodos } from "@/api/queries/cyclicTodos/useCyclicTodos";
 import { useAddCyclicTodo } from "@/api/mutations/cyclicTodos/useAddCyclicTodo";
 import { useEditCyclicTodo } from "@/api/mutations/cyclicTodos/useEditCyclicTodo";
 import { useDeleteCyclicTodo } from "@/api/mutations/cyclicTodos/useDeleteCyclicTodo";
+import { useViewportKeyboard } from "@/hooks/useViewportKeyboard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function CyclicTodos() {
   const { t } = useTranslation();
   const formContainerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [todoToEdit, setTodoToEdit] = useState<CyclicTodoUpdate | null>(null);
+
+  const keyboardHeight = useViewportKeyboard(inputRef);
   const { currentUser } = useAuth();
   const { cyclicTodos, isLoading } = useCyclicTodos(currentUser.accountId);
   const { createCyclicTodo, isCreatingCyclicTodo } = useAddCyclicTodo(
     currentUser.accountId
   );
-
   const { editCyclicTodoItem, isEditingCyclicTodo } = useEditCyclicTodo(
     currentUser.accountId
   );
   const { deleteCyclicTodo, isDeletingCyclicTodo } = useDeleteCyclicTodo(
     currentUser.accountId
   );
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (formContainerRef.current) {
-        formContainerRef.current.style.setProperty(
-          "bottom",
-          `env(safe-area-inset-bottom)`
-        );
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleResize);
-      handleResize();
-    }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", handleResize);
-      }
-    };
-  }, []);
 
   const handleAddSubmit = (
     data: { todo: string },
@@ -104,74 +101,134 @@ export default function CyclicTodos() {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <ListRestart
-          className="cursor-pointer w-[30px] h-[30px]"
-          data-testid="cyclic-todos-trigger"
-        />
+        <div className="cursor-pointer" data-testid="cyclic-todos-trigger">
+          <ListRestart size={30} />
+        </div>
       </DrawerTrigger>
-      <DrawerContent ref={formContainerRef} className="min-h-[70vh]">
-        <div className="mx-auto w-full max-w-sm py-3">
-          <div className="mb-6">
-            <DrawerHeader className="mb-4 text-lg font-semibold">
-              <DrawerTitle>
+      <DrawerContent
+        ref={formContainerRef}
+        className="h-[90svh] bg-stone-50"
+        style={{
+          paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
+        }}
+      >
+        <div className="mx-auto w-full max-w-md h-full relative">
+          {/* Header with title and info icon */}
+          <DrawerHeader className="absolute top-0 left-0 right-0 pb-4 bg-stone-50 z-10">
+            <div className="flex items-center justify-between">
+              <DrawerTitle className="text-lg font-semibold">
                 {t("cyclicTodos.title")} ({cyclicTodos?.length || 0})
               </DrawerTitle>
-              <DrawerDescription>
-                {t("cyclicTodos.description")}
-              </DrawerDescription>
-            </DrawerHeader>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-blue-600 hover:text-blue-800"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      {t("cyclicTodos.description")}
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <DrawerDescription className="sr-only">
+              {t("cyclicTodos.description")}
+            </DrawerDescription>
+          </DrawerHeader>
 
-            <div className=" space-y-2 h-[50vh] overflow-auto custom-scrollbar">
+          {/* Scrollable content area with calculated height */}
+          <div
+            className="px-2 overflow-hidden"
+            style={{
+              height: `calc(90svh - 240px - ${keyboardHeight}px)` /* 240px for header + form */,
+              marginTop: "80px" /* space for header */,
+            }}
+          >
+            <div className="h-full overflow-y-auto custom-scrollbar space-y-2 pr-2 pb-24">
               {isLoading ? (
-                <Loader />
-              ) : (
-                cyclicTodos?.map((todo: CyclicTodoRow) => (
+                <div className="flex justify-center py-8">
+                  <Loader />
+                </div>
+              ) : cyclicTodos && cyclicTodos.length > 0 ? (
+                cyclicTodos.map((todo: CyclicTodoRow) => (
                   <div
                     key={todo.id}
-                    className="cyclic-todo-item flex items-center justify-between rounded-lg border p-3"
+                    className="cyclic-todo-item flex items-center justify-between rounded-lg shadow-md p-3 bg-white min-h-[70px] mr-2"
                   >
-                    <span>{todo.todo}</span>
+                    <span className="flex-1 pr-2 break-words">{todo.todo}</span>
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         asChild
                         data-testid="dropdown-trigger"
                       >
-                        <EllipsisVertical className="cursor-pointer" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 flex-shrink-0"
+                        >
+                          <EllipsisVertical className="cursor-pointer" />
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         className="z-50"
                         side="left"
                         align="start"
                       >
-                        <div className="flex flex-col gap-2 p-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setTodoToEdit(todo);
-                              setEditDialogOpen(true);
-                            }}
-                          >
-                            {t("common.edit")}
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => deleteCyclicTodo(todo.id)}
-                            disabled={isDeletingCyclicTodo}
-                          >
-                            {isDeletingCyclicTodo ? (
-                              <div className="flex gap-2">
-                                <Loader />
-                                {t("common.deleting")}
-                              </div>
-                            ) : (
-                              t("common.delete")
-                            )}
-                          </Button>
+                        <div className="flex items-center gap-2 p-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="group flex-shrink-0 transition-colors"
+                                  onClick={() => {
+                                    setTodoToEdit(todo);
+                                    setEditDialogOpen(true);
+                                  }}
+                                >
+                                  <Pencil className="text-purple-400 group-hover:text-purple-600 transition-colors" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t("common.edit")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="group flex-shrink-0 transition-colors"
+                                  onClick={() => deleteCyclicTodo(todo.id)}
+                                  disabled={isDeletingCyclicTodo}
+                                >
+                                  <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t("common.delete")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>{t("common.todosListEmpty")}</p>
+                </div>
               )}
             </div>
           </div>
@@ -205,11 +262,13 @@ export default function CyclicTodos() {
             </DialogContent>
           </Dialog>
 
-          <div className={cn("grid items-start gap-4 px-4")}>
+          {/* Fixed bottom form area */}
+          <div className="absolute bottom-2 left-0 right-0 bg-white backdrop-blur-sm p-4 rounded-lg shadow-md border-t border-stone-200 z-10">
             <CyclicTodoForm
               type="add"
               onSubmit={handleAddSubmit}
               isLoading={isCreatingCyclicTodo}
+              inputRef={inputRef}
             />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -8,7 +8,13 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { EllipsisVertical } from "lucide-react";
+import {
+  EllipsisVertical,
+  Info,
+  CalendarClock,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DelegatedTodoRow, DelegatedTodoUpdate } from "@/types/types";
 import { Calendar } from "@/components/ui/calendar";
@@ -30,16 +36,30 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { DelegatedTodoForm } from "./DelegatedTodoForm";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { localeMap } from "@/lib/helpers";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { DelegatedListIcon } from "../Icons";
+import { useViewportKeyboard } from "@/hooks/useViewportKeyboard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function DelegatedTodos() {
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
+  const formContainerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [selectedTodo, setSelectedTodo] = useState<DelegatedTodoRow | null>(
     null
   );
@@ -49,6 +69,8 @@ export default function DelegatedTodos() {
     null
   );
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+  const keyboardHeight = useViewportKeyboard(inputRef);
   const { currentUser } = useAuth();
   const { delegatedTodos, isLoading } = useDelegatedTodos(
     currentUser.accountId
@@ -117,88 +139,152 @@ export default function DelegatedTodos() {
           <DelegatedListIcon size={30} />
         </div>
       </DrawerTrigger>
-      <DrawerContent>
-        <div className="mx-auto w-full max-w-[90%] py-3">
-          <div className="mb-6">
-            <DrawerHeader className="mb-4 text-lg font-semibold">
-              <DrawerTitle className="text-center mb-5">
+      <DrawerContent
+        ref={formContainerRef}
+        className="h-[90svh] bg-stone-50"
+        style={{
+          paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
+        }}
+      >
+        <div className="mx-auto w-full max-w-md h-full relative">
+          {/* Header with title and info icon */}
+          <DrawerHeader className="absolute top-0 left-0 right-0 pb-4 bg-stone-50 z-10">
+            <div className="flex items-center justify-between">
+              <DrawerTitle className="text-lg font-semibold">
                 {t("delegatedTodos.title")} ({delegatedTodos?.length || 0})
               </DrawerTitle>
-              <div className="flex justify-between gap-x-2">
-                <DrawerDescription className="flex-1">
-                  {t("delegatedTodos.description")}
-                </DrawerDescription>
-                <div className="grid items-start gap-4 px-4 flex-1">
-                  <DelegatedTodoForm
-                    type="add"
-                    onSubmit={handleAddSubmit}
-                    isLoading={isCreatingDelegatedTodo}
-                  />
-                </div>
-              </div>
-            </DrawerHeader>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-blue-600 hover:text-blue-800"
+                  >
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      {t("delegatedTodos.description")}
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <DrawerDescription className="sr-only">
+              {t("delegatedTodos.description")}
+            </DrawerDescription>
+          </DrawerHeader>
 
-            <div className="space-y-2 h-[50vh] overflow-auto custom-scrollbar max-w-sm mx-auto">
+          {/* Scrollable content area with calculated height */}
+          <div
+            className="px-2 overflow-hidden"
+            style={{
+              height: `calc(90svh - 240px - ${keyboardHeight}px)` /* 240px for header + form */,
+              marginTop: "80px" /* space for header */,
+            }}
+          >
+            <div className="h-full overflow-y-auto custom-scrollbar space-y-2 pr-2 pb-24">
               {isLoading ? (
-                <Loader />
-              ) : (
-                <>
-                  {delegatedTodos?.map((todo: DelegatedTodoRow) => (
-                    <div
-                      key={todo.id}
-                      className="delegated-todo-item flex items-center justify-between rounded-lg border p-3"
-                    >
-                      <span>{todo.todo}</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          asChild
-                          data-testid="dropdown-trigger"
+                <div className="flex justify-center py-8">
+                  <Loader />
+                </div>
+              ) : delegatedTodos && delegatedTodos.length > 0 ? (
+                delegatedTodos.map((todo: DelegatedTodoRow) => (
+                  <div
+                    key={todo.id}
+                    className="delegated-todo-item flex items-center justify-between rounded-lg shadow-md p-3 bg-white min-h-[70px] mr-2"
+                  >
+                    <span className="flex-1 pr-2 break-words">{todo.todo}</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        asChild
+                        data-testid="dropdown-trigger"
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 flex-shrink-0"
                         >
                           <EllipsisVertical className="cursor-pointer" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          className="z-50"
-                          side="left"
-                          align="start"
-                        >
-                          <div className="flex flex-col gap-2 p-2">
-                            <Button
-                              onClick={() => {
-                                setSelectedTodo(todo);
-                                setIsDialogOpen(true);
-                              }}
-                            >
-                              {t("common.assignToDay")}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                setTodoToEdit(todo);
-                                setEditDialogOpen(true);
-                              }}
-                            >
-                              {t("common.edit")}
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              onClick={() => deleteDelegatedTodoItem(todo.id)}
-                              disabled={isDeletingDelegatedTodo}
-                            >
-                              {isDeletingDelegatedTodo ? (
-                                <div className="flex gap-2">
-                                  <Loader />
-                                  {t("common.deleting")}
-                                </div>
-                              ) : (
-                                t("common.delete")
-                              )}
-                            </Button>
-                          </div>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  ))}
-                </>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="z-50"
+                        side="left"
+                        align="start"
+                      >
+                        <div className="flex items-center gap-2 p-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="group flex-shrink-0 transition-colors"
+                                  onClick={() => {
+                                    setSelectedTodo(todo);
+                                    setIsDialogOpen(true);
+                                  }}
+                                >
+                                  <CalendarClock className="text-blue-400 group-hover:text-blue-600 transition-colors" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t("common.assignToDay")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="group flex-shrink-0 transition-colors"
+                                  onClick={() => {
+                                    setTodoToEdit(todo);
+                                    setEditDialogOpen(true);
+                                  }}
+                                >
+                                  <Pencil className="text-purple-400 group-hover:text-purple-600 transition-colors" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t("common.edit")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="group flex-shrink-0 transition-colors"
+                                  onClick={() =>
+                                    deleteDelegatedTodoItem(todo.id)
+                                  }
+                                  disabled={isDeletingDelegatedTodo}
+                                >
+                                  <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t("common.delete")}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>{t("common.todosListEmpty")}</p>
+                </div>
               )}
             </div>
           </div>
@@ -272,6 +358,16 @@ export default function DelegatedTodos() {
               )}
             </DialogContent>
           </Dialog>
+
+          {/* Fixed bottom form area */}
+          <div className="absolute bottom-2 left-0 right-0 bg-white backdrop-blur-sm p-4 rounded-lg shadow-md border-t border-stone-200 z-10">
+            <DelegatedTodoForm
+              type="add"
+              onSubmit={handleAddSubmit}
+              isLoading={isCreatingDelegatedTodo}
+              inputRef={inputRef}
+            />
+          </div>
         </div>
       </DrawerContent>
     </Drawer>

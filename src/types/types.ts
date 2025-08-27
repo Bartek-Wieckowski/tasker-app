@@ -90,3 +90,9 @@ export type CyclicTodoUpdate =
 export type CoopTodoShared = Tables<"coop_todos_shared">;
 export type CoopTodo = Tables<"coop_todos">;
 export type CoopInvitation = Tables<"coop_invitations">;
+
+export type CoopTodoRow = Database["public"]["Tables"]["coop_todos"]["Row"];
+export type CoopTodoInsert =
+  Database["public"]["Tables"]["coop_todos"]["Insert"];
+export type CoopTodoUpdate =
+  Database["public"]["Tables"]["coop_todos"]["Update"];
