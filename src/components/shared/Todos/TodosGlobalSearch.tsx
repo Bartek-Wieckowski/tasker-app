@@ -61,7 +61,7 @@ export default function TodosGlobalSearch({
           onKeyDown={handleKeyPress}
         />
         <Button onClick={handleSearch}>
-          <Search className="w-[15px] h-[15px]" />
+          <Search className="w-[0.938rem] h-[0.938rem]" />
         </Button>
       </div>
       {errorMessage && (

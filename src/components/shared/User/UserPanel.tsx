@@ -60,7 +60,7 @@ export default function UserPanel() {
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <span className="flex items-center gap-2">
-                    <PocketKnife className="w-[12px] h-[12px]" />
+                    <PocketKnife className="w-3 h-3" />
                     {t("app.userPanel.settings")}
                   </span>
                 </Button>
@@ -84,7 +84,7 @@ export default function UserPanel() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <LogOut className="w-[12px] h-[12px]" />
+                <LogOut className="w-3 h-3" />
                 {t("app.userPanel.logout")}
               </div>
             )}

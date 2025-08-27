@@ -121,8 +121,8 @@ export default function CoopTodosDrawer({
             className="px-2 overflow-hidden"
             style={{
               height:
-                "calc(90svh - 180px)" /* 240px for header + bottom button */,
-              marginTop: "80px" /* space for header */,
+                "calc(90svh - 11.25rem)" /* 240px for header + bottom button */,
+              marginTop: "5rem" /* space for header */,
             }}
           >
             <div className="h-full overflow-y-auto custom-scrollbar  pr-2 pb-4">

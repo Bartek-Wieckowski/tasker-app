@@ -33,7 +33,7 @@ export default function CoopMembersPopup({
           {t("coopTodos.members")}: {memberCount}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="max-w-[400px] w-full" align="start">
+      <PopoverContent className="max-w-[25rem] w-full" align="start">
         <div className="space-y-3">
           <h4 className="font-medium text-sm">{t("coopTodos.membersList")}</h4>
           <div className="space-y-2">

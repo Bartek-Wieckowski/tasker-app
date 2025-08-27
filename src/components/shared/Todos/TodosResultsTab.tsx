@@ -7,7 +7,7 @@ type TodosResultsTabProps = {
 
 export default function TodosResultsTab({ todos }: TodosResultsTabProps) {
   return (
-    <div className="max-h-[calc(100vh-290px)] md:max-h-[calc(100vh-250px)] overflow-y-auto custom-scrollbar mt-2">
+    <div className="max-h-[calc(100vh-18.125rem)] md:max-h-[calc(100vh-15.625rem)] overflow-y-auto custom-scrollbar mt-2">
       {todos.map((data) => (
         <TodosItemCard key={data.id} data={data} />
       ))}

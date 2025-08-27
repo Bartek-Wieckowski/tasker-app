@@ -117,8 +117,8 @@ export default function CoopTodos() {
           <div
             className="pl-2 overflow-hidden"
             style={{
-              height: `calc(90svh - 125px - ${keyboardHeight}px)` /* 160px for header (no form in CoopTodos) */,
-              marginTop: "80px" /* space for header */,
+              height: `calc(90svh - 7.8125rem - ${keyboardHeight}px)` /* 125px for header (no form in CoopTodos) */,
+              marginTop: "5rem" /* space for header */,
             }}
           >
             <div className="h-full overflow-y-auto custom-scrollbar">

@@ -263,7 +263,7 @@ export default function TodosItemCard({
             <Image
               data-testid="todo-item-has-image"
               data-image-url={data.image_url}
-              className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 w-[24px] h-[24px] cursor-zoom-in"
+              className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 w-6 h-6 cursor-zoom-in"
               onClick={() => setOpenLightBoxImage(true)}
             />
           )}
@@ -271,7 +271,7 @@ export default function TodosItemCard({
             <EllipsisVertical className="cursor-pointer" />
           </PopoverTrigger>
         </div>
-        <PopoverContent className="space-y-2 w-auto min-w-[250px]">
+        <PopoverContent className="space-y-2 w-auto min-w-[15.625rem]">
           <div className="flex flex-col items-center gap-2">
             <div className="flex justify-between w-full gap-2">
               <Button asChild onClick={setGlobalDateIfItemSearchGlobally}>

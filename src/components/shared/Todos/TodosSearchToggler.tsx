@@ -31,7 +31,7 @@ export default function TodosSearchToggler({
           <TooltipTrigger asChild>
             <label htmlFor="globalSearch">
               <TextSearch
-                className="cursor-pointer w-[28px] h-[28px]"
+                className="cursor-pointer w-7 h-7"
                 data-testid="globe-icon"
               />
             </label>

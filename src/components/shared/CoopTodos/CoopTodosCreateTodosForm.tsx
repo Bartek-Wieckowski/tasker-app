@@ -232,7 +232,7 @@ export default function CoopTodosCreateTodosForm({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>
             {currentStep === "create-table"

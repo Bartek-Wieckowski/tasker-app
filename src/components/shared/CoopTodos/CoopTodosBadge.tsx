@@ -19,7 +19,7 @@ export default function CoopTodosBadge({
           pendingInvitations.filter(
             (inv) => inv.invitee_email === currentUser.email
           ).length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] rounded-full px-1.5 py-0.5">
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[0.5rem] rounded-full px-1.5 py-0.5">
               {
                 pendingInvitations.filter(
                   (inv) => inv.invitee_email === currentUser.email

@@ -178,8 +178,8 @@ export default function GlobalTodos() {
           <div
             className="px-2 overflow-hidden"
             style={{
-              height: `calc(90svh - 240px - ${keyboardHeight}px)` /* 240px for header + form */,
-              marginTop: "80px" /* space for header */,
+              height: `calc(90svh - 15rem - ${keyboardHeight}px)` /* 240px for header + form */,
+              marginTop: "5rem" /* space for header */,
             }}
           >
             <div className="h-full overflow-y-auto custom-scrollbar space-y-2 pr-2 pb-24">
@@ -191,7 +191,7 @@ export default function GlobalTodos() {
                 globalTodos.map((todo: GlobalTodoRow) => (
                   <div
                     key={todo.id}
-                    className="global-todo-item flex items-center justify-between rounded-lg shadow-md p-3 bg-white min-h-[70px] mr-2"
+                    className="global-todo-item flex items-center justify-between rounded-lg shadow-md p-3 bg-white min-h-[4.375rem] mr-2"
                   >
                     <span className="flex-1 pr-2 break-words">{todo.todo}</span>
                     <DropdownMenu>

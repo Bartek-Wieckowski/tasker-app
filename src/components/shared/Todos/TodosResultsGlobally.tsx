@@ -10,7 +10,7 @@ export default function TodosResultsGlobally({
   todos,
 }: TodosResultsGloballyProps) {
   return (
-    <div className="max-h-[calc(100vh-290px)] md:max-h-[calc(100vh-250px)] overflow-y-auto custom-scrollbar">
+    <div className="max-h-[calc(100vh-18.125rem)] md:max-h-[calc(100vh-15.625rem)] overflow-y-auto custom-scrollbar">
       <AnimatePresence mode="wait">
         {todos.map((data, index) => (
           <motion.div

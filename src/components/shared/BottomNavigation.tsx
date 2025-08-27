@@ -66,7 +66,7 @@ export default function BottomNavigation({
               <ListX className="xs:w-6 xs:h-6 w-4 h-4" />
             </button>
           </div>
-          <div className="flex items-center justify-between max-w-[100px] w-full">
+          <div className="flex items-center justify-between max-w-[6.25rem] w-full">
             <button
               onClick={() => handleTabClick("stats")}
               className={cn(
