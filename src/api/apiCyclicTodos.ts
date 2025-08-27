@@ -5,7 +5,7 @@ export async function getCyclicTodos(userId: string) {
     .from("cyclic_todos")
     .select("*")
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("order_index", { ascending: true });
 
   if (error) {
     if (import.meta.env.DEV) {
@@ -21,11 +21,25 @@ export async function getCyclicTodos(userId: string) {
 }
 
 export async function addCyclicTodo(todo: { todo: string }, userId: string) {
+  // Get next order_index
+  const { data: maxOrderData } = await supabase
+    .from("cyclic_todos")
+    .select("order_index")
+    .eq("user_id", userId)
+    .order("order_index", { ascending: false })
+    .limit(1);
+
+  const nextOrderIndex =
+    maxOrderData && maxOrderData.length > 0
+      ? (maxOrderData[0].order_index || 0) + 1
+      : 1;
+
   const { data, error } = await supabase
     .from("cyclic_todos")
     .insert({
       todo: todo.todo,
       user_id: userId,
+      order_index: nextOrderIndex,
     })
     .select()
     .single();
@@ -121,4 +135,38 @@ export async function deleteCyclicTodo(todoId: string, accountId: string) {
   }
 
   return { success: true };
+}
+
+export async function updateCyclicTodosOrder(
+  todoOrders: Array<{ id: string; order_index: number }>,
+  userId: string
+) {
+  // Update each cyclic todo's order_index
+  const promises = todoOrders.map(({ id, order_index }) =>
+    supabase
+      .from("cyclic_todos")
+      .update({ order_index })
+      .eq("id", id)
+      .eq("user_id", userId)
+  );
+
+  const results = await Promise.all(promises);
+
+  // Check if any update failed
+  const failedUpdate = results.find((result) => result.error);
+  if (failedUpdate?.error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: failedUpdate.error.code,
+        message: failedUpdate.error.message,
+      });
+    }
+    throw { code: "UPDATE_CYCLIC_TODOS_ORDER_ERROR" };
+  }
+
+  if (import.meta.env.DEV) {
+    console.log("Cyclic todos order updated successfully:", {
+      updatedCount: todoOrders.length,
+    });
+  }
 }

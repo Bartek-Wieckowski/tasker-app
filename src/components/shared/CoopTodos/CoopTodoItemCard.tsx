@@ -63,7 +63,7 @@ export default function CoopTodoItemCard({
         isCompleted: !data.is_completed,
       });
     } catch (error) {
-      // Error is handled by the mutation hook
+      console.error("Error updating coop todo status:", error);
     } finally {
       setIsStatusChanging(false);
     }
@@ -78,7 +78,7 @@ export default function CoopTodoItemCard({
       try {
         await deleteCoopTodoMutation(data.id);
       } catch (error) {
-        // Error is handled by the mutation hook
+        console.error("Error deleting coop todo:", error);
       }
     }
   };
@@ -98,7 +98,7 @@ export default function CoopTodoItemCard({
   return (
     <div
       className={cn(
-        "coop-todo-item-card flex justify-between shadow-md rounded-lg mb-3 p-3 min-h-24 items-center mr-2",
+        "coop-todo-item-card flex justify-between shadow-md rounded-lg p-3 min-h-24 items-center mb-3 mr-2",
         data.is_completed ? "bg-green-50" : "bg-white"
       )}
     >

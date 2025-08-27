@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useCoopTodosByTableId } from "@/api/queries/coopTodos/useCoopTodos";
-import CoopTodoItemCard from "./CoopTodoItemCard";
+import CoopTodosList from "./CoopTodosList";
 import CoopTodoForm from "./CoopTodoForm";
 import { ArrowLeft } from "lucide-react";
 import { useCreateCoopTodo } from "@/api/mutations/coopTodos/useCreateCoopTodo";
@@ -41,7 +41,6 @@ export default function CoopTodosDrawer({
     todo: string;
     todo_more_content: string | null;
   } | null>(null);
-
   const { data: todos, isLoading } = useCoopTodosByTableId(tableId);
   const { createCoopTodoMutation, isCreatingCoopTodo } = useCreateCoopTodo();
   const { updateCoopTodoMutation, isUpdatingCoopTodo } = useUpdateCoopTodo();
@@ -58,7 +57,7 @@ export default function CoopTodosDrawer({
       });
       setAddDialogOpen(false);
     } catch (error) {
-      // Error is handled by the mutation hook
+      console.error("Error creating coop todo:", error);
     }
   };
 
@@ -76,7 +75,7 @@ export default function CoopTodosDrawer({
       });
       setEditingTodo(null);
     } catch (error) {
-      // Error is handled by the mutation hook
+      console.error("Error updating coop todo:", error);
     }
   };
 
@@ -116,7 +115,6 @@ export default function CoopTodosDrawer({
             </DrawerDescription>
           </DrawerHeader>
 
-          {/* Scrollable content area for todos list only */}
           <div
             className="px-2 overflow-hidden"
             style={{
@@ -131,13 +129,11 @@ export default function CoopTodosDrawer({
                   {t("app.loading")}
                 </div>
               ) : todos && todos.length > 0 ? (
-                todos.map((todo) => (
-                  <CoopTodoItemCard
-                    key={todo.id}
-                    data={todo}
-                    onEdit={handleEditClick}
-                  />
-                ))
+                <CoopTodosList
+                  todos={todos}
+                  sharedTableId={tableId}
+                  onEdit={handleEditClick}
+                />
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   {t("coopTodos.noTasksInTable")}
@@ -146,7 +142,6 @@ export default function CoopTodosDrawer({
             </div>
           </div>
 
-          {/* Fixed bottom add button */}
           <div className="absolute bottom-1 md:bottom-2 left-0 right-0 bg-white backdrop-blur-sm p-4 rounded-lg shadow-md border-t border-stone-200 z-10">
             <Button
               onClick={() => setAddDialogOpen(true)}
@@ -159,7 +154,6 @@ export default function CoopTodosDrawer({
         </div>
       </DrawerContent>
 
-      {/* Dialog dodawania poza Drawer */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -173,7 +167,6 @@ export default function CoopTodosDrawer({
         </DialogContent>
       </Dialog>
 
-      {/* Dialog edycji poza Drawer żeby uniknąć problemów z z-index */}
       <Dialog open={!!editingTodo} onOpenChange={() => setEditingTodo(null)}>
         <DialogContent>
           <DialogHeader>

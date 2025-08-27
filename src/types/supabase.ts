@@ -17,9 +17,9 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
-          operationName?: string
-          extensions?: Json
           variables?: Json
+          extensions?: Json
+          operationName?: string
           query?: string
         }
         Returns: Json
@@ -103,6 +103,7 @@ export type Database = {
           creator_user_id: string
           id: string
           is_completed: boolean
+          order_index: number
           shared_table_id: string
           todo: string
           todo_more_content: string | null
@@ -116,6 +117,7 @@ export type Database = {
           creator_user_id: string
           id?: string
           is_completed?: boolean
+          order_index?: number
           shared_table_id: string
           todo: string
           todo_more_content?: string | null
@@ -129,6 +131,7 @@ export type Database = {
           creator_user_id?: string
           id?: string
           is_completed?: boolean
+          order_index?: number
           shared_table_id?: string
           todo?: string
           todo_more_content?: string | null
@@ -219,6 +222,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          order_index: number
           todo: string
           updated_at: string | null
           user_id: string
@@ -226,6 +230,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          order_index?: number
           todo: string
           updated_at?: string | null
           user_id: string
@@ -233,6 +238,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          order_index?: number
           todo?: string
           updated_at?: string | null
           user_id?: string
@@ -277,6 +283,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_completed: boolean
+          order_index: number
           original_todo_id: string | null
           todo: string
           todo_more_content: string | null
@@ -291,6 +298,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_completed?: boolean
+          order_index?: number
           original_todo_id?: string | null
           todo: string
           todo_more_content?: string | null
@@ -305,6 +313,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_completed?: boolean
+          order_index?: number
           original_todo_id?: string | null
           todo?: string
           todo_more_content?: string | null
@@ -337,6 +346,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_completed: boolean
+          order_index: number
           original_todo_id: string | null
           todo: string
           todo_more_content: string | null
@@ -351,6 +361,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_completed?: boolean
+          order_index?: number
           original_todo_id?: string | null
           todo: string
           todo_more_content?: string | null
@@ -365,6 +376,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_completed?: boolean
+          order_index?: number
           original_todo_id?: string | null
           todo?: string
           todo_more_content?: string | null
@@ -486,6 +498,7 @@ export type Database = {
           image_url: string | null
           is_completed: boolean
           is_independent_edit: boolean | null
+          order_index: number
           original_todo_id: string | null
           todo: string
           todo_date: string
@@ -500,6 +513,7 @@ export type Database = {
           image_url?: string | null
           is_completed?: boolean
           is_independent_edit?: boolean | null
+          order_index?: number
           original_todo_id?: string | null
           todo: string
           todo_date: string
@@ -514,6 +528,7 @@ export type Database = {
           image_url?: string | null
           is_completed?: boolean
           is_independent_edit?: boolean | null
+          order_index?: number
           original_todo_id?: string | null
           todo?: string
           todo_date?: string
@@ -542,6 +557,7 @@ export type Database = {
           creator_user_id: string | null
           id: string | null
           is_completed: boolean | null
+          order_index: number | null
           shared_table_id: string | null
           table_name: string | null
           table_owner_email: string | null
@@ -759,12 +775,12 @@ export type Database = {
       check_cron_jobs_status: {
         Args: Record<PropertyKey, never>
         Returns: {
-          job_name: string
-          last_run_status: string
-          last_run_started_at: string
           active: boolean
-          command: string
+          last_run_started_at: string
+          last_run_status: string
+          job_name: string
           schedule: string
+          command: string
         }[]
       }
       clean_test_users: {
@@ -812,7 +828,7 @@ export type Database = {
         Returns: Json
       }
       search_todos: {
-        Args: { search_term: string; user_id_param: string }
+        Args: { user_id_param: string; search_term: string }
         Returns: {
           like: Database["public"]["Tables"]["todos"]["Row"]
         }[]

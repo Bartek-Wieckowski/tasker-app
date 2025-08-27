@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS "public"."coop_todos" (
     "who_updated" "uuid" REFERENCES "public"."db_users"("id") ON DELETE SET NULL,
     "who_completed" "uuid" REFERENCES "public"."db_users"("id") ON DELETE SET NULL,
     "completed_at" timestamp with time zone,
+    "order_index" integer NOT NULL DEFAULT 1,
     CONSTRAINT "coop_todos_pkey" PRIMARY KEY ("id")
 );
 
@@ -61,6 +62,7 @@ CREATE TABLE IF NOT EXISTS "public"."coop_invitations" (
 
 -- 4. Indexes
 CREATE INDEX IF NOT EXISTS "idx_coop_todos_shared_table_id" ON "coop_todos"("shared_table_id");
+CREATE INDEX IF NOT EXISTS "idx_coop_todos_shared_table_order" ON "coop_todos"("shared_table_id", "order_index");
 CREATE INDEX IF NOT EXISTS "idx_coop_todos_creator_user_id" ON "coop_todos"("creator_user_id");
 CREATE INDEX IF NOT EXISTS "idx_coop_todos_is_completed" ON "coop_todos"("is_completed");
 CREATE INDEX IF NOT EXISTS "idx_coop_todos_who_updated" ON "coop_todos"("who_updated");

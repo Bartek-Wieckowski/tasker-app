@@ -34,7 +34,7 @@ export async function getTodosFromDay(selectedDate: string, currentUser: User) {
     .select("*")
     .eq("user_id", currentUser.accountId)
     .eq("todo_date", selectedDate)
-    .order("created_at", { ascending: false });
+    .order("order_index", { ascending: true });
 
   if (error) {
     if (import.meta.env.DEV) {
@@ -128,6 +128,20 @@ export async function addTodo(
 ) {
   let imageUrl = "";
 
+  // Get next order_index for this date
+  const { data: maxOrderData } = await supabase
+    .from("todos")
+    .select("order_index")
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate)
+    .order("order_index", { ascending: false })
+    .limit(1);
+
+  const nextOrderIndex =
+    maxOrderData && maxOrderData.length > 0
+      ? (maxOrderData[0].order_index || 0) + 1
+      : 1;
+
   const insertData: TodoInsert = {
     user_id: currentUser.accountId,
     todo: todoDetails.todo,
@@ -135,6 +149,7 @@ export async function addTodo(
     image_url: imageUrl || null,
     todo_date: selectedDate,
     is_completed: false,
+    order_index: nextOrderIndex,
   };
 
   if (todoDetails.imageFile) {
@@ -276,6 +291,15 @@ export async function deleteTodo(
     throw { code: "GET_TODO_ERROR" };
   }
 
+  // Check if this is an original todo (one that has repeats)
+  const isOriginalTodo = todo.original_todo_id === todo.id;
+
+  // If this is an original todo, delete all related todos first
+  if (isOriginalTodo) {
+    await deleteRelatedTodos(currentUser.accountId, todoId);
+  }
+
+  // Handle image deletion AFTER related todos are deleted
   if (todo.image_url) {
     await handleImageDeletion(currentUser.accountId, todo.image_url, todoId);
   }
@@ -296,6 +320,72 @@ export async function deleteTodo(
     }
 
     throw { code: "DELETE_TODO_ERROR" };
+  }
+}
+
+export async function deleteRelatedTodos(
+  accountId: string,
+  originalTodoId: string
+) {
+  // Find all related todos that are not independent
+  const { data: relatedTodos, error: findError } = await supabase
+    .from("todos")
+    .select("id, todo_date, image_url")
+    .eq("user_id", accountId)
+    .eq("original_todo_id", originalTodoId)
+    .eq("is_independent_edit", false)
+    .neq("id", originalTodoId);
+
+  if (findError) {
+    if (import.meta.env.DEV) {
+      console.error({
+        message: findError.message,
+      });
+    }
+    throw { code: "FIND_RELATED_TODOS_ERROR" };
+  }
+
+  if (relatedTodos && relatedTodos.length > 0) {
+    // Delete all related todos first
+    const { error: deleteError } = await supabase
+      .from("todos")
+      .delete()
+      .eq("user_id", accountId)
+      .eq("original_todo_id", originalTodoId)
+      .eq("is_independent_edit", false)
+      .neq("id", originalTodoId);
+
+    if (deleteError) {
+      if (import.meta.env.DEV) {
+        console.error({
+          message: deleteError.message,
+        });
+      }
+      throw { code: "DELETE_RELATED_TODOS_ERROR" };
+    }
+
+    // Now handle image deletion after todos are deleted
+    for (let i = 0; i < relatedTodos.length; i++) {
+      const relatedTodo = relatedTodos[i];
+      if (relatedTodo.image_url) {
+        await handleImageDeletion(
+          accountId,
+          relatedTodo.image_url,
+          relatedTodo.id
+        );
+      }
+    }
+
+    if (import.meta.env.DEV) {
+      console.log("Deleted related todos:", {
+        originalTodoId,
+        deletedCount: relatedTodos.length,
+        deletedTodos: relatedTodos.map((t) => ({
+          id: t.id,
+          date: t.todo_date,
+        })),
+      });
+    }
   }
 }
 
@@ -518,6 +608,20 @@ export async function repeatTodo(
 ) {
   const sourceOriginalTodoId = todoDetails.original_todo_id || todoDetails.id;
 
+  // Get next order_index for the new date
+  const { data: maxOrderData } = await supabase
+    .from("todos")
+    .select("order_index")
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", newDate)
+    .order("order_index", { ascending: false })
+    .limit(1);
+
+  const nextOrderIndex =
+    maxOrderData && maxOrderData.length > 0
+      ? (maxOrderData[0].order_index || 0) + 1
+      : 1;
+
   const insertData: TodoInsert = {
     user_id: currentUser.accountId,
     todo: todoDetails.todo,
@@ -528,6 +632,7 @@ export async function repeatTodo(
     original_todo_id: sourceOriginalTodoId,
     is_independent_edit: false,
     from_delegated: todoDetails.from_delegated || false,
+    order_index: nextOrderIndex,
   };
 
   const { data: repeatedTodo, error } = await supabase
@@ -803,4 +908,41 @@ export async function delegateTodo(
   }
 
   return delegatedTodo;
+}
+
+export async function updateTodosOrder(
+  todoOrders: Array<{ id: string; order_index: number }>,
+  selectedDate: string,
+  currentUser: User
+) {
+  // Update each todo's order_index
+  const promises = todoOrders.map(({ id, order_index }) =>
+    supabase
+      .from("todos")
+      .update({ order_index })
+      .eq("id", id)
+      .eq("user_id", currentUser.accountId)
+      .eq("todo_date", selectedDate)
+  );
+
+  const results = await Promise.all(promises);
+
+  // Check if any update failed
+  const failedUpdate = results.find((result) => result.error);
+  if (failedUpdate?.error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: failedUpdate.error.code,
+        message: failedUpdate.error.message,
+      });
+    }
+    throw { code: "UPDATE_TODOS_ORDER_ERROR" };
+  }
+
+  if (import.meta.env.DEV) {
+    console.log("Todos order updated successfully:", {
+      updatedCount: todoOrders.length,
+      date: selectedDate,
+    });
+  }
 }

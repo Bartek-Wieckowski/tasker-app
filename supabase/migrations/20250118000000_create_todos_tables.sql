@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS "public"."todos" (
     "is_independent_edit" boolean DEFAULT false,
     "from_delegated" boolean DEFAULT false,
     "todo_date" date NOT NULL,
+    "order_index" integer NOT NULL DEFAULT 1,
     CONSTRAINT "todos_pkey" PRIMARY KEY ("id")
 );
 
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS "public"."delegated_todos" (
     "from_delegated" boolean DEFAULT false,
     "delegated_by" "uuid",
     "delegated_at" timestamp with time zone,
+    "order_index" integer NOT NULL DEFAULT 1,
     CONSTRAINT "delegated_todos_pkey" PRIMARY KEY ("id")
 );
 
@@ -46,6 +48,7 @@ CREATE TABLE IF NOT EXISTS "public"."global_todos" (
     "from_delegated" boolean DEFAULT false,
     "delegated_by" "uuid",
     "delegated_at" timestamp with time zone,
+    "order_index" integer NOT NULL DEFAULT 1,
     CONSTRAINT "global_todos_pkey" PRIMARY KEY ("id")
 );
 
@@ -56,6 +59,7 @@ CREATE TABLE IF NOT EXISTS "public"."cyclic_todos" (
     "todo" "text" NOT NULL,
     "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     "updated_at" timestamp with time zone,
+    "order_index" integer NOT NULL DEFAULT 1,
     CONSTRAINT "cyclic_todos_pkey" PRIMARY KEY ("id")
 );
 
@@ -77,15 +81,19 @@ ALTER TABLE ONLY "public"."cyclic_todos"
 CREATE INDEX "idx_todos_user_id" ON "public"."todos" USING "btree" ("user_id");
 CREATE INDEX "idx_todos_todo_date" ON "public"."todos" USING "btree" ("todo_date");
 CREATE INDEX "idx_todos_user_date" ON "public"."todos" USING "btree" ("user_id", "todo_date");
+CREATE INDEX "idx_todos_user_date_order" ON "public"."todos" USING "btree" ("user_id", "todo_date", "order_index");
 CREATE INDEX "idx_todos_original_todo_id" ON "public"."todos" USING "btree" ("original_todo_id");
 CREATE INDEX "idx_todos_is_completed" ON "public"."todos" USING "btree" ("is_completed");
 
 CREATE INDEX "idx_delegated_todos_user_id" ON "public"."delegated_todos" USING "btree" ("user_id");
+CREATE INDEX "idx_delegated_todos_user_order" ON "public"."delegated_todos" USING "btree" ("user_id", "order_index");
 CREATE INDEX "idx_delegated_todos_delegated_by" ON "public"."delegated_todos" USING "btree" ("delegated_by");
 
 CREATE INDEX "idx_global_todos_user_id" ON "public"."global_todos" USING "btree" ("user_id");
+CREATE INDEX "idx_global_todos_user_order" ON "public"."global_todos" USING "btree" ("user_id", "order_index");
 
 CREATE INDEX "idx_cyclic_todos_user_id" ON "public"."cyclic_todos" USING "btree" ("user_id");
+CREATE INDEX "idx_cyclic_todos_user_order" ON "public"."cyclic_todos" USING "btree" ("user_id", "order_index");
 
 -- Enable Row Level Security
 ALTER TABLE "public"."todos" ENABLE ROW LEVEL SECURITY;

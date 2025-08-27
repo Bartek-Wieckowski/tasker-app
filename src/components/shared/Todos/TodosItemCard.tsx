@@ -217,7 +217,7 @@ export default function TodosItemCard({
   return (
     <div
       className={cn(
-        "todo-item-card flex justify-between min-h-20 rounded-lg mb-3 p-3 mr-2 bg-white shadow-md",
+        "todo-item-card flex justify-between min-h-20 rounded-lg p-3 bg-white shadow-md mb-3 mr-2",
         shortTimeToFinishTask(
           isGlobalSearch ? (data.todo_date as string) : selectedDate,
           data.is_completed

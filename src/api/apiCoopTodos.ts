@@ -87,7 +87,7 @@ export async function getCoopTodosByTableId(sharedTableId: string) {
     .from("my_accessible_todos")
     .select("*")
     .eq("shared_table_id", sharedTableId)
-    .order("created_at", { ascending: false });
+    .order("order_index", { ascending: true });
 
   if (error) {
     if (import.meta.env.DEV) {
@@ -230,6 +230,19 @@ export async function createCoopTodo(
     throw new Error("Użytkownik nie jest zalogowany");
   }
 
+  // Get next order_index for this shared table
+  const { data: maxOrderData } = await supabase
+    .from("coop_todos")
+    .select("order_index")
+    .eq("shared_table_id", sharedTableId)
+    .order("order_index", { ascending: false })
+    .limit(1);
+
+  const nextOrderIndex =
+    maxOrderData && maxOrderData.length > 0
+      ? (maxOrderData[0].order_index || 0) + 1
+      : 1;
+
   const { data, error } = await supabase
     .from("coop_todos")
     .insert({
@@ -237,6 +250,7 @@ export async function createCoopTodo(
       creator_user_id: user.id,
       todo,
       todo_more_content: todoMoreContent,
+      order_index: nextOrderIndex,
     })
     .select()
     .single();
@@ -366,6 +380,41 @@ export async function updateSharedTable(
   }
 
   return data;
+}
+
+export async function updateCoopTodosOrder(
+  todoOrders: Array<{ id: string; order_index: number }>,
+  sharedTableId: string
+) {
+  // Update each coop todo's order_index
+  const promises = todoOrders.map(({ id, order_index }) =>
+    supabase
+      .from("coop_todos")
+      .update({ order_index })
+      .eq("id", id)
+      .eq("shared_table_id", sharedTableId)
+  );
+
+  const results = await Promise.all(promises);
+
+  // Check if any update failed
+  const failedUpdate = results.find((result) => result.error);
+  if (failedUpdate?.error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: failedUpdate.error.code,
+        message: failedUpdate.error.message,
+      });
+    }
+    throw { code: "UPDATE_COOP_TODOS_ORDER_ERROR" };
+  }
+
+  if (import.meta.env.DEV) {
+    console.log("Coop todos order updated successfully:", {
+      updatedCount: todoOrders.length,
+      sharedTableId,
+    });
+  }
 }
 
 export async function getSharedTableById(sharedTableId: string) {
