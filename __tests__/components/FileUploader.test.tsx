@@ -106,7 +106,7 @@ describe("FileUploader Component", () => {
       });
 
       // Mock the onDrop callback to simulate file drop
-      mockUseDropzone.mockImplementationOnce((config) => {
+      mockUseDropzone.mockImplementationOnce((config: any) => {
         // Store the onDrop function for later use
         mockOnDrop.mockImplementation(config.onDrop);
 

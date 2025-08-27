@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, MockedFunction } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
@@ -49,7 +49,7 @@ vi.mock("@/lib/utils", () => ({
   cn: vi.fn((...classes) => classes.filter(Boolean).join(" ")),
 }));
 
-const mockUseLanguage = useLanguage as MockedFunction<typeof useLanguage>;
+const mockUseLanguage = useLanguage as any;
 
 describe("LanguageSwitcher Component", () => {
   const mockChangeLanguage = vi.fn();

@@ -50,7 +50,7 @@ describe("Add Todo()", () => {
     cy.login(email, password);
     cy.visit("/");
 
-    cy.get('[data-testid="add-todo-button"]').click();
+    cy.get('[data-testid="add-todo-button"]').first().click();
     cy.get('input[name="todo"]').first().type(longTodoText);
     cy.get('button[type="submit"]').click();
 
@@ -70,7 +70,7 @@ describe("Add Todo()", () => {
     cy.login(email, password);
     cy.visit("/");
 
-    cy.get('[data-testid="add-todo-button"]').click();
+    cy.get('[data-testid="add-todo-button"]').first().click();
     cy.get('input[name="todo"]').type(todoText);
     cy.get('textarea[name="todo_more_content"]').type(todoMoreContent);
     cy.get('button[type="submit"]').click();
@@ -97,10 +97,11 @@ describe("Add Todo()", () => {
     cy.visit("/");
     cy.createTodo(todoText);
 
-    cy.get('[data-testid="date-picker-button"]').click();
-    cy.get(`[role="gridcell"]`)
-      .contains(currentDay)
-      .should("have.class", "bg-primary");
+    cy.get('[data-testid="date-picker-button"]').first().click();
+    cy.get(`[role="gridcell"][tabindex="0"]`)
+      .should("contain", currentDay)
+      .should("have.class", "bg-primary")
+      .should("have.attr", "aria-selected", "true");
     cy.contains(todoText).should("exist");
   });
 
@@ -125,7 +126,7 @@ describe("Add Todo()", () => {
 
     cy.login(email, password);
     cy.visit("/");
-    cy.get('[data-testid="add-todo-button"]').click();
+    cy.get('[data-testid="add-todo-button"]').first().click();
     cy.get('input[name*="todo"]').first().type(todoText);
     cy.get('button[type="submit"]').click();
 
