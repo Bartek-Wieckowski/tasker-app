@@ -169,16 +169,16 @@ export default defineConfig({
             ];
 
             for (const table of tables) {
-              console.log(`Cleaning table: ${table}`);
+              // console.log(`Cleaning table: ${table}`);
 
               // First check what's in the table
               const { data: beforeData } = await supabase
                 .from(table)
                 .select("id");
 
-              console.log(
-                `${table} has ${beforeData?.length || 0} rows before cleanup`
-              );
+              // console.log(
+              //   `${table} has ${beforeData?.length || 0} rows before cleanup`
+              // );
 
               // Delete all rows - use gt filter which should work for all rows
               const { error } = await supabase
@@ -187,18 +187,18 @@ export default defineConfig({
                 .gt("created_at", "1900-01-01");
 
               if (error) {
-                console.log(`❌ Error cleaning ${table}:`, error);
+                // console.log(`❌ Error cleaning ${table}:`, error);
                 throw error;
               } else {
                 // Verify deletion worked
                 const { data: afterData } = await supabase
                   .from(table)
                   .select("id");
-                console.log(
-                  `✅ Cleaned table: ${table}, ${
-                    afterData?.length || 0
-                  } rows remaining`
-                );
+                // console.log(
+                //   `✅ Cleaned table: ${table}, ${
+                //     afterData?.length || 0
+                //   } rows remaining`
+                // );
               }
             }
 
