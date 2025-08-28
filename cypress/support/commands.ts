@@ -71,6 +71,9 @@ declare global {
         targetYear: number,
         currentDate: Date
       ): Chainable<void>;
+      setupTestSession(): Chainable<void>;
+      cleanupTodosOnly(): Chainable<void>;
+      preserveSession(): Chainable<void>;
     }
   }
 }
@@ -87,6 +90,7 @@ Cypress.Commands.add(
     cy.get('input[name="email"]').type(email);
     cy.get('input[name="password"]').type(password);
     cy.get('button[type="submit"]').click();
+    cy.get('[data-testid="toaster"]').find("button").click({ force: true });
     cy.url().should("eq", Cypress.config().baseUrl + "/");
 
     // After successful registration, get the user ID and add to db_users table
@@ -123,12 +127,14 @@ Cypress.Commands.add("login", (email: string, password: string) => {
   cy.get('input[name="email"]').type(email);
   cy.get('input[name="password"]').type(password);
   cy.get('button[type="submit"]').click();
+  cy.get('[data-testid="toaster"]').find("button").click({ force: true });
   cy.url().should("eq", Cypress.config().baseUrl + "/");
 });
 
 Cypress.Commands.add("logout", () => {
   cy.get('[data-testid="user-menu"]').click();
   cy.get('[data-testid="logout-button"]').click();
+  cy.get('[data-testid="toaster"]').find("button").click({ force: true });
   cy.url().should("eq", Cypress.config().baseUrl + "/login");
 });
 
@@ -148,6 +154,7 @@ Cypress.Commands.add("createTodo", (todoText) => {
   cy.get('[data-testid="add-todo-button"]').first().click();
   cy.get('input[name*="todo"]').first().type(todoText);
   cy.get('button[type="submit"]').click();
+  cy.get('[data-testid="toaster"]').find("button").click({ force: true });
   cy.contains(todoText).should("exist");
 });
 
@@ -165,6 +172,7 @@ Cypress.Commands.add("createTodoWithImage", (todoText, imageFixture) => {
   );
 
   cy.get('button[type="submit"]').click();
+  cy.get('[data-testid="toaster"]').find("button").click({ force: true });
   cy.contains(todoText).should("exist");
 });
 
@@ -187,9 +195,20 @@ Cypress.Commands.add(
       cy.get('[role="button"][name="next-month"]').click();
     }
 
-    cy.get(`[role="gridcell"]`).contains(targetDay).click();
+    cy.get('[role="grid"]').within(() => {
+      cy.get(`button:not([disabled]):not(.disabled)`)
+        .not('[aria-disabled="true"]')
+        .not(".day-outside")
+        .not(".rdp-day_outside")
+        .contains(new RegExp(`^${targetDay}$`))
+        .first()
+        .should("be.visible")
+        .should("not.be.disabled")
+        .click();
+    });
 
     cy.get('[data-testid="move-todo-button"]').click();
+    cy.get('[data-testid="toaster"]').find("button").click({ force: true });
   }
 );
 
@@ -205,7 +224,17 @@ Cypress.Commands.add("navigateToDate", (targetDay, targetMonth, targetYear) => {
     cy.get('[role="button"][name="next-month"]').click();
   }
 
-  cy.get(`[role="gridcell"]`).contains(targetDay).click({ force: true });
+  cy.get('[role="grid"]').within(() => {
+    cy.get(`button:not([disabled]):not(.disabled)`)
+      .not('[aria-disabled="true"]')
+      .not(".day-outside")
+      .not(".rdp-day_outside")
+      .contains(new RegExp(`^${targetDay}$`))
+      .first()
+      .should("be.visible")
+      .should("not.be.disabled")
+      .click();
+  });
 });
 
 Cypress.Commands.add(
@@ -225,10 +254,50 @@ Cypress.Commands.add(
       cy.get('[role="button"][name="next-month"]').click();
     }
 
-    cy.get(`[role="gridcell"]`).contains(targetDay).click();
+    cy.get('[role="grid"]').within(() => {
+      cy.get(`button:not([disabled]):not(.disabled)`)
+        .not('[aria-disabled="true"]')
+        .not(".day-outside")
+        .not(".rdp-day_outside")
+        .contains(new RegExp(`^${targetDay}$`))
+        .first()
+        .should("be.visible")
+        .should("not.be.disabled")
+        .click();
+    });
 
     cy.get('[data-testid="repeat-todo-button"]').click();
+    cy.get('[data-testid="toaster"]').find("button").click({ force: true });
   }
 );
+
+// Session management commands for optimized testing
+Cypress.Commands.add("setupTestSession", () => {
+  // Use cy.session to properly maintain authentication state across tests
+  cy.session(
+    "test-user-session",
+    () => {
+      // This block runs only once to establish the session
+      cy.login("taskertestuser@developedbybart.pl", "password123");
+    },
+    {
+      validate() {
+        // This validates the session is still active
+        cy.visit("/");
+        cy.url().should("not.include", "/login");
+      },
+    }
+  );
+});
+
+Cypress.Commands.add("cleanupTodosOnly", () => {
+  // Clean only todos-related tables, keeping user session
+  cy.task("cleanupTodos");
+});
+
+Cypress.Commands.add("preserveSession", () => {
+  // This is now handled by cy.session
+  cy.log("Session preserved by cy.session");
+});
 
 export {};

@@ -1,22 +1,23 @@
 describe("Delegated Todos()", () => {
-  const email = "taskertestuser@developedbybart.pl";
-  const password = "password123";
-
   before(() => {
     cy.task("db:reset");
     cy.createTestUser();
   });
 
+  beforeEach(() => {
+    cy.setupTestSession();
+    cy.cleanupTodosOnly();
+    cy.visit("/");
+  });
+
   it("should successfully add a new delegated todo", () => {
     const delegatedTodoText = "New delegated task to add";
 
-    cy.visit("/");
+    cy.get('[data-testid="delegated-todos-trigger"]').first().click();
 
-    cy.get('[data-testid="delegated-todos-trigger"]').click();
-
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
+    cy.get('[data-testid="add-delegated-todo-button"]').first().click();
     cy.get('[data-testid="add-delegated-todo-input"]').type(delegatedTodoText);
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
+    cy.get('[data-testid="add-delegated-todo-button"]').first().click();
 
     cy.contains(delegatedTodoText).should("exist");
   });
@@ -25,20 +26,17 @@ describe("Delegated Todos()", () => {
     const originalTodoText = "Delegated todo to edit";
     const editedTodoText = "Edited delegated todo";
 
-    cy.login(email, password);
-    cy.visit("/");
+    cy.get('[data-testid="delegated-todos-trigger"]').first().click();
 
-    cy.get('[data-testid="delegated-todos-trigger"]').click();
-
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
+    cy.get('[data-testid="add-delegated-todo-button"]').first().click();
 
     cy.get('[data-testid="add-delegated-todo-input"]')
       .should("be.visible")
       .type(originalTodoText);
 
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
+    cy.get('[data-testid="add-delegated-todo-button"]').first().click();
 
-    cy.wait(2000);
+    cy.wait(500);
 
     cy.contains(originalTodoText).should("exist");
 
@@ -47,7 +45,7 @@ describe("Delegated Todos()", () => {
       .find('[data-testid="dropdown-trigger"]')
       .click();
 
-    cy.contains("button", /edit/i).click();
+    cy.get('[data-testid="edit-delegated-todo-button-icon"]').click();
 
     cy.get('[data-testid="edit-delegated-todo-input"]')
       .should("be.visible")
@@ -63,14 +61,11 @@ describe("Delegated Todos()", () => {
   it("should successfully delete a delegated todo", () => {
     const delegatedTodoText = "Delegated todo to delete";
 
-    cy.login(email, password);
-    cy.visit("/");
+    cy.get('[data-testid="delegated-todos-trigger"]').first().click();
 
-    cy.get('[data-testid="delegated-todos-trigger"]').click();
-
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
+    cy.get('[data-testid="add-delegated-todo-button"]').first().click();
     cy.get('[data-testid="add-delegated-todo-input"]').type(delegatedTodoText);
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
+    cy.get('[data-testid="add-delegated-todo-button"]').first().click();
 
     cy.contains(delegatedTodoText).should("exist");
 
@@ -79,25 +74,21 @@ describe("Delegated Todos()", () => {
       .find('[data-testid="dropdown-trigger"]')
       .click();
 
-    cy.contains("button", /delete/i).click();
+    cy.get('[data-testid="delete-delegated-todo-button-icon"]').click();
 
     cy.contains(delegatedTodoText).should("not.exist");
   });
 
   it("should successfully assign a delegated todo to a specific date", () => {
     const delegatedTodoText = "Delegated todo to assign";
-    const targetDay = 25;
+    const targetDay = new Date().getDate();
     const targetMonth = new Date().getMonth() + 1;
     const targetYear = new Date().getFullYear();
 
-    cy.login(email, password);
-    cy.visit("/");
+    cy.get('[data-testid="delegated-todos-trigger"]').first().click();
 
-    cy.get('[data-testid="delegated-todos-trigger"]').click();
-
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
     cy.get('[data-testid="add-delegated-todo-input"]').type(delegatedTodoText);
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
+    cy.get('[data-testid="add-delegated-todo-button"]').first().click();
 
     cy.contains(delegatedTodoText).should("exist");
 
@@ -105,7 +96,7 @@ describe("Delegated Todos()", () => {
       .closest('div[class*="delegated-todo-item"]')
       .find('[data-testid="dropdown-trigger"]')
       .click();
-    cy.contains("button", /assign to day/i).click();
+    cy.get('[data-testid="assign-delegated-todo-button-icon"]').click();
 
     if (
       targetMonth > new Date().getMonth() + 1 ||
@@ -114,9 +105,19 @@ describe("Delegated Todos()", () => {
       cy.get('[role="button"][name="next-month"]').click();
     }
 
-    cy.get(`[role="gridcell"]`).contains(targetDay).click();
-    cy.wait(1000);
+    cy.get('[role="grid"]').within(() => {
+      cy.get(`button:not([disabled]):not(.disabled)`)
+        .not('[aria-disabled="true"]')
+        .not(".day-outside")
+        .not(".rdp-day_outside")
+        .contains(new RegExp(`^${targetDay}$`))
+        .first()
+        .should("be.visible")
+        .should("not.be.disabled")
+        .click();
+    });
 
+    cy.get('[data-testid="assign-delegated-todo-button"]').click();
     cy.get('div[role="dialog"]').type("{esc}");
 
     cy.contains(delegatedTodoText).should("not.exist");
@@ -126,13 +127,9 @@ describe("Delegated Todos()", () => {
   });
 
   it("should validate required fields when adding delegated todo", () => {
-    cy.login(email, password);
-    cy.visit("/");
+    cy.get('[data-testid="delegated-todos-trigger"]').first().click();
 
-    cy.get('[data-testid="delegated-todos-trigger"]').click();
-
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
-    cy.get('[data-testid="add-delegated-todo-button"]').click();
+    cy.get('[data-testid="add-delegated-todo-button"]').first().click();
 
     cy.get('[data-testid="delegated-todo-form-message"]').should("be.visible");
     cy.get('input[name="todo"]').should("be.visible");

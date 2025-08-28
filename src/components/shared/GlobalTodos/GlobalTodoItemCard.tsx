@@ -71,6 +71,7 @@ export default function GlobalTodoItemCard({
                         variant="ghost"
                         className="group flex-shrink-0 transition-colors"
                         onClick={() => onAssign(todo)}
+                        data-testid="assign-global-todo-button-icon"
                       >
                         <CalendarClock className="text-blue-400 group-hover:text-blue-600 transition-colors" />
                       </Button>
@@ -89,6 +90,7 @@ export default function GlobalTodoItemCard({
                         variant="ghost"
                         className="group flex-shrink-0 transition-colors"
                         onClick={() => onEdit(todo)}
+                        data-testid="edit-global-todo-button-icon"
                       >
                         <Pencil className="text-purple-400 group-hover:text-purple-600 transition-colors" />
                       </Button>
@@ -107,6 +109,7 @@ export default function GlobalTodoItemCard({
                       className="group flex-shrink-0 transition-colors"
                       onClick={handleDelete}
                       disabled={isDeletingGlobalTodo}
+                      data-testid="delete-global-todo-button-icon"
                     >
                       <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
                     </Button>

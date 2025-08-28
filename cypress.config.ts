@@ -150,6 +150,99 @@ export default defineConfig({
             return null;
           }
         },
+        cleanupTodos: async () => {
+          try {
+            // console.log("Cleaning todos data only...");
+
+            const supabase = createClient(
+              "http://127.0.0.1:54321",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+            );
+
+            // Clean all todo-related tables but keep users
+            const tables = [
+              "todos",
+              "cyclic_todos",
+              "delegated_todos",
+              "global_todos",
+              "coop_todos",
+            ];
+
+            for (const table of tables) {
+              console.log(`Cleaning table: ${table}`);
+
+              // First check what's in the table
+              const { data: beforeData } = await supabase
+                .from(table)
+                .select("id");
+
+              console.log(
+                `${table} has ${beforeData?.length || 0} rows before cleanup`
+              );
+
+              // Delete all rows - use gt filter which should work for all rows
+              const { error } = await supabase
+                .from(table)
+                .delete()
+                .gt("created_at", "1900-01-01");
+
+              if (error) {
+                console.log(`❌ Error cleaning ${table}:`, error);
+                throw error;
+              } else {
+                // Verify deletion worked
+                const { data: afterData } = await supabase
+                  .from(table)
+                  .select("id");
+                console.log(
+                  `✅ Cleaned table: ${table}, ${
+                    afterData?.length || 0
+                  } rows remaining`
+                );
+              }
+            }
+
+            // Clean todo images from storage
+            const bucketName = "todo-images";
+            const { data: folders, error: listFoldersError } =
+              await supabase.storage.from(bucketName).list("", { limit: 1000 });
+
+            if (!listFoldersError && folders && folders.length > 0) {
+              const allFilePaths: string[] = [];
+
+              for (const folder of folders) {
+                if (folder.name) {
+                  const { data: files, error: listFilesError } =
+                    await supabase.storage
+                      .from(bucketName)
+                      .list(folder.name, { limit: 1000 });
+
+                  if (!listFilesError && files && files.length > 0) {
+                    const filePaths = files.map(
+                      (f) => `${folder.name}/${f.name}`
+                    );
+                    allFilePaths.push(...filePaths);
+                  }
+                }
+              }
+
+              if (allFilePaths.length > 0) {
+                const { error: removeError } = await supabase.storage
+                  .from(bucketName)
+                  .remove(allFilePaths);
+                if (!removeError) {
+                  // console.log(`✅ Cleaned ${allFilePaths.length} todo images`);
+                }
+              }
+            }
+
+            // console.log("✅ Todos cleanup completed successfully");
+            return null;
+          } catch (error) {
+            // console.log("❌ Todos cleanup failed:", error);
+            return null;
+          }
+        },
       });
     },
     env: {

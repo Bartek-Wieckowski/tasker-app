@@ -65,6 +65,7 @@ export default function CyclicTodoItemCard({
                         variant="ghost"
                         className="group flex-shrink-0 transition-colors"
                         onClick={() => onEdit(todo)}
+                        data-testid="edit-cyclic-todo-button-icon"
                       >
                         <Pencil className="text-purple-400 group-hover:text-purple-600 transition-colors" />
                       </Button>
@@ -83,6 +84,7 @@ export default function CyclicTodoItemCard({
                       className="group flex-shrink-0 transition-colors"
                       onClick={handleDelete}
                       disabled={isDeletingCyclicTodo}
+                      data-testid="delete-cyclic-todo-button-icon"
                     >
                       <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
                     </Button>

@@ -1,16 +1,17 @@
 describe("Delete Todo()", () => {
-  const email = "taskertestuser@developedbybart.pl";
-  const password = "password123";
-
   before(() => {
     cy.task("db:reset");
     cy.createTestUser();
   });
 
+  beforeEach(() => {
+    cy.setupTestSession();
+    cy.cleanupTodosOnly();
+    cy.visit("/");
+  });
+
   it("should successfully delete a todo", () => {
     const todoText = "Test todo to delete";
-
-    cy.visit("/");
 
     cy.createTodo(todoText);
     cy.contains(todoText)
@@ -25,9 +26,6 @@ describe("Delete Todo()", () => {
   it("should successfully delete a todo with image", () => {
     const todoText = "Todo with image to delete";
     const imageFixture = "test-image.jpg";
-
-    cy.login(email, password);
-    cy.visit("/");
 
     cy.createTodoWithImage(todoText, imageFixture);
 

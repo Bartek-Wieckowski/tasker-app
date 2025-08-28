@@ -214,6 +214,7 @@ export default function DelegatedTodosList({
             <Button
               onClick={handleAssignToDay}
               disabled={!selectedDate || isAssigningDelegatedTodo}
+              data-testid="assign-delegated-todo-button"
             >
               {isAssigningDelegatedTodo
                 ? t("common.assigning")

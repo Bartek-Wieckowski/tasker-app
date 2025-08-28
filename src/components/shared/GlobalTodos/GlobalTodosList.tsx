@@ -213,6 +213,7 @@ export default function GlobalTodosList({ globalTodos }: GlobalTodosListProps) {
             <Button
               onClick={handleAssignToDay}
               disabled={!selectedDate || isAssigningGlobalTodo}
+              data-testid="assign-global-todo-button"
             >
               {isAssigningGlobalTodo
                 ? t("common.assigning")
