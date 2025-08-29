@@ -49,7 +49,7 @@ export default function CoopListTodosWithActions({
       try {
         await deleteSharedTableMutation(tableId);
       } catch (error) {
-        // Error is handled by the mutation hook
+        console.error("Failed to delete table:", error);
       }
     }
   };
@@ -67,7 +67,7 @@ export default function CoopListTodosWithActions({
       try {
         await leaveSharedTableMutation({ sharedTableId: tableId });
       } catch (error) {
-        // Error is handled by the mutation hook
+        console.error("Failed to leave table:", error);
       }
     }
   };
@@ -75,7 +75,7 @@ export default function CoopListTodosWithActions({
   return (
     <>
       {tablesLoading ? (
-        <div className="text-center py-8">{t("common.loading")}</div>
+        <div className="text-center py-8">{t("app.loading")}</div>
       ) : sharedTables && sharedTables.length > 0 ? (
         <div className="space-y-3 custom-scrollbar overflow-y-auto pb-2">
           {sharedTables.map((table) => (
@@ -91,7 +91,10 @@ export default function CoopListTodosWithActions({
                       tableId={table.id || ""}
                       tableName={table.table_name || ""}
                     >
-                      <h3 className="font-semibold text-base cursor-pointer hover:text-primary transition-colors flex items-center gap-2 underline text-indigo-600">
+                      <h3
+                        className="font-semibold text-base cursor-pointer hover:text-primary transition-colors flex items-center gap-2 underline text-indigo-600"
+                        data-testid="coop-table-name"
+                      >
                         {table.table_name}
                       </h3>
                     </CoopTodosDrawer>
@@ -143,6 +146,7 @@ export default function CoopListTodosWithActions({
                               className="group flex-shrink-0 transition-colors"
                               onClick={() => setEditingTableId(table.id || "")}
                               disabled={isDeletingSharedTable}
+                              data-testid="coop-table-edit-button-icon"
                             >
                               <Edit className="text-purple-400 group-hover:text-purple-600 transition-colors" />
                             </Button>
@@ -166,6 +170,7 @@ export default function CoopListTodosWithActions({
                                 )
                               }
                               disabled={isDeletingSharedTable}
+                              data-testid="coop-table-delete-button-icon"
                             >
                               <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
                             </Button>
@@ -184,6 +189,7 @@ export default function CoopListTodosWithActions({
                               className="group flex-shrink-0 transition-colors"
                               onClick={() => setInvitingTableId(table.id || "")}
                               disabled={isDeletingSharedTable}
+                              data-testid="coop-table-invite-button-icon"
                             >
                               <Send className="text-teal-400 group-hover:text-teal-600 transition-colors" />
                             </Button>
@@ -203,9 +209,10 @@ export default function CoopListTodosWithActions({
                         handleLeaveTable(table.id || "", table.table_name || "")
                       }
                       disabled={isLeavingSharedTable}
+                      data-testid="coop-table-leave-button"
                     >
                       {isLeavingSharedTable
-                        ? t("common.leaving")
+                        ? t("coopTodos.leaving")
                         : t("coopTodos.leaveTable")}
                     </Button>
                   )}

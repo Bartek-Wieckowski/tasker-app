@@ -147,6 +147,7 @@ export default function CoopTodosDrawer({
               onClick={() => setAddDialogOpen(true)}
               className="w-fit"
               size="sm"
+              data-testid="in-table-coop-add-new-todo-button"
             >
               {t("common.addNewTodo")}
             </Button>
@@ -163,6 +164,7 @@ export default function CoopTodosDrawer({
             onSubmit={handleAddTodo}
             isSubmitting={isCreatingCoopTodo}
             onCancel={() => setAddDialogOpen(false)}
+            type="add"
           />
         </DialogContent>
       </Dialog>
@@ -181,6 +183,7 @@ export default function CoopTodosDrawer({
                 todo: editingTodo.todo || "",
                 todoMoreContent: editingTodo.todo_more_content || "",
               }}
+              type="edit"
             />
           )}
         </DialogContent>

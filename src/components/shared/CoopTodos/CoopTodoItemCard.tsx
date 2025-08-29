@@ -112,6 +112,7 @@ export default function CoopTodoItemCard({
               data.is_completed && "!bg-green-500 !border-green-500"
             )}
             disabled={isStatusChanging}
+            data-testid="in-table-coop-todo-complete-button"
           />
           <label
             htmlFor={data.id}
@@ -174,7 +175,12 @@ export default function CoopTodoItemCard({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            data-testid="in-table-coop-todo-dropdown-menu-trigger"
+          >
             <EllipsisVertical className="cursor-pointer" />
           </Button>
         </DropdownMenuTrigger>
@@ -191,6 +197,7 @@ export default function CoopTodoItemCard({
                   onClick={handleEditClick}
                   disabled={isDeletingCoopTodo}
                   className="group flex-shrink-0 transition-colors cursor-pointer"
+                  data-testid="in-table-coop-todo-edit-button-icon"
                 >
                   <Pencil className="text-purple-400 group-hover:text-purple-600 transition-colors" />
                 </Button>
@@ -208,6 +215,7 @@ export default function CoopTodoItemCard({
                   onClick={handleDeleteClick}
                   disabled={isDeletingCoopTodo}
                   className="group flex-shrink-0 transition-colors cursor-pointer"
+                  data-testid="in-table-coop-todo-delete-button-icon"
                 >
                   <Trash2 className="text-red-400 group-hover:text-red-600 transition-colors" />
                 </Button>

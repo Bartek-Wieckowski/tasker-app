@@ -80,15 +80,15 @@ export const createTableSchema = (t: TFunction) =>
     tableName: z
       .string()
       .min(2, {
-        message: t("common.tableNameMinLength"),
+        message: t("coopTodos.tableNameMinLength"),
       })
       .max(25, {
-        message: t("common.tableNameMaxLength"),
+        message: t("coopTodos.tableNameMaxLength"),
       }),
     description: z
       .string()
       .max(75, {
-        message: t("common.descriptionMaxLength"),
+        message: t("coopTodos.descriptionMaxLength"),
       })
       .optional(),
   });

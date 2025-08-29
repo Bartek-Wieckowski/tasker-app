@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 type CoopTodoFormProps = {
   onSubmit: (data: { todo: string; todoMoreContent?: string }) => Promise<void>;
   isSubmitting: boolean;
+  type: "add" | "edit";
   onCancel?: () => void;
   initialData?: {
     todo: string;
@@ -28,6 +29,7 @@ type CoopTodoFormProps = {
 export default function CoopTodoForm({
   onSubmit,
   isSubmitting,
+  type,
   onCancel,
   initialData,
 }: CoopTodoFormProps) {
@@ -47,7 +49,6 @@ export default function CoopTodoForm({
       todoMoreContent: data.todo_more_content || undefined,
     });
 
-    // Reset form after successful submission
     form.reset();
   };
 
@@ -59,10 +60,23 @@ export default function CoopTodoForm({
           name="todo"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("common.todoContent")}</FormLabel>
+              <FormLabel>
+                {type === "add"
+                  ? t("common.newTaskName")
+                  : t("common.editTaskName")}
+              </FormLabel>
               <FormControl>
                 <Input
-                  placeholder={t("common.todoContentPlaceholder")}
+                  placeholder={
+                    type === "add"
+                      ? t("common.writeYourTaskNamePlaceholder")
+                      : t("common.editYourTaskPlaceholder")
+                  }
+                  data-testid={
+                    type === "add"
+                      ? "add-coop-todo-input"
+                      : "edit-coop-todo-input"
+                  }
                   disabled={isSubmitting}
                   {...field}
                 />
@@ -77,10 +91,23 @@ export default function CoopTodoForm({
           name="todo_more_content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("common.todoMoreContent")}</FormLabel>
+              <FormLabel>
+                {type === "add"
+                  ? t("common.newTaskName")
+                  : t("common.editTaskName")}
+              </FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder={t("common.todoMoreContentPlaceholder")}
+                  placeholder={
+                    type === "add"
+                      ? t("common.writeYourTaskNamePlaceholder")
+                      : t("common.editYourTaskPlaceholder")
+                  }
+                  data-testid={
+                    type === "add"
+                      ? "add-coop-todo-more-content-textarea"
+                      : "edit-coop-todo-more-content-textarea"
+                  }
                   disabled={isSubmitting}
                   rows={3}
                   {...field}
@@ -103,16 +130,22 @@ export default function CoopTodoForm({
               {t("common.cancel")}
             </Button>
           )}
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            data-testid={
+              type === "add" ? "add-coop-todo-button" : "edit-coop-todo-button"
+            }
+          >
             {isSubmitting ? (
               <div className="flex items-center gap-2">
                 <Loader />
-                {initialData ? t("common.updating") : t("common.adding")}
+                {type === "add" ? t("common.adding") : t("common.updating")}
               </div>
-            ) : initialData ? (
-              t("common.edit")
-            ) : (
+            ) : type === "add" ? (
               t("common.add")
+            ) : (
+              t("common.edit")
             )}
           </Button>
         </div>

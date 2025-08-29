@@ -220,6 +220,7 @@ export default function CoopTodosCreateTodosForm({
     >
       <DialogTrigger asChild>
         <Button
+          data-testid="create-table-button"
           onClick={() => {
             setCurrentStep("create-table");
             setCreatedTableId(null);
@@ -262,6 +263,13 @@ export default function CoopTodosCreateTodosForm({
                         placeholder={t("coopTodos.tableNamePlaceholder")}
                         disabled={
                           isCreatingSharedTable || isUpdatingSharedTable
+                        }
+                        data-testid={
+                          mode === "create"
+                            ? "create-table-name-input"
+                            : mode === "edit"
+                            ? "edit-table-name-input"
+                            : "invite-table-name-input"
                         }
                         {...field}
                       />
@@ -314,6 +322,13 @@ export default function CoopTodosCreateTodosForm({
                 <Button
                   type="submit"
                   disabled={isCreatingSharedTable || isUpdatingSharedTable}
+                  data-testid={
+                    mode === "create"
+                      ? "create-table-submit-button"
+                      : mode === "edit"
+                      ? "edit-table-submit-button"
+                      : "invite-table-submit-button"
+                  }
                 >
                   {mode === "edit"
                     ? isUpdatingSharedTable
@@ -343,6 +358,8 @@ export default function CoopTodosCreateTodosForm({
               <div key={index} className="flex space-x-2">
                 <Input
                   type="email"
+                  name="email"
+                  id={`email-${index}`}
                   value={email}
                   onChange={(e) => updateEmail(index, e.target.value)}
                   placeholder="email@example.com"

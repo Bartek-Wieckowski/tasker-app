@@ -138,10 +138,17 @@ export default function CoopTodos() {
                   className="w-full"
                 >
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="coop-todos-list">
+                    <TabsTrigger
+                      value="coop-todos-list"
+                      data-testid="coop-todos-list-tab"
+                    >
                       {t("coopTodos.listsOfTasks")}
                     </TabsTrigger>
-                    <TabsTrigger value="invitations" className="relative">
+                    <TabsTrigger
+                      value="invitations"
+                      className="relative"
+                      data-testid="coop-todos-invitations-tab"
+                    >
                       {t("coopTodos.invitations")}
                       <CoopTodosBadge />
                     </TabsTrigger>
@@ -160,7 +167,10 @@ export default function CoopTodos() {
                   <TabsContent value="invitations" className="space-y-4 mt-4">
                     <Tabs defaultValue="pending" className="w-full">
                       <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="pending">
+                        <TabsTrigger
+                          value="pending"
+                          data-testid="coop-todos-pending-tab"
+                        >
                           {t("coopTodos.pendingTab")}
                           {pendingInvitations &&
                             currentUser &&
@@ -177,10 +187,16 @@ export default function CoopTodos() {
                               </span>
                             )}
                         </TabsTrigger>
-                        <TabsTrigger value="sent">
+                        <TabsTrigger
+                          value="sent"
+                          data-testid="coop-todos-sent-tab"
+                        >
                           {t("coopTodos.sent")}
                         </TabsTrigger>
-                        <TabsTrigger value="received">
+                        <TabsTrigger
+                          value="received"
+                          data-testid="coop-todos-received-tab"
+                        >
                           {t("coopTodos.received")}
                         </TabsTrigger>
                       </TabsList>
