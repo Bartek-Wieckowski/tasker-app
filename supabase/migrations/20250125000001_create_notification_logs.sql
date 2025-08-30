@@ -25,14 +25,23 @@ CREATE INDEX "idx_notification_logs_status" ON "public"."notification_logs" ("st
 ALTER TABLE "public"."notification_logs" ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
-CREATE POLICY "Users can view their own notification logs" ON "public"."notification_logs"
-    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users and service role can view notification logs" ON "public"."notification_logs"
+    FOR SELECT USING (
+        (select auth.uid()) = user_id OR 
+        auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Users can insert their own notification logs" ON "public"."notification_logs"
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users and service role can insert notification logs" ON "public"."notification_logs"
+    FOR INSERT WITH CHECK (
+        (select auth.uid()) = user_id OR 
+        auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Service role can manage notification logs" ON "public"."notification_logs"
-    FOR ALL USING (auth.role() = 'service_role');
+CREATE POLICY "Service role can update notification logs" ON "public"."notification_logs"
+    FOR UPDATE USING (auth.role() = 'service_role');
+
+CREATE POLICY "Service role can delete notification logs" ON "public"."notification_logs"
+    FOR DELETE USING (auth.role() = 'service_role');
 
 -- Trigger for updated_at (if needed)
 CREATE TRIGGER update_notification_logs_updated_at 
@@ -48,6 +57,7 @@ CREATE OR REPLACE FUNCTION cleanup_old_notification_logs()
 RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   deleted_count integer;

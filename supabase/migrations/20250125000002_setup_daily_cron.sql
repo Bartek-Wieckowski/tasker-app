@@ -16,6 +16,7 @@ CREATE OR REPLACE FUNCTION trigger_daily_notifications(is_production boolean DEF
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   resp record;

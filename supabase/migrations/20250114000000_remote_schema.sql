@@ -27,6 +27,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 CREATE OR REPLACE FUNCTION "public"."deactivate_user"("p_user_id" "uuid") RETURNS "void"
     LANGUAGE "plpgsql"
+    set search_path = ''
     AS $$
 begin
   update public.db_users

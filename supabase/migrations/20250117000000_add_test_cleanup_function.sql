@@ -2,6 +2,7 @@ CREATE OR REPLACE FUNCTION public.clean_test_users()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+set search_path = ''
 AS $$
 BEGIN
   -- Clean up test users from application tables, e.g. db_users, profiles, etc.

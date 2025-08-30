@@ -7,6 +7,7 @@ CREATE OR REPLACE FUNCTION process_cyclic_todos_internal()
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   today_date text;
@@ -144,6 +145,7 @@ CREATE OR REPLACE FUNCTION manually_process_cyclic_todos()
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   RETURN process_cyclic_todos_internal();
@@ -168,6 +170,7 @@ CREATE OR REPLACE FUNCTION setup_cyclic_todos_test_cron(interval_minutes integer
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   cron_expression text;
@@ -203,6 +206,7 @@ CREATE OR REPLACE FUNCTION stop_cyclic_todos_test_cron()
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   PERFORM cron.unschedule('process-cyclic-todos-test');
@@ -226,6 +230,7 @@ RETURNS TABLE(
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   RETURN QUERY

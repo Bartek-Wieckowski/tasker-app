@@ -103,61 +103,64 @@ ALTER TABLE "public"."cyclic_todos" ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for todos table
 CREATE POLICY "Users can view their own todos" ON "public"."todos"
-    FOR SELECT USING (auth.uid() = user_id);
+    FOR SELECT USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can insert their own todos" ON "public"."todos"
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can update their own todos" ON "public"."todos"
-    FOR UPDATE USING (auth.uid() = user_id);
+    FOR UPDATE USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete their own todos" ON "public"."todos"
-    FOR DELETE USING (auth.uid() = user_id);
+    FOR DELETE USING ((select auth.uid()) = user_id);
 
 -- RLS Policies for delegated_todos table
 CREATE POLICY "Users can view delegated todos assigned to them" ON "public"."delegated_todos"
-    FOR SELECT USING (auth.uid() = user_id);
+    FOR SELECT USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can insert delegated todos" ON "public"."delegated_todos"
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can update delegated todos assigned to them" ON "public"."delegated_todos"
-    FOR UPDATE USING (auth.uid() = user_id);
+    FOR UPDATE USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete delegated todos assigned to them" ON "public"."delegated_todos"
-    FOR DELETE USING (auth.uid() = user_id);
+    FOR DELETE USING ((select auth.uid()) = user_id);
 
 -- RLS Policies for global_todos table
 CREATE POLICY "Users can view public global todos" ON "public"."global_todos"
-    FOR SELECT USING (auth.uid() = user_id);
+    FOR SELECT USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can insert global todos" ON "public"."global_todos"
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can update global todos they created or are assigned to" ON "public"."global_todos"
-    FOR UPDATE USING (auth.uid() = user_id);
+    FOR UPDATE USING ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can delete global todos they created" ON "public"."global_todos"
-    FOR DELETE USING (auth.uid() = user_id);
+    FOR DELETE USING ((select auth.uid()) = user_id);
 
 -- RLS Policies for cyclic_todos table
 CREATE POLICY "Users can view cyclic todos assigned to them" ON "public"."cyclic_todos"
-    FOR SELECT USING (auth.uid() = user_id);
+    FOR SELECT USING ((select auth.uid()) = user_id);
 
 
 CREATE POLICY "Users can insert cyclic todos" ON "public"."cyclic_todos"
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can update cyclic todos assigned to them" ON "public"."cyclic_todos"
-    FOR UPDATE USING (auth.uid() = user_id);
+    FOR UPDATE USING ((select auth.uid()) = user_id);
 
 
 CREATE POLICY "Users can delete cyclic todos assigned to them" ON "public"."cyclic_todos"
-    FOR DELETE USING (auth.uid() = user_id);
+    FOR DELETE USING ((select auth.uid()) = user_id);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
     NEW.updated_at = now();
     RETURN NEW;

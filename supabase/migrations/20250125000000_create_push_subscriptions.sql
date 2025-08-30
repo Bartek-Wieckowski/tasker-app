@@ -38,17 +38,26 @@ ON "public"."push_subscriptions" ("user_id", "endpoint");
 ALTER TABLE "public"."push_subscriptions" ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
-CREATE POLICY "Users can view their own subscriptions" ON "public"."push_subscriptions"
-    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users and service role can view subscriptions" ON "public"."push_subscriptions"
+    FOR SELECT USING (
+        (select auth.uid()) = user_id OR 
+        auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Users can insert their own subscriptions" ON "public"."push_subscriptions"
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users and service role can insert subscriptions" ON "public"."push_subscriptions"
+    FOR INSERT WITH CHECK (
+        (select auth.uid()) = user_id OR 
+        auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Users can update their own subscriptions" ON "public"."push_subscriptions"
-    FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users and service role can update subscriptions" ON "public"."push_subscriptions"
+    FOR UPDATE USING (
+        (select auth.uid()) = user_id OR 
+        auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Service role can access all subscriptions" ON "public"."push_subscriptions"
-    FOR ALL USING (auth.role() = 'service_role');
+CREATE POLICY "Service role can delete subscriptions" ON "public"."push_subscriptions"
+    FOR DELETE USING (auth.role() = 'service_role');
 
 -- Trigger for updated_at
 CREATE TRIGGER update_push_subscriptions_updated_at 
@@ -64,6 +73,7 @@ CREATE OR REPLACE FUNCTION cleanup_inactive_push_subscriptions()
 RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   deleted_count integer;

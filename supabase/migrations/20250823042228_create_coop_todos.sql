@@ -80,7 +80,10 @@ CREATE INDEX IF NOT EXISTS "idx_invitations_status" ON "coop_invitations"("statu
 
 -- 5. Triggers for updated_at and tracking changes
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
@@ -89,7 +92,10 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger for automatically setting who_updated
 CREATE OR REPLACE FUNCTION set_who_updated()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
     -- Set who_updated on each update
     NEW.who_updated = auth.uid();
@@ -130,11 +136,15 @@ ALTER TABLE coop_invitations ENABLE ROW LEVEL SECURITY;
 
 -- Helper function to get the email of the current user
 CREATE OR REPLACE FUNCTION current_user_email()
-RETURNS TEXT AS $$
+RETURNS TEXT
+SECURITY DEFINER
+STABLE
+SET search_path = ''
+AS $$
 BEGIN
     RETURN (SELECT email FROM db_users WHERE id = auth.uid());
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql;
 
 -- Policies for coop_todos_shared - only sees tables where it is a member
 CREATE POLICY "Users can view tables they are members of" ON coop_todos_shared
@@ -144,15 +154,15 @@ CREATE POLICY "Users can view tables they are members of" ON coop_todos_shared
 
 CREATE POLICY "Users can create shared tables" ON coop_todos_shared
     FOR INSERT WITH CHECK (
-        owner_user_id = auth.uid() AND 
+        owner_user_id = (select auth.uid()) AND 
         current_user_email() = ANY(member_emails)
     );
 
 CREATE POLICY "Owners can update their tables" ON coop_todos_shared
-    FOR UPDATE USING (owner_user_id = auth.uid());
+    FOR UPDATE USING (owner_user_id = (select auth.uid()));
 
 CREATE POLICY "Owners can delete their tables" ON coop_todos_shared
-    FOR DELETE USING (owner_user_id = auth.uid());
+    FOR DELETE USING (owner_user_id = (select auth.uid()));
 
 -- Policies for coop_todos - only sees todos from tables where it is a member
 CREATE POLICY "Users can view todos from accessible tables" ON coop_todos
@@ -167,7 +177,7 @@ CREATE POLICY "Users can view todos from accessible tables" ON coop_todos
 
 CREATE POLICY "Users can insert todos to accessible tables" ON coop_todos
     FOR INSERT WITH CHECK (
-        creator_user_id = auth.uid() AND
+        creator_user_id = (select auth.uid()) AND
         EXISTS (
             SELECT 1 FROM coop_todos_shared cts
             WHERE cts.id = shared_table_id
@@ -200,14 +210,14 @@ CREATE POLICY "Users can delete todos in accessible tables" ON coop_todos
 -- Policies for coop_invitations
 CREATE POLICY "Users can view relevant invitations" ON coop_invitations
     FOR SELECT USING (
-        inviter_user_id = auth.uid() OR 
-        invitee_user_id = auth.uid() OR 
+        inviter_user_id = (select auth.uid()) OR 
+        invitee_user_id = (select auth.uid()) OR 
         invitee_email = current_user_email()
     );
 
 CREATE POLICY "Members can create invitations" ON coop_invitations
     FOR INSERT WITH CHECK (
-        inviter_user_id = auth.uid() AND
+        inviter_user_id = (select auth.uid()) AND
         EXISTS (
             SELECT 1 FROM coop_todos_shared cts
             WHERE cts.id = shared_table_id
@@ -217,7 +227,7 @@ CREATE POLICY "Members can create invitations" ON coop_invitations
 
 CREATE POLICY "Invitees can update invitations" ON coop_invitations
     FOR UPDATE USING (
-        invitee_user_id = auth.uid() OR 
+        invitee_user_id = (select auth.uid()) OR 
         invitee_email = current_user_email()
     );
 
@@ -227,7 +237,11 @@ CREATE POLICY "Invitees can update invitations" ON coop_invitations
 CREATE OR REPLACE FUNCTION create_shared_todos_table(
     p_table_name TEXT,
     p_description TEXT DEFAULT NULL
-) RETURNS UUID AS $$
+)
+RETURNS UUID
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 DECLARE
     table_id UUID;
     user_email TEXT;
@@ -252,13 +266,17 @@ BEGIN
     
     RETURN table_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 -- Inviting to shared table
 CREATE OR REPLACE FUNCTION invite_to_shared_table(
     p_shared_table_id UUID,
     p_invitee_email TEXT
-) RETURNS UUID AS $$
+)
+RETURNS UUID
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 DECLARE
     invitation_id UUID;
     current_user_email TEXT;
@@ -326,12 +344,16 @@ BEGIN
     
     RETURN invitation_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 -- Accepting an invitation
 CREATE OR REPLACE FUNCTION accept_invitation(
     p_invitation_id UUID
-) RETURNS BOOLEAN AS $$
+)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 DECLARE
     invitation_record RECORD;
     user_email TEXT;
@@ -364,12 +386,16 @@ BEGIN
     
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 -- Decline an invitation
 CREATE OR REPLACE FUNCTION decline_invitation(
     p_invitation_id UUID
-) RETURNS BOOLEAN AS $$
+)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 DECLARE
     user_email TEXT;
 BEGIN
@@ -387,13 +413,17 @@ BEGIN
     
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 -- Leaving a table / deleting a member
 CREATE OR REPLACE FUNCTION leave_shared_table(
     p_shared_table_id UUID,
     p_email_to_remove TEXT DEFAULT NULL
-) RETURNS BOOLEAN AS $$
+)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 DECLARE
     current_user_email TEXT;
     target_email TEXT;
@@ -432,7 +462,7 @@ BEGIN
     
     RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 -- 8. Helper views
 
