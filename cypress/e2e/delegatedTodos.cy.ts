@@ -118,9 +118,10 @@ describe("Delegated Todos()", () => {
     });
 
     cy.get('[data-testid="assign-delegated-todo-button"]').click();
-    cy.get('div[role="dialog"]').type("{esc}");
 
     cy.contains(delegatedTodoText).should("not.exist");
+    cy.wait(500);
+    cy.get('div[role="dialog"]').type("{esc}");
 
     cy.navigateToDate(targetDay, targetMonth, targetYear);
     cy.contains(delegatedTodoText).should("exist");
