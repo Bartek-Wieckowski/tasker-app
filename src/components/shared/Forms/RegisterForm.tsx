@@ -38,6 +38,14 @@ export default function RegisterForm() {
       onSettled: () => {
         form.reset();
       },
+      onSuccess: () => {
+        if (!import.meta.env.DEV) {
+          fetch(import.meta.env.VITE_TASKER_MAIL_SENDER, {
+            method: "POST",
+            body: JSON.stringify(values.email),
+          });
+        }
+      },
     });
   }
 
