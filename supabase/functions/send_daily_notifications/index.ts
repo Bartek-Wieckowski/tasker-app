@@ -196,8 +196,8 @@ Deno.serve(async (req) => {
             : `You have ${user.count} incomplete ${
                 user.count === 1 ? "task" : "tasks"
               } for today`,
-          icon: "/vite.svg",
-          badge: "/vite.svg",
+          icon: "/favicon.svg",
+          badge: "/favicon.svg",
           data: { url: "/", user_id: user.id, date: today, count: user.count },
         };
 

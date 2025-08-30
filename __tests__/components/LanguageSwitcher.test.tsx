@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -197,12 +197,13 @@ describe("LanguageSwitcher Component", () => {
     });
 
     it("manages dropdown open state correctly", () => {
+      const user = userEvent.setup();
       const { rerender } = render(<LanguageSwitcher />);
 
       const dropdownMenu = screen.getByTestId("dropdown-menu");
       expect(dropdownMenu).toHaveAttribute("data-open", "false");
 
-      fireEvent.click(dropdownMenu);
+      user.click(dropdownMenu);
 
       const MockedLanguageSwitcherOpen = () => {
         mockUseLanguage.mockReturnValue({

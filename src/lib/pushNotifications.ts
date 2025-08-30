@@ -279,7 +279,7 @@ export async function showTestNotification(): Promise<void> {
   // Test notification
   new Notification("Test notification", {
     body: "To jest testowe powiadomienie z Tasker App!",
-    icon: "/vite.svg",
+    icon: "/favicon.svg",
     tag: "test-notification",
   });
 }

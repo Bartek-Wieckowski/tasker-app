@@ -88,7 +88,9 @@
     "description3": "Powiadomienia tylko gdy masz aktywne zadania",
     "description4": "Możesz je wyłączyć w każdej chwili",
     "enabled": "Włączone",
-    "disabled": "Wyłączone"
+    "disabled": "Wyłączone",
+    "testTitle": "Testowe powiadomienie",
+    "testBody": "To jest testowe powiadomienie z aplikacji Tasker!"
   },
   "toastMsg": {
     "welcomeMessage": "Witaj w Tasker!",
