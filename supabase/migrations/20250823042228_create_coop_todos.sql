@@ -142,7 +142,7 @@ STABLE
 SET search_path = ''
 AS $$
 BEGIN
-    RETURN (SELECT email FROM db_users WHERE id = auth.uid());
+    RETURN (SELECT email FROM public.db_users WHERE id = auth.uid());
 END;
 $$ LANGUAGE plpgsql;
 
@@ -168,7 +168,7 @@ CREATE POLICY "Owners can delete their tables" ON coop_todos_shared
 CREATE POLICY "Users can view todos from accessible tables" ON coop_todos
     FOR SELECT USING (
         EXISTS (
-            SELECT 1 FROM coop_todos_shared cts
+            SELECT 1 FROM public.coop_todos_shared cts
             WHERE cts.id = coop_todos.shared_table_id
             AND current_user_email() = ANY(cts.member_emails)
             AND cts.is_active = true
@@ -179,7 +179,7 @@ CREATE POLICY "Users can insert todos to accessible tables" ON coop_todos
     FOR INSERT WITH CHECK (
         creator_user_id = (select auth.uid()) AND
         EXISTS (
-            SELECT 1 FROM coop_todos_shared cts
+            SELECT 1 FROM public.coop_todos_shared cts
             WHERE cts.id = shared_table_id
             AND current_user_email() = ANY(cts.member_emails)
             AND cts.is_active = true
@@ -189,7 +189,7 @@ CREATE POLICY "Users can insert todos to accessible tables" ON coop_todos
 CREATE POLICY "Users can update todos in accessible tables" ON coop_todos
     FOR UPDATE USING (
         EXISTS (
-            SELECT 1 FROM coop_todos_shared cts
+            SELECT 1 FROM public.coop_todos_shared cts
             WHERE cts.id = coop_todos.shared_table_id
             AND current_user_email() = ANY(cts.member_emails)
             AND cts.is_active = true
@@ -200,7 +200,7 @@ CREATE POLICY "Users can update todos in accessible tables" ON coop_todos
 CREATE POLICY "Users can delete todos in accessible tables" ON coop_todos
     FOR DELETE USING (
         EXISTS (
-            SELECT 1 FROM coop_todos_shared cts
+            SELECT 1 FROM public.coop_todos_shared cts
             WHERE cts.id = coop_todos.shared_table_id
             AND current_user_email() = ANY(cts.member_emails)
             AND cts.is_active = true
@@ -219,7 +219,7 @@ CREATE POLICY "Members can create invitations" ON coop_invitations
     FOR INSERT WITH CHECK (
         inviter_user_id = (select auth.uid()) AND
         EXISTS (
-            SELECT 1 FROM coop_todos_shared cts
+            SELECT 1 FROM public.coop_todos_shared cts
             WHERE cts.id = shared_table_id
             AND current_user_email() = ANY(cts.member_emails)
         )
@@ -246,13 +246,13 @@ DECLARE
     table_id UUID;
     user_email TEXT;
 BEGIN
-    SELECT email INTO user_email FROM db_users WHERE id = auth.uid();
+    SELECT email INTO user_email FROM public.db_users WHERE id = auth.uid();
     
     IF user_email IS NULL THEN
         RAISE EXCEPTION 'User is not logged in or does not exist';
     END IF;
     
-    INSERT INTO coop_todos_shared (
+    INSERT INTO public.coop_todos_shared (
         table_name,
         description,
         owner_user_id,
@@ -283,11 +283,11 @@ DECLARE
     invitee_user_id UUID;
     existing_invitation_id UUID;
 BEGIN
-    SELECT email INTO current_user_email FROM db_users WHERE id = auth.uid();
+    SELECT email INTO current_user_email FROM public.db_users WHERE id = auth.uid();
     
     -- Check if the inviting user has access to the table
     IF NOT EXISTS (
-        SELECT 1 FROM coop_todos_shared 
+        SELECT 1 FROM public.coop_todos_shared 
         WHERE id = p_shared_table_id 
         AND current_user_email = ANY(member_emails)
         AND is_active = true
@@ -297,15 +297,15 @@ BEGIN
     
     -- Check if the email is already a member
     IF EXISTS (
-        SELECT 1 FROM coop_todos_shared 
+        SELECT 1 FROM public.coop_todos_shared 
         WHERE id = p_shared_table_id 
         AND p_invitee_email = ANY(member_emails)
     ) THEN
         RAISE EXCEPTION 'This email already has access to the table';
     END IF;
     
-    -- Check if the user with this email exists in db_users
-    SELECT id INTO invitee_user_id FROM db_users WHERE email = p_invitee_email;
+    -- Check if the user with this email exists in public.db_users
+    SELECT id INTO invitee_user_id FROM public.db_users WHERE email = p_invitee_email;
     
     IF invitee_user_id IS NULL THEN
         RAISE EXCEPTION 'User with email % does not exist in the system', p_invitee_email;
@@ -313,13 +313,13 @@ BEGIN
     
     -- Check if there is already an invitation for this email and table
     SELECT id INTO existing_invitation_id 
-    FROM coop_invitations 
+    FROM public.coop_invitations 
     WHERE shared_table_id = p_shared_table_id 
     AND invitee_email = p_invitee_email;
     
     IF existing_invitation_id IS NOT NULL THEN
         -- Update existing invitation
-        UPDATE coop_invitations 
+        UPDATE public.coop_invitations 
         SET 
             status = 'pending',
             expires_at = NOW() + interval '7 days',
@@ -329,7 +329,7 @@ BEGIN
         RETURNING id INTO invitation_id;
     ELSE
         -- Create a new invitation
-        INSERT INTO coop_invitations (
+        INSERT INTO public.coop_invitations (
             shared_table_id,
             inviter_user_id,
             invitee_email,
@@ -358,11 +358,11 @@ DECLARE
     invitation_record RECORD;
     user_email TEXT;
 BEGIN
-    SELECT email INTO user_email FROM db_users WHERE id = auth.uid();
+    SELECT email INTO user_email FROM public.db_users WHERE id = auth.uid();
     
     -- Get the invitation
     SELECT * INTO invitation_record
-    FROM coop_invitations 
+    FROM public.coop_invitations 
     WHERE id = p_invitation_id 
     AND (invitee_user_id = auth.uid() OR invitee_email = user_email)
     AND status = 'pending'
@@ -373,12 +373,12 @@ BEGIN
     END IF;
     
     -- KEY PART: Add email to member_emails in shared table
-    UPDATE coop_todos_shared 
+    UPDATE public.coop_todos_shared 
     SET member_emails = array_append(member_emails, user_email)
     WHERE id = invitation_record.shared_table_id;
     
     -- Mark the invitation as accepted and set user_id if not set
-    UPDATE coop_invitations 
+    UPDATE public.coop_invitations 
     SET 
         status = 'accepted',
         invitee_user_id = COALESCE(invitee_user_id, auth.uid())
@@ -399,9 +399,9 @@ AS $$
 DECLARE
     user_email TEXT;
 BEGIN
-    SELECT email INTO user_email FROM db_users WHERE id = auth.uid();
+    SELECT email INTO user_email FROM public.db_users WHERE id = auth.uid();
     
-    UPDATE coop_invitations 
+    UPDATE public.coop_invitations 
     SET status = 'declined'
     WHERE id = p_invitation_id 
     AND (invitee_user_id = auth.uid() OR invitee_email = user_email)
@@ -429,7 +429,7 @@ DECLARE
     target_email TEXT;
     table_record RECORD;
 BEGIN
-    SELECT email INTO current_user_email FROM db_users WHERE id = auth.uid();
+    SELECT email INTO current_user_email FROM public.db_users WHERE id = auth.uid();
     
     -- If no email is provided, use your own
     target_email := COALESCE(p_email_to_remove, current_user_email);
@@ -437,8 +437,8 @@ BEGIN
     -- Get information about the table
     SELECT cts.*, du.email as owner_email 
     INTO table_record
-    FROM coop_todos_shared cts
-    JOIN db_users du ON du.id = cts.owner_user_id
+    FROM public.coop_todos_shared cts
+    JOIN public.db_users du ON du.id = cts.owner_user_id
     WHERE cts.id = p_shared_table_id;
     
     IF NOT FOUND THEN
@@ -456,7 +456,7 @@ BEGIN
     END IF;
     
     -- Remove email from member_emails
-    UPDATE coop_todos_shared 
+    UPDATE public.coop_todos_shared 
     SET member_emails = array_remove(member_emails, target_email)
     WHERE id = p_shared_table_id;
     
@@ -476,8 +476,8 @@ SELECT
         ELSE 'member'
     END as my_role,
     array_length(cts.member_emails, 1) as member_count
-FROM coop_todos_shared cts
-JOIN db_users du ON du.id = cts.owner_user_id
+FROM public.coop_todos_shared cts
+JOIN public.db_users du ON du.id = cts.owner_user_id
 WHERE current_user_email() = ANY(cts.member_emails)
 AND cts.is_active = true;
 
@@ -494,12 +494,12 @@ SELECT
         WHEN ct.creator_user_id = auth.uid() THEN 'own'
         ELSE 'shared'
     END as todo_type
-FROM coop_todos ct
-JOIN coop_todos_shared cts ON cts.id = ct.shared_table_id
-JOIN db_users owner_du ON owner_du.id = cts.owner_user_id
-JOIN db_users creator_du ON creator_du.id = ct.creator_user_id
-LEFT JOIN db_users updated_du ON updated_du.id = ct.who_updated
-LEFT JOIN db_users completed_du ON completed_du.id = ct.who_completed
+FROM public.coop_todos ct
+JOIN public.coop_todos_shared cts ON cts.id = ct.shared_table_id
+JOIN public.db_users owner_du ON owner_du.id = cts.owner_user_id
+JOIN public.db_users creator_du ON creator_du.id = ct.creator_user_id
+LEFT JOIN public.db_users updated_du ON updated_du.id = ct.who_updated
+LEFT JOIN public.db_users completed_du ON completed_du.id = ct.who_completed
 WHERE current_user_email() = ANY(cts.member_emails)
 AND cts.is_active = true;
 
@@ -510,9 +510,9 @@ SELECT
     cts.table_name,
     cts.description,
     inviter_du.email as inviter_email
-FROM coop_invitations ci
-JOIN coop_todos_shared cts ON cts.id = ci.shared_table_id
-JOIN db_users inviter_du ON inviter_du.id = ci.inviter_user_id
+FROM public.coop_invitations ci
+JOIN public.coop_todos_shared cts ON cts.id = ci.shared_table_id
+JOIN public.db_users inviter_du ON inviter_du.id = ci.inviter_user_id
 WHERE (ci.invitee_user_id = auth.uid() OR ci.invitee_email = current_user_email())
 AND ci.status = 'pending'
 AND ci.expires_at > NOW();
@@ -531,9 +531,9 @@ SELECT
     cts.table_name,
     cts.description,
     invitee_du.email as invitee_user_email
-FROM coop_invitations ci
-JOIN coop_todos_shared cts ON cts.id = ci.shared_table_id
-LEFT JOIN db_users invitee_du ON invitee_du.id = ci.invitee_user_id
+FROM public.coop_invitations ci
+JOIN public.coop_todos_shared cts ON cts.id = ci.shared_table_id
+LEFT JOIN public.db_users invitee_du ON invitee_du.id = ci.invitee_user_id
 WHERE ci.inviter_user_id = auth.uid();
 
 -- My received invitations (all statuses)
@@ -550,7 +550,7 @@ SELECT
     cts.table_name,
     cts.description,
     inviter_du.email as inviter_email
-FROM coop_invitations ci
-JOIN coop_todos_shared cts ON cts.id = ci.shared_table_id
-JOIN db_users inviter_du ON inviter_du.id = ci.inviter_user_id
+FROM public.coop_invitations ci
+JOIN public.coop_todos_shared cts ON cts.id = ci.shared_table_id
+JOIN public.db_users inviter_du ON inviter_du.id = ci.inviter_user_id
 WHERE (ci.invitee_user_id = auth.uid() OR ci.invitee_email = current_user_email());
