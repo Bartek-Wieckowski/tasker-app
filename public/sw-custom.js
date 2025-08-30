@@ -4,7 +4,7 @@ console.log("🔧 Loading simple SW with push notifications...");
 
 // Cache name
 const CACHE_NAME = "tasker-app-v1";
-const urlsToCache = ["/", "/index.html", "/vite.svg"];
+const urlsToCache = ["/", "/index.html", "/favicon.svg"];
 
 // Install event - cache resources
 self.addEventListener("install", function (event) {
@@ -65,32 +65,33 @@ self.addEventListener("push", function (event) {
   });
 
   let notificationData = {
-    title: "Niezrealizowane zadania",
-    body: "Masz niezrealizowane zadania na dziś",
-    icon: "/vite.svg",
-    badge: "/vite.svg",
+    // title: "Incomplete tasks",
+    // body: "You have incomplete tasks",
+    icon: "/favicon.svg",
+    badge: "/favicon.svg",
     data: { url: "/" },
   };
 
-  // Parsowanie danych z powiadomienia
+  // Parse notification data from server (this should always have data)
   if (event.data) {
     try {
       const pushData = event.data.json();
-      console.log("📦 Push data parsed:", pushData);
-      notificationData = {
-        ...notificationData,
-        ...pushData,
-      };
+      console.log("📦 Push data received from server:", pushData);
+
+      // Use server data directly (server always sends complete notification)
+      notificationData = pushData;
+      console.log("✅ Using server notification data:", notificationData);
     } catch (e) {
-      console.warn("❌ Could not parse push data:", e);
+      console.warn("❌ Could not parse push data, using fallback:", e);
       try {
-        console.log("📝 Raw push data:", event.data.text());
+        const rawText = event.data.text();
+        console.log("📝 Raw push data as text:", rawText);
       } catch (textError) {
-        console.log("📝 Could not get text data either");
+        console.log("📝 Could not get text data either:", textError);
       }
     }
   } else {
-    console.log("⚠️ No data in push event");
+    console.log("⚠️ No data in push event, using fallback");
   }
 
   const options = {
@@ -98,17 +99,18 @@ self.addEventListener("push", function (event) {
     icon: notificationData.icon,
     badge: notificationData.badge,
     data: notificationData.data,
-    actions: [
-      {
-        action: "view",
-        title: "Zobacz zadania",
-        icon: "/vite.svg",
-      },
-      {
-        action: "dismiss",
-        title: "Zamknij",
-      },
-    ],
+    // actions: [
+    //   {
+    //     action: "view",
+    //     title: "View tasks",
+    //     icon: "/favicon.svg",
+    //   },
+    //   {
+    //     action: "dismiss",
+    //     title: "Dismiss",
+    //   },
+    // ],
+    actions: [],
     requireInteraction: false,
     tag: "daily-todo-reminder",
     renotify: true,
@@ -131,7 +133,7 @@ self.addEventListener("push", function (event) {
   );
 });
 
-// Obsługa kliknięć w powiadomienia
+// Handle notification clicks
 self.addEventListener("notificationclick", function (event) {
   console.log("🖱️ Notification clicked:", event);
 
@@ -141,21 +143,21 @@ self.addEventListener("notificationclick", function (event) {
     return;
   }
 
-  // Otwórz aplikację lub przejdź do zadań
+  // Open app or navigate to tasks
   const urlToOpen = event.notification.data?.url || "/";
 
   event.waitUntil(
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
-        // Sprawdź czy okno jest już otwarte
+        // Check if window is already open
         for (const client of clientList) {
           if (client.url.includes(urlToOpen) && "focus" in client) {
             return client.focus();
           }
         }
 
-        // Otwórz nowe okno
+        // Open new window
         if (clients.openWindow) {
           return clients.openWindow(urlToOpen);
         }
@@ -163,7 +165,7 @@ self.addEventListener("notificationclick", function (event) {
   );
 });
 
-// Obsługa zamknięcia powiadomień
+// Handle notification close
 self.addEventListener("notificationclose", function (event) {
   console.log("❌ Notification closed:", event);
 });

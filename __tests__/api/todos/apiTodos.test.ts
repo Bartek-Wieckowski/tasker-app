@@ -11,7 +11,7 @@ import {
   updateTodoCompletionStatus,
 } from "@/api/apiTodos";
 import { mockSupabase } from "../../setup";
-import { TodoRow, TodoSearchResult } from "@/types/types";
+import { TodoSearchResult } from "@/types/types";
 
 describe("apiTodos", () => {
   describe("getUserTodos()", () => {
@@ -342,6 +342,7 @@ describe("apiTodos", () => {
             is_completed: false,
             todo_date: "2024-01-15",
             created_at: "2024-01-15T10:00:00Z",
+            order_index: 1,
             from_delegated: null,
             image_url: null,
             is_independent_edit: null,
@@ -358,6 +359,7 @@ describe("apiTodos", () => {
             is_completed: false,
             todo_date: "2024-01-15",
             created_at: "2024-01-15T09:00:00Z",
+            order_index: 2,
             from_delegated: null,
             image_url: null,
             is_independent_edit: null,

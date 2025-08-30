@@ -1,12 +1,13 @@
 -- Enable pg_cron extension (może już być włączone w Supabase)
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
--- Funkcja która bezpośrednio przetwarza cyclic todos (bez wywołania Edge Function)
--- Ta wersja używa dokładnie tej samej logiki co Edge Function ale działa wewnątrz bazy
+-- Function that directly processes cyclic todos (without calling Edge Function)
+-- This version uses exactly the same logic as Edge Function but runs inside the database
 CREATE OR REPLACE FUNCTION process_cyclic_todos_internal()
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   today_date text;
@@ -144,6 +145,7 @@ CREATE OR REPLACE FUNCTION manually_process_cyclic_todos()
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   RETURN process_cyclic_todos_internal();
@@ -168,6 +170,7 @@ CREATE OR REPLACE FUNCTION setup_cyclic_todos_test_cron(interval_minutes integer
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   cron_expression text;
@@ -203,6 +206,7 @@ CREATE OR REPLACE FUNCTION stop_cyclic_todos_test_cron()
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   PERFORM cron.unschedule('process-cyclic-todos-test');
@@ -226,6 +230,7 @@ RETURNS TABLE(
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   RETURN QUERY

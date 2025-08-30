@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Info } from "lucide-react";
-import { useNotifications } from "../../../hooks/useNotifications";
+import { useNotificationContext } from "../../../contexts/NotificationContext";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import { Button } from "../../ui/button";
 import { useTranslation } from "react-i18next";
 
-export const UserSettingsNotifications = () => {
+export default function UserSettingsNotifications() {
   const {
     isEnabled,
     isSupported,
@@ -13,16 +13,14 @@ export const UserSettingsNotifications = () => {
     canEnable,
     enableNotifications,
     disableNotifications,
-  } = useNotifications();
+  } = useNotificationContext();
   const { t } = useTranslation();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-        <span className="text-sm text-gray-600">
-          {t("userSettingsNotifications.loading")}
-        </span>
+        <span className="text-sm text-gray-600">{t("app.loading")}</span>
       </div>
     );
   }
@@ -38,14 +36,10 @@ export const UserSettingsNotifications = () => {
   }
 
   const handleToggleNotifications = async (enabled: boolean) => {
-    try {
-      if (enabled) {
-        await enableNotifications();
-      } else {
-        await disableNotifications();
-      }
-    } catch (error) {
-      // Error handled silently
+    if (enabled) {
+      await enableNotifications();
+    } else {
+      await disableNotifications();
     }
   };
 
@@ -114,4 +108,4 @@ export const UserSettingsNotifications = () => {
       </div>
     </div>
   );
-};
+}

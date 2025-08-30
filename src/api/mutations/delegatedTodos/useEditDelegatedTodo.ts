@@ -8,6 +8,7 @@ export function useEditDelegatedTodo(accountId: string) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
   const { mutate: editDelegatedTodoItem, isPending: isEditingDelegatedTodo } =
     useMutation({
       mutationFn: ({
@@ -21,11 +22,11 @@ export function useEditDelegatedTodo(accountId: string) {
         queryClient.invalidateQueries({
           queryKey: [QUERY_KEYS.delegatedTodos],
         });
-        toast({ title: t("toastMsg.delegatedTodoUpdated") });
+        toast({ title: t("toastMsg.todoUpdated") });
       },
       onError: () => {
         toast({
-          title: t("toastMsg.delegatedTodoUpdatedFailed"),
+          title: t("toastMsg.todosFailed"),
           variant: "destructive",
         });
       },

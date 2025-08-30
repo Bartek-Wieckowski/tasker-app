@@ -183,7 +183,6 @@ async function getCurrentUserAvatar(userId: string, currentAvatarUrl?: string) {
     return currentAvatarUrl;
   }
 
-  // Use consistent starter avatar as fallback
   return STARTER_USER_AVATAR_URL;
 }
 

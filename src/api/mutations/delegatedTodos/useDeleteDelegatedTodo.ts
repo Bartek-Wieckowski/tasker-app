@@ -8,6 +8,7 @@ export function useDeleteDelegatedTodo(accountId: string) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
   const {
     mutate: deleteDelegatedTodoItem,
     isPending: isDeletingDelegatedTodo,
@@ -17,11 +18,11 @@ export function useDeleteDelegatedTodo(accountId: string) {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.delegatedTodos],
       });
-      toast({ title: t("toastMsg.delegatedTodoDeleted") });
+      toast({ title: t("toastMsg.todoDeleted") });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.delegatedTodoDeletedFailed"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

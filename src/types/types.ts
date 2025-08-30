@@ -1,4 +1,4 @@
-import { Database, TablesInsert } from "./supabase";
+import { Database, Tables, TablesInsert } from "./supabase";
 
 export type NewUser = {
   username: string;
@@ -35,6 +35,17 @@ export type UserProfileUpdates = {
 };
 export type UpdateUserPassword = {
   password: string;
+};
+
+export type SearchGlobalContextType = {
+  searchValueGlobal: string;
+  setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;
+  isGlobalSearch: boolean;
+  setIsGlobalSearch: React.Dispatch<React.SetStateAction<boolean>>;
+  globalSearchResult: TodoSearchResult[];
+  setGlobalSearchResult: React.Dispatch<
+    React.SetStateAction<TodoSearchResult[]>
+  >;
 };
 
 export type TodoRow = Database["public"]["Tables"]["todos"]["Row"];
@@ -75,13 +86,13 @@ export type CyclicTodoInsert =
 export type CyclicTodoUpdate =
   Database["public"]["Tables"]["cyclic_todos"]["Update"];
 
-export type SearchGlobalContextType = {
-  searchValueGlobal: string;
-  setSearchValueGlobal: React.Dispatch<React.SetStateAction<string>>;
-  isGlobalSearch: boolean;
-  setIsGlobalSearch: React.Dispatch<React.SetStateAction<boolean>>;
-  globalSearchResult: TodoSearchResult[];
-  setGlobalSearchResult: React.Dispatch<
-    React.SetStateAction<TodoSearchResult[]>
-  >;
-};
+// Typy dla cooperative todos
+export type CoopTodoShared = Tables<"coop_todos_shared">;
+export type CoopTodo = Tables<"coop_todos">;
+export type CoopInvitation = Tables<"coop_invitations">;
+
+export type CoopTodoRow = Database["public"]["Tables"]["coop_todos"]["Row"];
+export type CoopTodoInsert =
+  Database["public"]["Tables"]["coop_todos"]["Insert"];
+export type CoopTodoUpdate =
+  Database["public"]["Tables"]["coop_todos"]["Update"];

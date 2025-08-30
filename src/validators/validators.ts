@@ -4,40 +4,36 @@ import { TFunction } from "i18next";
 export const registerFormSchema = (t: TFunction) =>
   z.object({
     username: z.string().min(2, {
-      message: t("registerPage.usernameMinLength"),
+      message: t("common.usernameMinLength"),
     }),
     email: z.string().email({
-      message: t("registerPage.emailInvalid"),
+      message: t("common.emailInvalid"),
     }),
-    password: z
-      .string()
-      .min(8, { message: t("registerPage.passwordMinLength") }),
+    password: z.string().min(8, { message: t("common.passwordMinLength") }),
   });
 
 export const loginFormSchema = (t: TFunction) =>
   z.object({
     email: z.string().email({
-      message: t("loginPage.emailInvalid"),
+      message: t("common.emailInvalid"),
     }),
-    password: z.string().min(8, { message: t("loginPage.passwordMinLength") }),
+    password: z.string().min(8, { message: t("common.passwordMinLength") }),
   });
 
 export const userSettingsFormInfoSchema = (t: TFunction) =>
   z.object({
     username: z.string().min(2, {
-      message: t("userSettingsForm.usernameMinLength"),
+      message: t("common.usernameMinLength"),
     }),
     email: z.string().email({
-      message: t("userSettingsForm.emailInvalid"),
+      message: t("common.emailInvalid"),
     }),
     imageUrl: z.custom<File>(),
   });
 
 export const userSettingsFormPasswordSchema = (t: TFunction) =>
   z.object({
-    password: z
-      .string()
-      .min(8, { message: t("userSettingsForm.passwordMinLength") }),
+    password: z.string().min(8, { message: t("common.passwordMinLength") }),
   });
 
 export const todoFormSchema = (t: TFunction) =>
@@ -45,34 +41,56 @@ export const todoFormSchema = (t: TFunction) =>
     todo: z
       .string()
       .min(2, {
-        message: t("todoForm.todoMinLength"),
+        message: t("common.todoMinLength"),
       })
       .max(70, {
-        message: t("todoForm.todoMaxLength"),
+        message: t("common.todoMaxLength"),
       }),
-    todo_more_content: z.optional(z.string()),
+    todo_more_content: z.optional(
+      z.string().max(500, {
+        message: t("common.todoMoreContentMaxLength"),
+      })
+    ),
     imageFile: z.optional(z.custom<File>()),
   });
 
 export const delegatedTodoFormSchema = (t: TFunction) =>
   z.object({
     todo: z.string().min(2, {
-      message: t("delegatedTodoForm.todoTaskIsRequired"),
+      message: t("common.todoTaskIsRequired"),
     }),
   });
 
 export const globalTodoFormSchema = (t: TFunction) =>
   z.object({
     todo: z.string().min(2, {
-      message: t("globalTodoForm.todoTaskIsRequired"),
+      message: t("common.todoTaskIsRequired"),
     }),
   });
 
 export const cyclicTodoFormSchema = (t: TFunction) =>
   z.object({
     todo: z.string().min(2, {
-      message: t("cyclicTodoForm.todoTaskIsRequired"),
+      message: t("common.todoTaskIsRequired"),
     }),
+  });
+
+export const createTableSchema = (t: TFunction) =>
+  z.object({
+    tableName: z
+      .string()
+      .min(2, {
+        message: t("coopTodos.tableNameMinLength"),
+      })
+      .max(25, {
+        message: t("coopTodos.tableNameMaxLength"),
+      }),
+    description: z
+      .string()
+      .max(75, {
+        message: t("coopTodos.descriptionMaxLength"),
+      })
+      .optional(),
   });
 
 export type RegisterFormValues = z.infer<ReturnType<typeof registerFormSchema>>;
@@ -93,3 +111,4 @@ export type GlobalTodoFormValues = z.infer<
 export type CyclicTodoFormValues = z.infer<
   ReturnType<typeof cyclicTodoFormSchema>
 >;
+export type CreateTableValues = z.infer<ReturnType<typeof createTableSchema>>;

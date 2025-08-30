@@ -21,10 +21,10 @@ import { Loader as LoaderIcon } from "lucide-react";
 import Loader from "../Loader";
 import UserSettingsFormInfo from "./UserSettingsFormInfo";
 import UserSettingsFormPassword from "./UserSettingsFormPassword";
-import { UserSettingsNotifications } from "./UserSettingsNotifications";
+import UserSettingsNotifications from "./UserSettingsNotifications";
 import { useTranslation } from "react-i18next";
 
-const UserPanel = () => {
+export default function UserPanel() {
   const { deleteUser, isDeleting } = useDeleteAccount();
   const { logoutUser, isLogouting } = useLogoutAccount();
   const { currentUser } = useAuth();
@@ -33,11 +33,14 @@ const UserPanel = () => {
 
   return (
     <Popover>
-      <PopoverTrigger asChild className="cursor-pointer">
-        <Avatar>
+      <PopoverTrigger
+        asChild
+        className="cursor-pointer xs:w-10 xs:h-10 w-8 h-8"
+      >
+        <Avatar data-testid="user-avatar-wrapper">
           <AvatarImage
-            src={currentUser?.imageUrl}
-            alt={currentUser?.username}
+            src={currentUser.imageUrl}
+            alt={currentUser.username}
             data-testid="user-avatar"
           />
           <AvatarFallback>
@@ -45,13 +48,11 @@ const UserPanel = () => {
           </AvatarFallback>
         </Avatar>
       </PopoverTrigger>
-      <PopoverContent className="w-40">
+      <PopoverContent className="w-40" data-testid="user-panel-popover-content">
         <div className="flex flex-col gap-2">
           <p className="text-center text-sm">
             {t("app.userPanel.welcomeText")}{" "}
-            <span className="text-teal-600 italic">
-              {currentUser?.username}
-            </span>{" "}
+            <span className="text-teal-600 italic">{currentUser.username}</span>{" "}
             !
           </p>
           {currentUser.providerId !== "google.com" && (
@@ -59,12 +60,12 @@ const UserPanel = () => {
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <span className="flex items-center gap-2">
-                    <PocketKnife className="w-[12px] h-[12px]" />
+                    <PocketKnife className="w-3 h-3" />
                     {t("app.userPanel.settings")}
                   </span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
+              <DialogContent className="overflow-y-auto max-h-screen custom-scrollbar">
                 <DialogHeader>
                   <DialogTitle>{t("userSettingsForm.editProfile")}</DialogTitle>
                 </DialogHeader>
@@ -83,7 +84,7 @@ const UserPanel = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <LogOut className="w-[12px] h-[12px]" />
+                <LogOut className="w-3 h-3" />
                 {t("app.userPanel.logout")}
               </div>
             )}
@@ -101,6 +102,4 @@ const UserPanel = () => {
       </PopoverContent>
     </Popover>
   );
-};
-
-export default UserPanel;
+}

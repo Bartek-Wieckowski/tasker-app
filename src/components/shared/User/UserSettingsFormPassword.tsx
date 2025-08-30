@@ -18,7 +18,7 @@ import Loader from "../Loader";
 import { useChangeSettingsPassword } from "@/api/mutations/users/useChangeSettingsPassword";
 import { useTranslation } from "react-i18next";
 
-const UserSettingsFormPassword = () => {
+export default function UserSettingsFormPassword() {
   const { updateSettingsPassword, isUpdatingPassword } =
     useChangeSettingsPassword();
   const { t } = useTranslation();
@@ -68,6 +68,4 @@ const UserSettingsFormPassword = () => {
       </form>
     </Form>
   );
-};
-
-export default UserSettingsFormPassword;
+}

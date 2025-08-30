@@ -1,5 +1,6 @@
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MutableRefObject } from "react";
 import {
   Form,
   FormControl,
@@ -25,6 +26,7 @@ type CyclicTodoFormProps = {
   isLoading: boolean;
   type: "add" | "edit";
   defaultValues?: CyclicTodoFormValues;
+  inputRef?: MutableRefObject<HTMLInputElement | null>;
 };
 
 export function CyclicTodoForm({
@@ -32,6 +34,7 @@ export function CyclicTodoForm({
   isLoading,
   type,
   defaultValues,
+  inputRef,
 }: CyclicTodoFormProps) {
   const { t } = useTranslation();
   const form = useForm<CyclicTodoFormValues>({
@@ -55,15 +58,15 @@ export function CyclicTodoForm({
             <FormItem>
               <FormLabel>
                 {type === "add"
-                  ? t("cyclicTodoForm.newCyclicTaskName")
-                  : t("cyclicTodoForm.editCyclicTaskName")}
+                  ? t("common.newTaskName")
+                  : t("common.editTaskName")}
               </FormLabel>
               <FormControl>
                 <Input
                   placeholder={
                     type === "add"
-                      ? t("cyclicTodoForm.writeYourTaskNameForCyclicList")
-                      : t("cyclicTodoForm.editYourCyclicTodo")
+                      ? t("common.writeYourTaskNamePlaceholder")
+                      : t("common.editYourTaskPlaceholder")
                   }
                   data-testid={
                     type === "add"
@@ -71,6 +74,12 @@ export function CyclicTodoForm({
                       : "edit-cyclic-todo-input"
                   }
                   {...field}
+                  ref={(e) => {
+                    field.ref(e);
+                    if (type === "add" && inputRef) {
+                      inputRef.current = e;
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage data-testid="cyclic-todo-form-message" />
@@ -92,9 +101,9 @@ export function CyclicTodoForm({
               {type === "add" ? t("common.adding") : t("common.updating")}
             </div>
           ) : type === "add" ? (
-            t("cyclicTodoForm.addCyclicTask")
+            t("common.add")
           ) : (
-            t("cyclicTodoForm.updateTodo")
+            t("common.edit")
           )}
         </Button>
       </form>

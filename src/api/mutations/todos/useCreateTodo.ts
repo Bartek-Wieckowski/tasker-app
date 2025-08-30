@@ -26,10 +26,13 @@ export function useCreateTodo() {
     }) => addTodo(todoDetails, selectedDate, currentUser),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
+      toast({
+        title: t("toastMsg.todoAdded"),
+      });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.addingTodosFailed"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

@@ -20,7 +20,6 @@ export function useCreateUserAccount() {
       registerUser(user.email, user.password, user.username),
     onSuccess: () => {
       navigate(ROUTES.home);
-
       toast({
         title: t("toastMsg.createAccountSuccess"),
         description: t("toastMsg.welcomeMessage"),

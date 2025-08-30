@@ -16,11 +16,12 @@ import { useGlobalSearch } from "@/contexts/GlobalSearchContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTranslation } from "react-i18next";
 
-export function DatePicker() {
+export default function DatePicker() {
   const { selectedDate, setSelectedDate } = useAuth();
   const [date, setDate] = useState<Date>(() => {
     return selectedDate ? new Date(selectedDate) : new Date();
   });
+  const [isOpen, setIsOpen] = useState(false);
   const { setIsGlobalSearch, setSearchValueGlobal, setGlobalSearchResult } =
     useGlobalSearch();
   const { currentLanguage } = useLanguage();
@@ -37,16 +38,17 @@ export function DatePicker() {
     setIsGlobalSearch(false);
     setSearchValueGlobal("");
     setGlobalSearchResult([]);
+    setIsOpen(false);
   };
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           data-testid="date-picker-button"
           variant={"outline"}
           className={cn(
-            "w-full justify-center text-left font-normal",
+            "w-full justify-center text-left font-normal mt-2 md:mt-0",
             !date && "text-muted-foreground"
           )}
         >

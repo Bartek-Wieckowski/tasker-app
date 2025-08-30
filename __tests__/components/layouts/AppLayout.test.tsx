@@ -34,11 +34,14 @@ describe("AppLayout component", () => {
     );
 
     const containers = screen.getAllByTestId("container");
+    const outletContents = screen.getAllByTestId("outlet-content");
+
+    expect(containers).toHaveLength(2);
+    expect(outletContents).toHaveLength(2);
 
     const secondContainer = containers[1];
+    const secondOutletContent = outletContents[1];
 
-    expect(secondContainer).toContainElement(
-      screen.getByTestId("outlet-content")
-    );
+    expect(secondContainer).toContainElement(secondOutletContent);
   });
 });

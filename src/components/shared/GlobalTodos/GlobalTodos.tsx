@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -8,81 +8,36 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { EllipsisVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Info } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { GlobalTodoRow, GlobalTodoUpdate } from "@/types/types";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogHeader,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import Loader from "@/components/shared/Loader";
 import { useGlobalTodos } from "@/api/queries/globalTodos/useGlobalTodos";
 import { useAddGlobalTodo } from "@/api/mutations/globalTodos/useAddGlobalTodo";
-import { useAssignGlobalTodo } from "@/api/mutations/globalTodos/useAssignGlobalTodo";
-import { useEditGlobalTodo } from "@/api/mutations/globalTodos/useEditGlobalTodo";
-import { useDeleteGlobalTodo } from "@/api/mutations/globalTodos/useDeleteGlobalTodo";
+
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { GlobalTodoForm } from "./GlobalTodoForm";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { localeMap } from "@/lib/helpers";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { GlobalListIcon } from "../Icons";
+import { useViewportKeyboard } from "@/hooks/useViewportKeyboard";
+
+import GlobalTodosList from "./GlobalTodosList";
 
 export default function GlobalTodos() {
   const { t } = useTranslation();
-  const { currentLanguage } = useLanguage();
   const formContainerRef = useRef<HTMLDivElement | null>(null);
-  const [selectedTodo, setSelectedTodo] = useState<GlobalTodoRow | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [todoToEdit, setTodoToEdit] = useState<GlobalTodoUpdate | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const keyboardHeight = useViewportKeyboard(inputRef);
   const { currentUser } = useAuth();
   const { globalTodos, isLoading } = useGlobalTodos(currentUser.accountId);
   const { createGlobalTodo, isCreatingGlobalTodo } = useAddGlobalTodo(
     currentUser.accountId
   );
-  const { assignGlobalTodo, isAssigningGlobalTodo } = useAssignGlobalTodo(
-    currentUser.accountId
-  );
-  const { editGlobalTodoItem, isEditingGlobalTodo } = useEditGlobalTodo(
-    currentUser.accountId
-  );
-  const { deleteGlobalTodo, isDeletingGlobalTodo } = useDeleteGlobalTodo(
-    currentUser.accountId
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (formContainerRef.current) {
-        formContainerRef.current.style.setProperty(
-          "bottom",
-          `env(safe-area-inset-bottom)`
-        );
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleResize);
-      handleResize();
-    }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", handleResize);
-      }
-    };
-  }, []);
 
   const handleAddSubmit = (
     data: { todo: string },
@@ -95,201 +50,78 @@ export default function GlobalTodos() {
     });
   };
 
-  const handleEditSubmit = (data: { todo: string }) => {
-    if (todoToEdit?.id) {
-      editGlobalTodoItem(
-        {
-          todoId: todoToEdit.id,
-          newTodoName: data.todo,
-        },
-        {
-          onSuccess: () => {
-            setEditDialogOpen(false);
-            setTodoToEdit(null);
-          },
-        }
-      );
-    }
-  };
-
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date || !selectedTodo) return;
-
-    setSelectedDate(date);
-    assignGlobalTodo(
-      {
-        todoId: selectedTodo.id,
-        date,
-      },
-      {
-        onSuccess: () => {
-          setSelectedTodo(null);
-          setIsDialogOpen(false);
-          setSelectedDate(undefined);
-        },
-      }
-    );
-  };
-
   return (
     <Drawer>
       <DrawerTrigger asChild>
         <div className="cursor-pointer" data-testid="global-todos-trigger">
-          <GlobalListIcon />
+          <GlobalListIcon size={30} />
         </div>
       </DrawerTrigger>
-      <DrawerContent ref={formContainerRef} className="min-h-[70vh]">
-        <div className="mx-auto w-full max-w-sm py-3">
-          <div className="mb-6">
-            <DrawerHeader className="mb-4 text-lg font-semibold">
-              <DrawerTitle>
+      <DrawerContent
+        ref={formContainerRef}
+        className="h-[90svh] bg-stone-50"
+        style={{
+          paddingBottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
+        }}
+      >
+        <div className="mx-auto w-full max-w-md h-full relative">
+          <DrawerHeader className="absolute top-0 left-0 right-0 pb-4 bg-stone-50 z-10">
+            <div className="flex items-center justify-between">
+              <DrawerTitle className="text-lg font-semibold">
                 {t("globalTodos.title")} ({globalTodos?.length || 0})
               </DrawerTitle>
-              <DrawerDescription>
-                {t("globalTodos.description")}
-              </DrawerDescription>
-            </DrawerHeader>
-
-            <div className=" space-y-2 h-[50vh] overflow-auto custom-scrollbar">
-              {isLoading ? (
-                <Loader />
-              ) : (
-                globalTodos?.map((todo: GlobalTodoRow) => (
-                  <div
-                    key={todo.id}
-                    className="global-todo-item flex items-center justify-between rounded-lg border p-3"
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-blue-600 hover:text-blue-800"
                   >
-                    <span>{todo.todo}</span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        asChild
-                        data-testid="dropdown-trigger"
-                      >
-                        <EllipsisVertical className="cursor-pointer" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        className="z-50"
-                        side="left"
-                        align="start"
-                      >
-                        <div className="flex flex-col gap-2 p-2">
-                          <Button
-                            onClick={() => {
-                              setSelectedTodo(todo);
-                              setIsDialogOpen(true);
-                            }}
-                          >
-                            {t("globalTodos.assignToDay")}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setTodoToEdit(todo);
-                              setEditDialogOpen(true);
-                            }}
-                          >
-                            {t("globalTodos.edit")}
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => deleteGlobalTodo(todo.id)}
-                            disabled={isDeletingGlobalTodo}
-                          >
-                            {isDeletingGlobalTodo ? (
-                              <div className="flex gap-2">
-                                <Loader />
-                                {t("common.deleting")}
-                              </div>
-                            ) : (
-                              t("globalTodos.delete")
-                            )}
-                          </Button>
-                        </div>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      {t("globalTodos.description")}
+                    </p>
                   </div>
-                ))
+                </PopoverContent>
+              </Popover>
+            </div>
+            <DrawerDescription className="sr-only">
+              {t("globalTodos.description")}
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div
+            className="px-2 overflow-hidden"
+            style={{
+              height: `calc(90svh - 15rem - ${keyboardHeight}px)` /* 240px for header + form */,
+              marginTop: "5rem" /* space for header */,
+            }}
+          >
+            <div className="h-full overflow-y-auto custom-scrollbar space-y-2 pr-2 pb-24">
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader />
+                </div>
+              ) : globalTodos && globalTodos.length > 0 ? (
+                <GlobalTodosList globalTodos={globalTodos} />
+              ) : (
+                <p className="text-center text-gray-500 py-8">
+                  {t("common.todosListEmpty")}
+                </p>
               )}
             </div>
           </div>
 
-          <Dialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              if (!open) {
-                setTimeout(() => {
-                  setSelectedTodo(null);
-                  setSelectedDate(undefined);
-                }, 0);
-              }
-              setIsDialogOpen(open);
-            }}
-          >
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t("globalTodos.assignToDayTitle")}</DialogTitle>
-                <DialogDescription>
-                  {t("globalTodos.assignToDayDescription")}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-center p-4">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      handleDateSelect(date);
-                    }
-                  }}
-                  initialFocus={false}
-                  className="rounded-md border"
-                  locale={localeMap[currentLanguage]}
-                />
-              </div>
-              {isAssigningGlobalTodo && (
-                <div className="flex justify-center">
-                  <Loader />
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
-
-          <Dialog
-            open={editDialogOpen}
-            onOpenChange={(open) => {
-              if (!open) {
-                setTimeout(() => {
-                  setTodoToEdit(null);
-                }, 0);
-              }
-              setEditDialogOpen(open);
-            }}
-          >
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {t("globalTodoForm.editYourGlobalTodo")}
-                </DialogTitle>
-                <DialogDescription />
-              </DialogHeader>
-              {todoToEdit && (
-                <GlobalTodoForm
-                  type="edit"
-                  onSubmit={handleEditSubmit}
-                  isLoading={isEditingGlobalTodo}
-                  defaultValues={{
-                    todo: todoToEdit.todo || "",
-                  }}
-                />
-              )}
-            </DialogContent>
-          </Dialog>
-
-          <div className={cn("grid items-start gap-4 px-4")}>
+          <div className="absolute bottom-1 md:bottom-2 left-0 right-0 bg-white backdrop-blur-sm p-4 rounded-lg shadow-md border-t border-stone-200 z-10">
             <GlobalTodoForm
               type="add"
               onSubmit={handleAddSubmit}
               isLoading={isCreatingGlobalTodo}
+              inputRef={inputRef}
             />
           </div>
         </div>

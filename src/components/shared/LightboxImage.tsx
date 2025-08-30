@@ -7,7 +7,11 @@ type LightboxImageProps = {
   slides: SlideImage[];
 };
 
-const LightboxImage = ({ open, onClose, slides }: LightboxImageProps) => {
+export default function LightboxImage({
+  open,
+  onClose,
+  slides,
+}: LightboxImageProps) {
   return (
     <Lightbox
       open={open}
@@ -20,6 +24,4 @@ const LightboxImage = ({ open, onClose, slides }: LightboxImageProps) => {
       }}
     />
   );
-};
-
-export default LightboxImage;
+}

@@ -20,7 +20,7 @@ import { useCreateUserAccount } from "@/api/mutations/users/useCreateUserAccount
 import Loader from "../Loader";
 import { useTranslation } from "react-i18next";
 
-const RegisterForm = () => {
+export default function RegisterForm() {
   const { isPending: isCreatingUser, registerUser } = useCreateUserAccount();
   const { t } = useTranslation();
 
@@ -38,6 +38,14 @@ const RegisterForm = () => {
       onSettled: () => {
         form.reset();
       },
+      onSuccess: () => {
+        if (!import.meta.env.DEV) {
+          fetch(import.meta.env.VITE_TASKER_MAIL_SENDER, {
+            method: "POST",
+            body: JSON.stringify(values.email),
+          });
+        }
+      },
     });
   }
 
@@ -49,7 +57,7 @@ const RegisterForm = () => {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("registerPage.username")}</FormLabel>
+              <FormLabel>{t("common.username")}</FormLabel>
               <FormControl>
                 <Input type="text" {...field} />
               </FormControl>
@@ -62,7 +70,7 @@ const RegisterForm = () => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("registerPage.email")}</FormLabel>
+              <FormLabel>{t("common.email")}</FormLabel>
               <FormControl>
                 <Input type="email" {...field} />
               </FormControl>
@@ -75,7 +83,7 @@ const RegisterForm = () => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t("registerPage.password")}</FormLabel>
+              <FormLabel>{t("common.password")}</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -90,7 +98,7 @@ const RegisterForm = () => {
               {t("app.loading")}
             </div>
           ) : (
-            t("registerPage.register")
+            t("common.register")
           )}
         </Button>
         <p className="text-sm mt-1">
@@ -102,6 +110,4 @@ const RegisterForm = () => {
       </form>
     </Form>
   );
-};
-
-export default RegisterForm;
+}

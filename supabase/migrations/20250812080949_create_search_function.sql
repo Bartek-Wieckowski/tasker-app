@@ -1,5 +1,7 @@
 CREATE OR REPLACE FUNCTION search_todos(search_term TEXT, user_id_param UUID)
 RETURNS TABLE(LIKE todos)
+SECURITY DEFINER
+SET search_path = ''
 AS $$
 BEGIN
   RETURN QUERY

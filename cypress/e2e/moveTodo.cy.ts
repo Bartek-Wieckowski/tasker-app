@@ -1,66 +1,82 @@
 describe("Move Todo()", () => {
-  const email = "taskertestuser@developedbybart.pl";
-  const password = "password123";
-  const targetYear = new Date().getFullYear();
-  const targetMonth = new Date().getMonth() + 1;
-  const targetDay = 25;
+  const baseDate = new Date();
+  const targetDate = new Date(baseDate);
+  targetDate.setDate(baseDate.getDate() + 1);
+
+  const today = {
+    day: baseDate.getDate(),
+    month: baseDate.getMonth() + 1,
+    year: baseDate.getFullYear(),
+  };
+
+  const tomorrow = {
+    day: targetDate.getDate(),
+    month: targetDate.getMonth() + 1,
+    year: targetDate.getFullYear(),
+  };
 
   before(() => {
     cy.task("db:reset");
     cy.createTestUser();
   });
 
+  beforeEach(() => {
+    cy.setupTestSession();
+    cy.cleanupTodosOnly();
+    cy.visit("/");
+  });
+
   it("should successfully move a todo to a new date", () => {
     const todoText = "Test todo to move";
 
-    cy.visit("/");
     cy.createTodo(todoText);
-    cy.moveTodoToDate(todoText, targetDay, targetMonth, targetYear);
+    cy.moveTodoToDate(todoText, tomorrow.day, tomorrow.month, tomorrow.year);
     cy.contains(todoText).should("not.exist");
-    cy.navigateToDate(targetDay, targetMonth, targetYear);
+    cy.navigateToDate(tomorrow.day, tomorrow.month, tomorrow.year);
     cy.contains(todoText).should("exist");
   });
 
   it("should not allow moving completed todos", () => {
-    cy.login(email, password);
-    cy.visit("/");
+    const todoText = "Test todo to move";
 
-    cy.navigateToDate(targetDay, targetMonth, targetYear);
-    cy.get('[data-testid="checkbox-to-change-status-todo"]').click();
+    cy.createTodo(todoText);
+    cy.get('[data-testid="checkbox-to-change-status-todo"]').first().click();
+    cy.wait(500);
     cy.get('div[class*="todo-item-card"]')
+      .first()
       .find('[data-testid="popover-trigger"]')
       .click();
     cy.contains("button", /move/i).should("be.disabled");
   });
 
   it("should prevent moving to past dates", () => {
-    cy.login(email, password);
-    cy.visit("/");
+    const todoText = "Test todo to move";
 
-    cy.navigateToDate(targetDay, targetMonth, targetYear);
-    cy.get('[data-testid="checkbox-to-change-status-todo"]').click();
+    cy.createTodo(todoText);
+
     cy.get('div[class*="todo-item-card"]')
+      .first()
       .find('[data-testid="popover-trigger"]')
       .click();
-    cy.contains("button", /move/i).click();
+    cy.contains("button", /move/i).should("be.enabled").click();
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayDay = yesterday.getDate();
 
-    if (yesterday.getMonth() < new Date().getMonth()) {
+    const currentMonth = new Date().getMonth();
+    if (yesterday.getMonth() < currentMonth) {
       cy.get('[role="button"][name="previous-month"]').click();
     }
 
-    cy.get(`[role="gridcell"]`).contains(yesterdayDay).should("be.disabled");
+    cy.get('[role="grid"]')
+      .contains("button", new RegExp(`^${yesterdayDay}$`))
+      .should("be.disabled");
   });
 
   it("should move todo with image successfully", () => {
     const todoText = "Todo with image to move";
     const imageFixture = "test-image.jpg";
-
-    cy.login(email, password);
-    cy.visit("/");
 
     cy.createTodoWithImage(todoText, imageFixture);
 
@@ -69,9 +85,9 @@ describe("Move Todo()", () => {
       .find('[data-testid="todo-item-has-image"]')
       .should("exist");
 
-    cy.moveTodoToDate(todoText, targetDay, targetMonth, targetYear);
+    cy.moveTodoToDate(todoText, tomorrow.day, tomorrow.month, tomorrow.year);
     cy.contains(todoText).should("not.exist");
-    cy.navigateToDate(targetDay, targetMonth, targetYear);
+    cy.navigateToDate(tomorrow.day, tomorrow.month, tomorrow.year);
     cy.contains(todoText).should("exist");
     cy.contains(todoText)
       .closest('div[class*="todo-item-card"]')

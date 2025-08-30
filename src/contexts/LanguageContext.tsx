@@ -56,13 +56,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     await i18n.changeLanguage(lang);
     localStorage.setItem("tasker-language", lang);
 
-    // If user is logged in, save language to database
     if (currentUser) {
       try {
         await updateUserLanguage(lang);
       } catch (error) {
         console.error("Failed to update language in database:", error);
-        // Don't block language change if saving to database fails
       }
     }
   };

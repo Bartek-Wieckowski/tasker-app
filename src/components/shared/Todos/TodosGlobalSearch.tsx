@@ -12,10 +12,10 @@ type TodosGlobalSearchProps = {
   currentUser: User;
 };
 
-const TodosGlobalSearch = ({
+export default function TodosGlobalSearch({
   isGlobalSearch,
   currentUser,
-}: TodosGlobalSearchProps) => {
+}: TodosGlobalSearchProps) {
   const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = useState("");
   const { searchValueGlobal, setSearchValueGlobal, setGlobalSearchResult } =
@@ -50,16 +50,18 @@ const TodosGlobalSearch = ({
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-2">
         <Input
           type="text"
+          name="searchGlobal"
+          id="searchGlobal"
           placeholder={t("todosGlobalSearch.searchPlaceholder")}
-          className="my-2"
+          className="my-2 "
           onChange={handleChange}
           onKeyDown={handleKeyPress}
         />
         <Button onClick={handleSearch}>
-          <Search className="w-[15px] h-[15px]" />
+          <Search className="w-[0.938rem] h-[0.938rem]" />
         </Button>
       </div>
       {errorMessage && (
@@ -67,6 +69,4 @@ const TodosGlobalSearch = ({
       )}
     </>
   );
-};
-
-export default TodosGlobalSearch;
+}

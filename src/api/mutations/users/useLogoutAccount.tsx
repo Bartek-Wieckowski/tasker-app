@@ -9,6 +9,7 @@ export function useLogoutAccount() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
+
   const {
     isPending: isLogouting,
     isError,

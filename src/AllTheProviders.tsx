@@ -11,11 +11,11 @@ const queryClient = new QueryClient({
   },
 });
 
-export const AllTheProviders = ({
+export default function AllTheProviders({
   children,
 }: {
   children: React.ReactNode;
-}) => {
+}) {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
@@ -26,4 +26,4 @@ export const AllTheProviders = ({
       </LanguageProvider>
     </QueryClientProvider>
   );
-};
+}

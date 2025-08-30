@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
@@ -37,13 +36,18 @@ import { useUpdateTodoStatus } from "@/api/mutations/todos/useUpdateTodoStatus";
 import { searchTodos } from "@/api/apiTodos";
 import { useGlobalSearch } from "@/contexts/GlobalSearchContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 
 type TodosItemCardProps = {
   data: TodoRow;
   isGlobalSearch?: boolean;
 };
 
-const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
+export default function TodosItemCard({
+  data,
+  isGlobalSearch,
+}: TodosItemCardProps) {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const { isStatusChanging, updateStatusTodo } = useUpdateTodoStatus();
@@ -204,8 +208,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
       setSelectedMoveDate(undefined);
     } catch (error) {
       toast({
-        title: t("toastMsg.moveTodoFailed"),
-        description: t("toastMsg.moveTodoFailedDescription"),
+        title: t("toastMsg.todoFailed"),
         variant: "destructive",
       });
     }
@@ -213,21 +216,24 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
 
   return (
     <div
-      className={`todo-item-card flex justify-between border border-stone-200 rounded-lg mb-3 p-3 ${shortTimeToFinishTask(
-        isGlobalSearch ? (data.todo_date as string) : selectedDate,
-        data.is_completed
-      )}`}
+      className={cn(
+        "todo-item-card flex justify-between min-h-20 rounded-lg p-3 bg-white shadow-md mb-3 mr-2",
+        shortTimeToFinishTask(
+          isGlobalSearch ? (data.todo_date as string) : selectedDate,
+          data.is_completed
+        )
+      )}
     >
-      <div className="flex flex-col gap-1 relative">
+      <div className="flex flex-col gap-1 relative justify-center">
         <div className="flex items-center space-x-2 w-full">
-          <Checkbox
+          <Switch
             data-testid="checkbox-to-change-status-todo"
             id={data.id}
             checked={data.is_completed}
             onClick={handleCheckboxClick}
-            className={`${
+            className={cn(
               data.is_completed && "!bg-green-500  !border-green-500"
-            }`}
+            )}
           />
           <label
             htmlFor={data.id}
@@ -237,9 +243,9 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
           >
             <div className="flex items-center gap-2">
               <div
-                className={`${
+                className={cn(
                   data.is_completed && "line-through text-green-500"
-                }`}
+                )}
               >
                 {data.todo}
               </div>
@@ -250,22 +256,22 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
         <small className="text-slate-400">
           {multiFormatDateString(data.created_at)}
         </small>
-        {data.image_url && (
-          <Image
-            data-testid="todo-item-has-image"
-            data-image-url={data.image_url}
-            className="absolute -right-6 -top-1 text-slate-400 w-[12px] h-[12px] cursor-zoom-in"
-            onClick={() => setOpenLightBoxImage(true)}
-          />
-        )}
       </div>
       <Popover>
-        <div className="flex items-center justify-between space-x-4 px-4">
+        <div className="relative flex items-center justify-between space-x-4 pl-4">
+          {data.image_url && (
+            <Image
+              data-testid="todo-item-has-image"
+              data-image-url={data.image_url}
+              className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 w-6 h-6 cursor-zoom-in"
+              onClick={() => setOpenLightBoxImage(true)}
+            />
+          )}
           <PopoverTrigger asChild data-testid="popover-trigger">
             <EllipsisVertical className="cursor-pointer" />
           </PopoverTrigger>
         </div>
-        <PopoverContent className="space-y-2 w-auto min-w-[250px]">
+        <PopoverContent className="space-y-2 w-auto min-w-[15.625rem]">
           <div className="flex flex-col items-center gap-2">
             <div className="flex justify-between w-full gap-2">
               <Button asChild onClick={setGlobalDateIfItemSearchGlobally}>
@@ -276,13 +282,11 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
 
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline">
-                    {t("todosItemCard.options.edit")}
-                  </Button>
+                  <Button variant="outline">{t("common.edit")}</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-screen custom-scrollbar">
+                <DialogContent className=" overflow-y-auto max-h-screen custom-scrollbar">
                   <DialogHeader>
-                    <DialogTitle>{t("todosItemCard.editTodo")}</DialogTitle>
+                    <DialogTitle>{t("common.editTodo")}</DialogTitle>
                   </DialogHeader>
                   <TodoForm
                     action="Update"
@@ -303,10 +307,10 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 {isDeletingItemTodo ? (
                   <div className="flex gap-2">
                     <Loader />
-                    {t("todosItemCard.options.deleting")}
+                    {t("common.deleting")}
                   </div>
                 ) : (
-                  t("todosItemCard.options.delete")
+                  t("common.delete")
                 )}
               </Button>
             </div>
@@ -321,10 +325,10 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                       data.is_completed ? "Cannot move completed todo" : ""
                     }
                   >
-                    {t("todosItemCard.options.move")}
+                    {t("common.move")}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>{t("todosItemCard.moveTodoDate")}</DialogTitle>
                   </DialogHeader>
@@ -349,7 +353,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                       {isMovingTodo ? (
                         <div className="flex gap-2">
                           <Loader />
-                          {t("todosItemCard.options.moving")}
+                          {t("common.moving")}
                         </div>
                       ) : (
                         t("todosItemCard.confirmMove")
@@ -363,11 +367,9 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 onOpenChange={setRepeatDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button variant="outline">
-                    {t("todosItemCard.options.repeat")}
-                  </Button>
+                  <Button variant="outline">{t("common.repeat")}</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>
                       {t("todosItemCard.repeatTodoDate")}
@@ -394,7 +396,7 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                       {isRepeatingTodo ? (
                         <div className="flex gap-2">
                           <Loader />
-                          {t("todosItemCard.options.repeating")}
+                          {t("common.repeating")}
                         </div>
                       ) : (
                         t("todosItemCard.confirmRepeat")
@@ -419,10 +421,10 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
                 {isDelegatingTodo ? (
                   <div className="flex gap-2">
                     <Loader />
-                    {t("todosItemCard.options.delegating")}
+                    {t("common.delegating")}
                   </div>
                 ) : (
-                  t("todosItemCard.options.delegate")
+                  t("common.delegate")
                 )}
               </Button>
             </div>
@@ -436,6 +438,4 @@ const TodosItemCard = ({ data, isGlobalSearch }: TodosItemCardProps) => {
       />
     </div>
   );
-};
-
-export default TodosItemCard;
+}

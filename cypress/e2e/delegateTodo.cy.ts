@@ -1,16 +1,18 @@
 describe("Delegate Todo()", () => {
-  const email = "taskertestuser@developedbybart.pl";
-  const password = "password123";
-
   before(() => {
     cy.task("db:reset");
     cy.createTestUser();
   });
 
+  beforeEach(() => {
+    cy.setupTestSession();
+    cy.cleanupTodosOnly();
+    cy.visit("/");
+  });
+
   it("should successfully delegate a basic todo", () => {
     const todoText = "Test todo to delegate";
 
-    cy.visit("/");
     cy.createTodo(todoText);
 
     cy.contains(todoText)
@@ -22,7 +24,7 @@ describe("Delegate Todo()", () => {
 
     cy.contains(todoText).should("not.exist");
 
-    cy.get('[data-testid="delegated-todos-trigger"]').click();
+    cy.get('[data-testid="delegated-todos-trigger"]').first().click();
     cy.contains(todoText).should("exist");
   });
 
@@ -32,9 +34,6 @@ describe("Delegate Todo()", () => {
       "Second todo to delegate",
       "Third todo to delegate",
     ];
-
-    cy.login(email, password);
-    cy.visit("/");
 
     todos.forEach((todoText) => {
       cy.createTodo(todoText);
@@ -51,7 +50,7 @@ describe("Delegate Todo()", () => {
       cy.contains(todoText).should("not.exist");
     });
 
-    cy.get('[data-testid="delegated-todos-trigger"]').click();
+    cy.get('[data-testid="delegated-todos-trigger"]').first().click();
     todos.forEach((todoText) => {
       cy.contains(todoText).should("exist");
     });

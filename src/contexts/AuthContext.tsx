@@ -20,7 +20,7 @@ const initialState: AuthContextType = {
   setCurrentUser: () => {},
   isLoading: true,
   isAuth: false,
-  selectedDate: new Date().toISOString().split("T")[0], // Domyślnie dzisiejsza data
+  selectedDate: new Date().toISOString().split("T")[0], // Default today's date
   setSelectedDate: () => {},
 };
 
@@ -36,7 +36,7 @@ export default function AuthProvider({
   const [isAuth, setIsAuth] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0]
-  ); // Domyślnie dzisiejsza data
+  );
   const { t } = useTranslation();
 
   const handleAuthState = async (session: Session | null) => {

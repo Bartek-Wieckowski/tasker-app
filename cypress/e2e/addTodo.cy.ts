@@ -1,16 +1,18 @@
 describe("Add Todo()", () => {
-  const email = "taskertestuser@developedbybart.pl";
-  const password = "password123";
-
   before(() => {
     cy.task("db:reset");
     cy.createTestUser();
   });
 
+  beforeEach(() => {
+    cy.setupTestSession();
+    cy.cleanupTodosOnly();
+    cy.visit("/");
+  });
+
   it("should successfully add a basic todo", () => {
     const todoText = "Test todo to add";
 
-    cy.visit("/");
     cy.createTodo(todoText);
     cy.contains(todoText).should("exist");
   });
@@ -18,9 +20,6 @@ describe("Add Todo()", () => {
   it("should successfully add a todo with image", () => {
     const todoText = "Todo with image to add";
     const imageFixture = "test-image.jpg";
-
-    cy.login(email, password);
-    cy.visit("/");
 
     cy.createTodoWithImage(todoText, imageFixture);
     cy.contains(todoText).should("exist");
@@ -31,11 +30,21 @@ describe("Add Todo()", () => {
       .and("be.visible");
   });
 
+  it("should add todo with image and verify image preview", () => {
+    const todoText = "Todo with image preview";
+    const imageFixture = "test-image-update.jpg";
+
+    cy.createTodoWithImage(todoText, imageFixture);
+
+    cy.contains(todoText)
+      .closest('div[class*="todo-item-card"]')
+      .find('[data-testid="todo-item-has-image"]')
+      .should("exist")
+      .and("be.visible");
+  });
+
   it("should add multiple todos", () => {
     const todos = ["First todo", "Second todo", "Third todo"];
-
-    cy.login(email, password);
-    cy.visit("/");
 
     todos.forEach((todoText) => {
       cy.createTodo(todoText);
@@ -47,10 +56,7 @@ describe("Add Todo()", () => {
     const longTodoText =
       "This is a very long todo text that should be handled properly by the application. It contains multiple sentences and should not break the UI or cause any issues with the database storage.";
 
-    cy.login(email, password);
-    cy.visit("/");
-
-    cy.get('[data-testid="add-todo-button"]').click();
+    cy.get('[data-testid="add-todo-button"]').first().click();
     cy.get('input[name="todo"]').first().type(longTodoText);
     cy.get('button[type="submit"]').click();
 
@@ -67,15 +73,11 @@ describe("Add Todo()", () => {
 
     cy.intercept("POST", "**/rest/v1/todos*").as("createTodo");
 
-    cy.login(email, password);
-    cy.visit("/");
-
-    cy.get('[data-testid="add-todo-button"]').click();
+    cy.get('[data-testid="add-todo-button"]').first().click();
     cy.get('input[name="todo"]').type(todoText);
     cy.get('textarea[name="todo_more_content"]').type(todoMoreContent);
     cy.get('button[type="submit"]').click();
 
-    // Wait for the todo to be created and get the ID
     cy.wait("@createTodo").then((interception) => {
       const todoId = interception.response?.body?.id;
       expect(todoId).to.exist;
@@ -93,41 +95,28 @@ describe("Add Todo()", () => {
     const today = new Date();
     const currentDay = today.getDate();
 
-    cy.login(email, password);
-    cy.visit("/");
     cy.createTodo(todoText);
 
-    // Verify todo appears on current date
-    cy.get('[data-testid="date-picker-button"]').click();
-    cy.get(`[role="gridcell"]`)
-      .contains(currentDay)
-      .should("have.class", "bg-primary");
+    cy.get('[data-testid="date-picker-button"]').first().click();
+    cy.get('[role="grid"]').within(() => {
+      cy.get(`button:not([disabled]):not(.disabled)`)
+        .not('[aria-disabled="true"]')
+        .not(".day-outside")
+        .not(".rdp-day_outside")
+        .contains(new RegExp(`^${currentDay}$`))
+        .first()
+        .should("be.visible")
+        .should("not.be.disabled")
+        .click();
+    });
     cy.contains(todoText).should("exist");
-  });
-
-  it("should add todo with image and verify image preview", () => {
-    const todoText = "Todo with image preview";
-    const imageFixture = "test-image-update.jpg";
-
-    cy.login(email, password);
-    cy.visit("/");
-
-    cy.createTodoWithImage(todoText, imageFixture);
-
-    cy.contains(todoText)
-      .closest('div[class*="todo-item-card"]')
-      .find('[data-testid="todo-item-has-image"]')
-      .should("exist")
-      .and("be.visible");
   });
 
   it("should add todo without image when image field is left empty", () => {
     const todoText = "Todo without image";
 
-    cy.login(email, password);
-    cy.visit("/");
-    cy.get('[data-testid="add-todo-button"]').click();
-    cy.get('input[placeholder*="todo"]').first().type(todoText);
+    cy.get('[data-testid="add-todo-button"]').first().click();
+    cy.get('input[name*="todo"]').first().type(todoText);
     cy.get('button[type="submit"]').click();
 
     cy.contains(todoText).should("exist");

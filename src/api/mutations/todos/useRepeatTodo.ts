@@ -33,16 +33,15 @@ export function useRepeatTodo() {
       });
 
       toast({
-        title: t("toastMsg.repeatTodoTitle"),
-        description: `${t("toastMsg.repeatTodoDescription")} ${newDate} ${
+        title: t("toastMsg.todoRepeated"),
+        description: `${t("toastMsg.todoNewDate")} ${newDate} ${
           todoDetails.image_url ? t("toastMsg.repeatTodoDescriptionImage") : ""
         }`,
       });
     },
     onError: () => {
       toast({
-        title: t("toastMsg.repeatTodoFailed"),
-        description: t("toastMsg.repeatTodoFailedDescription"),
+        title: t("toastMsg.todosFailed"),
         variant: "destructive",
       });
     },

@@ -6,9 +6,8 @@ if (!VAPID_PUBLIC_KEY) {
   console.warn("⚠️ VITE_VAPID_PUBLIC_KEY doesn't exist in .env");
 }
 
-/**
- * Converts VAPID key to Uint8Array format
- */
+// Converts VAPID key to Uint8Array format
+
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -22,9 +21,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
-/**
- * Checks if browser supports push notifications
- */
+// Checks if browser supports push notifications
 export function isPushSupported(): boolean {
   return (
     "serviceWorker" in navigator &&
@@ -33,16 +30,12 @@ export function isPushSupported(): boolean {
   );
 }
 
-/**
- * Checks current notification permissions
- */
+// Checks current notification permissions
 export function getNotificationPermission(): NotificationPermission {
   return Notification.permission;
 }
 
-/**
- * Requests notification permissions
- */
+// Requests notification permissions
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
   if (!isPushSupported()) {
     throw new Error("Push notifications are not supported");
@@ -51,9 +44,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   return await Notification.requestPermission();
 }
 
-/**
- * Registers push subscription
- */
+// Registers push subscription
 export async function subscribeToPushNotifications(): Promise<PushSubscription | null> {
   try {
     if (import.meta.env.DEV) {
@@ -135,9 +126,7 @@ export async function subscribeToPushNotifications(): Promise<PushSubscription |
   }
 }
 
-/**
- * Saves subscription to Supabase
- */
+// Saves subscription to Supabase
 async function savePushSubscription(
   subscription: PushSubscription
 ): Promise<void> {
@@ -269,9 +258,7 @@ async function savePushSubscription(
   }
 }
 
-/**
- * Gets browser name
- */
+// Gets browser name
 function getBrowserName(): string {
   const userAgent = navigator.userAgent;
   if (userAgent.includes("Chrome")) return "Chrome";
@@ -281,9 +268,7 @@ function getBrowserName(): string {
   return "Unknown";
 }
 
-/**
- * Shows test notification
- */
+// Shows test notification
 export async function showTestNotification(): Promise<void> {
   const permission = await requestNotificationPermission();
 
@@ -294,7 +279,7 @@ export async function showTestNotification(): Promise<void> {
   // Test notification
   new Notification("Test notification", {
     body: "To jest testowe powiadomienie z Tasker App!",
-    icon: "/vite.svg",
+    icon: "/favicon.svg",
     tag: "test-notification",
   });
 }

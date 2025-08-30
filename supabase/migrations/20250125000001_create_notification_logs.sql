@@ -1,4 +1,4 @@
--- Tabela do logowania wysłanych powiadomień
+-- Table for logging sent notifications
 CREATE TABLE IF NOT EXISTS "public"."notification_logs" (
     "id" "uuid" DEFAULT gen_random_uuid() NOT NULL,
     "user_id" "uuid" NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "public"."notification_logs" (
     "incomplete_todos_count" integer DEFAULT 0,
     "sent_at" timestamp with time zone DEFAULT now() NOT NULL,
     "status" "text" DEFAULT 'pending' NOT NULL, -- pending, sent, failed
-    "error_message" "text", -- dla błędów wysyłania
+    "error_message" "text", -- for sending errors
     "created_at" timestamp with time zone DEFAULT now() NOT NULL,
     
     CONSTRAINT "notification_logs_pkey" PRIMARY KEY ("id"),
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "public"."notification_logs" (
         FOREIGN KEY ("user_id") REFERENCES "public"."db_users"("id") ON DELETE CASCADE
 );
 
--- Indeksy
+-- Indexes
 CREATE INDEX "idx_notification_logs_user_id" ON "public"."notification_logs" ("user_id");
 CREATE INDEX "idx_notification_logs_sent_at" ON "public"."notification_logs" ("sent_at");
 CREATE INDEX "idx_notification_logs_type" ON "public"."notification_logs" ("notification_type");
@@ -24,17 +24,26 @@ CREATE INDEX "idx_notification_logs_status" ON "public"."notification_logs" ("st
 -- Row Level Security
 ALTER TABLE "public"."notification_logs" ENABLE ROW LEVEL SECURITY;
 
--- Polityki RLS
-CREATE POLICY "Users can view their own notification logs" ON "public"."notification_logs"
-    FOR SELECT USING (auth.uid() = user_id);
+-- RLS Policies
+CREATE POLICY "Users and service role can view notification logs" ON "public"."notification_logs"
+    FOR SELECT USING (
+        (select auth.uid()) = user_id OR 
+        auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Users can insert their own notification logs" ON "public"."notification_logs"
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users and service role can insert notification logs" ON "public"."notification_logs"
+    FOR INSERT WITH CHECK (
+        (select auth.uid()) = user_id OR 
+        auth.role() = 'service_role'
+    );
 
-CREATE POLICY "Service role can manage notification logs" ON "public"."notification_logs"
-    FOR ALL USING (auth.role() = 'service_role');
+CREATE POLICY "Service role can update notification logs" ON "public"."notification_logs"
+    FOR UPDATE USING (auth.role() = 'service_role');
 
--- Trigger dla updated_at (jeśli będzie potrzebny)
+CREATE POLICY "Service role can delete notification logs" ON "public"."notification_logs"
+    FOR DELETE USING (auth.role() = 'service_role');
+
+-- Trigger for updated_at (if needed)
 CREATE TRIGGER update_notification_logs_updated_at 
     BEFORE UPDATE ON "public"."notification_logs"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -43,16 +52,17 @@ CREATE TRIGGER update_notification_logs_updated_at
 GRANT ALL ON TABLE "public"."notification_logs" TO "authenticated";
 GRANT ALL ON TABLE "public"."notification_logs" TO "service_role";
 
--- Funkcja do czyszczenia starych logów (opcjonalna)
+-- Function to clean up old logs (optional)
 CREATE OR REPLACE FUNCTION cleanup_old_notification_logs()
 RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   deleted_count integer;
 BEGIN
-  -- Usuń logi starsze niż 90 dni
+  -- Delete logs older than 90 days
   DELETE FROM notification_logs 
   WHERE sent_at < NOW() - INTERVAL '90 days';
   
@@ -66,10 +76,10 @@ $$;
 GRANT EXECUTE ON FUNCTION cleanup_old_notification_logs() TO service_role;
 
 COMMENT ON TABLE "public"."notification_logs" IS 
-'Loguje wszystkie wysłane powiadomienia push dla celów debugowania i statystyk.';
+'Logs all sent push notifications for debugging and statistics.';
 
 COMMENT ON COLUMN "public"."notification_logs"."notification_type" IS 
-'Typ powiadomienia: daily_reminder, urgent_alert, etc.';
+'Notification type: daily_reminder, urgent_alert, etc.';
 
 COMMENT ON COLUMN "public"."notification_logs"."status" IS 
-'Status wysyłki: pending (oczekuje), sent (wysłane), failed (błąd).';
+'Sending status: pending (waiting), sent (sent), failed (error).';

@@ -1,30 +1,46 @@
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Globe } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { TextSearch } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Switch } from "@/components/ui/switch";
 
 type TodosSearchTogglerProps = {
   isGlobalSearch: boolean;
   toggleGlobalSearch: () => void;
 };
 
-const TodosSearchToggler = ({ isGlobalSearch, toggleGlobalSearch }: TodosSearchTogglerProps) => {
+export default function TodosSearchToggler({
+  isGlobalSearch,
+  toggleGlobalSearch,
+}: TodosSearchTogglerProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center gap-2 my-2">
-      <Checkbox id="globalSearch" checked={isGlobalSearch} onClick={toggleGlobalSearch} />
+      <Switch
+        id="globalSearch"
+        checked={isGlobalSearch}
+        onClick={toggleGlobalSearch}
+      />
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <label htmlFor="globalSearch">
-              <Globe className="cursor-pointer" data-testid="globe-icon" />
+              <TextSearch
+                className="cursor-pointer w-7 h-7"
+                data-testid="globe-icon"
+              />
             </label>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Check if you want to find task globally</p>
+            <p>{t("todosSearchToggler.searchDescription")}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </div>
   );
-};
-
-export default TodosSearchToggler;
+}

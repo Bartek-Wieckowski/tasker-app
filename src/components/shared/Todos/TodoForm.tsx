@@ -159,10 +159,10 @@ const TodoForm = ({
             name="todo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("todoForm.todoContent")}</FormLabel>
+                <FormLabel>{t("common.todoContent")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder={t("todoForm.todoContentPlaceholder")}
+                    placeholder={t("common.todoContentPlaceholder")}
                     {...field}
                   />
                 </FormControl>
@@ -175,12 +175,13 @@ const TodoForm = ({
             name="todo_more_content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("todoForm.todoMoreContent")}</FormLabel>
+                <FormLabel>{t("common.todoMoreContent")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    className="custom-scrollbar"
-                    placeholder={t("todoForm.todoMoreContentPlaceholder")}
+                    className="custom-scrollbar resize-y h-20 max-h-[calc(1.5rem*9+1rem)]"
+                    placeholder={t("common.todoMoreContentPlaceholder")}
                     {...field}
+                    rows={13}
                   />
                 </FormControl>
                 <FormMessage />
@@ -196,12 +197,13 @@ const TodoForm = ({
                 htmlFor="todoPhoto"
                 className="text-sm font-medium leading-none"
               >
-                <ImagePlus className="text-indigo-600" />
+                <ImagePlus className="text-indigo-600 w-7 h-7" />
               </label>
               <CollapsibleTrigger asChild>
                 <Checkbox
                   id="todoPhoto"
                   checked={isOpenCollapsible}
+                  className="w-6 h-6"
                   disabled={
                     action === "Update" &&
                     !!singleTodoData?.image_url &&
@@ -375,15 +377,11 @@ const TodoForm = ({
             {isAddingNewItemTodo || isTodoChanging ? (
               <div className="flex gap-2">
                 <Loader />
-                {action === "Create" && t("todoForm.creating")}
-                {action === "Update" && t("todoForm.updating")}
+                {action === "Create" && t("common.creating")}
+                {action === "Update" && t("common.updating")}
               </div>
             ) : (
-              `${
-                action === "Create"
-                  ? t("todoForm.createTodo")
-                  : t("todoForm.updateTodo")
-              }`
+              `${action === "Create" ? t("common.create") : t("common.edit")}`
             )}
           </Button>
         </form>

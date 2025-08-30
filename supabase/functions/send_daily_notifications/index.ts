@@ -23,20 +23,18 @@ Deno.serve(async (req) => {
   try {
     console.log("🔔 Starting daily notifications check...");
 
-    // Konfiguracja web-push z VAPID keys
+    // Configure web-push with VAPID keys
     const vapidPublicKey = Deno.env.get("VITE_VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
     const vapidEmail =
       Deno.env.get("VAPID_EMAIL") || "mailto:admin@example.com";
 
     if (!vapidPublicKey || !vapidPrivateKey) {
-      throw new Error(
-        "VAPID keys nie są skonfigurowane w environment variables"
-      );
+      throw new Error("VAPID keys are not configured in environment variables");
     }
 
     webpush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
-    console.log("✅ Web-push skonfigurowany z VAPID keys");
+    console.log("✅ Web-push configured with VAPID keys");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL"),
@@ -46,7 +44,7 @@ Deno.serve(async (req) => {
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
     console.log(`📅 Checking todos for date: ${today}`);
 
-    // Pobierz użytkowników z niezrealizowanymi zadaniami na dziś
+    // Get users with incomplete todos for today
     const { data: usersWithTodos, error: todosError } = await supabase
       .from("db_users")
       .select(
@@ -108,7 +106,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Grupuj todos według użytkownika
+    // Group todos by user
     const userTodoCounts: Record<
       string,
       { id: string; email: string; lang: string; count: number }
@@ -123,7 +121,7 @@ Deno.serve(async (req) => {
             count: 0,
           };
         }
-        // Zlicz todos w tym rekordzie użytkownika, nie samego użytkownika
+        // Count todos in this user record, not the user itself
         userTodoCounts[user.id].count += user.todos ? user.todos.length : 1;
       }
     );
@@ -134,14 +132,14 @@ Deno.serve(async (req) => {
     let notificationsSent = 0;
     let errors = 0;
 
-    // Wysyłanie powiadomień
+    // Send notifications
     for (const user of usersToNotify) {
       try {
         console.log(
           `👤 Processing user: ${user.email} (${user.count} incomplete todos)`
         );
 
-        // Pobierz aktywne push subscriptions
+        // Get active push subscriptions
         const { data: subscriptions, error: subscriptionsError } =
           await supabase
             .from("push_subscriptions")
@@ -184,8 +182,8 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Payload z obsługą języków - defensywne sprawdzenie
-        const userLanguage = user.lang || "en"; // fallback na wypadek NULL/undefined
+        // Payload with language support - defensive check
+        const userLanguage = user.lang || "en"; // fallback in case of NULL/undefined
         const isPolish = userLanguage === "pl";
         const notificationPayload = {
           title: isPolish ? "Niezrealizowane zadania" : "Incomplete tasks",
@@ -198,12 +196,12 @@ Deno.serve(async (req) => {
             : `You have ${user.count} incomplete ${
                 user.count === 1 ? "task" : "tasks"
               } for today`,
-          icon: "/vite.svg",
-          badge: "/vite.svg",
+          icon: "/favicon.svg",
+          badge: "/favicon.svg",
           data: { url: "/", user_id: user.id, date: today, count: user.count },
         };
 
-        // Wyślij dla każdej subskrypcji
+        // Send for each subscription
         for (const subscription of subscriptions) {
           let notificationStatus = "sent";
           let errorMessage: string | null = null;
@@ -249,7 +247,7 @@ Deno.serve(async (req) => {
             }
           }
 
-          // Zawsze loguj wynik
+          // Always log the result
           await supabase.from("notification_logs").insert({
             user_id: user.id,
             notification_type: "daily_reminder",

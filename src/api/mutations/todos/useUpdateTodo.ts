@@ -4,7 +4,7 @@ import { TodoUpdateDetails, User } from "@/types/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "react-i18next";
 
-export const useUpdateTodo = () => {
+export function useUpdateTodo() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -32,10 +32,10 @@ export const useUpdateTodo = () => {
     onError: () => {
       toast({
         variant: "destructive",
-        title: t("toastMsg.todoUpdateError"),
+        title: t("toastMsg.todosFailed"),
       });
     },
   });
 
   return { updateTodo, isTodoChanging };
-};
+}

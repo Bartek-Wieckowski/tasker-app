@@ -4,10 +4,11 @@ import { QUERY_KEYS } from "@/api/constants";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "react-i18next";
 
-export const useAssignGlobalTodo = (accountId: string) => {
+export function useAssignGlobalTodo(accountId: string) {
   const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+
   const { mutateAsync: assignGlobalTodo, isPending: isAssigningGlobalTodo } =
     useMutation({
       mutationFn: ({ todoId, date }: { todoId: string; date: Date }) =>
@@ -15,11 +16,11 @@ export const useAssignGlobalTodo = (accountId: string) => {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.todos] });
         queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.globalTodos] });
-        toast({ title: t("toastMsg.globalTodoAssignedToSelectedDate") });
+        toast({ title: t("toastMsg.todoAssign") });
       },
       onError: () => {
         toast({
-          title: t("toastMsg.globalTodoAssignedToSelectedDateFailed"),
+          title: t("toastMsg.todosFailed"),
           variant: "destructive",
         });
       },
@@ -28,4 +29,4 @@ export const useAssignGlobalTodo = (accountId: string) => {
     assignGlobalTodo,
     isAssigningGlobalTodo,
   };
-};
+}

@@ -12,21 +12,21 @@ VALUES (
 CREATE POLICY "Users can upload todo images to their own folder" ON storage.objects
 FOR INSERT WITH CHECK (
   bucket_id = 'todo-images' 
-  AND auth.uid()::text = (storage.foldername(name))[1]
+  AND (select auth.uid())::text = (storage.foldername(name))[1]
 );
 
 -- Allow authenticated users to update their own todo images
 CREATE POLICY "Users can update their own todo images" ON storage.objects
 FOR UPDATE USING (
   bucket_id = 'todo-images'
-  AND auth.uid()::text = (storage.foldername(name))[1]
+  AND (select auth.uid())::text = (storage.foldername(name))[1]
 );
 
 -- Allow authenticated users to delete their own todo images
 CREATE POLICY "Users can delete their own todo images" ON storage.objects  
 FOR DELETE USING (
   bucket_id = 'todo-images'
-  AND auth.uid()::text = (storage.foldername(name))[1]
+  AND (select auth.uid())::text = (storage.foldername(name))[1]
 );
 
 -- Allow users to view todo images they have access to
@@ -34,12 +34,15 @@ FOR DELETE USING (
 CREATE POLICY "Users can view accessible todo images" ON storage.objects
 FOR SELECT USING (
   bucket_id = 'todo-images' 
-  AND auth.uid()::text = (storage.foldername(name))[1] -- Own images only
+  AND (select auth.uid())::text = (storage.foldername(name))[1] -- Own images only
 );
 
 -- Create function to automatically create user folder structure
 CREATE OR REPLACE FUNCTION create_user_todo_folder()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
   -- This function will be called when a new user is created
   -- In Supabase, folders are created automatically when files are uploaded

@@ -9,6 +9,7 @@ export function useDelegateTodo() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
   const { mutate: delegateTodoItem, isPending: isDelegatingTodo } = useMutation(
     {
       mutationFn: ({
@@ -27,11 +28,11 @@ export function useDelegateTodo() {
         queryClient.invalidateQueries({
           queryKey: [QUERY_KEYS.delegatedTodos],
         });
-        toast({ title: t("toastMsg.delegateTodoSuccess") });
+        toast({ title: t("toastMsg.todoDelegated") });
       },
       onError: () => {
         toast({
-          title: t("toastMsg.delegateTodoFailed"),
+          title: t("toastMsg.todosFailed"),
           variant: "destructive",
         });
       },

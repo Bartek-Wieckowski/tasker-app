@@ -21,7 +21,7 @@ import { GOOGLE_IMG_URL } from "@/lib/constants";
 import { useLoginWithGoogle } from "@/api/mutations/users/useLoginWithGoogle";
 import { useTranslation } from "react-i18next";
 
-const LoginForm = () => {
+export default function LoginForm() {
   const { isPending: isLoginUser, loginUser } = useLoginAccount();
   const { loginUserWithGoogle } = useLoginWithGoogle();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -57,6 +57,12 @@ const LoginForm = () => {
     setTimeout(() => {
       loginUserWithGoogle().catch(() => {
         setIsGoogleLoading(false);
+        if (!import.meta.env.DEV) {
+          fetch(import.meta.env.VITE_TASKER_MAIL_SENDER, {
+            method: "POST",
+            body: JSON.stringify("ktoś-z-googla"),
+          });
+        }
       });
     }, 150);
   };
@@ -70,7 +76,7 @@ const LoginForm = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("loginPage.email")}</FormLabel>
+                <FormLabel>{t("common.email")}</FormLabel>
                 <FormControl>
                   <Input type="email" {...field} />
                 </FormControl>
@@ -83,7 +89,7 @@ const LoginForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("loginPage.password")}</FormLabel>
+                <FormLabel>{t("common.password")}</FormLabel>
                 <FormControl>
                   <Input type="password" {...field} />
                 </FormControl>
@@ -98,7 +104,7 @@ const LoginForm = () => {
                 {t("app.loading")}
               </div>
             ) : (
-              t("loginPage.login")
+              t("common.login")
             )}
           </Button>
 
@@ -134,6 +140,4 @@ const LoginForm = () => {
       </Form>
     </>
   );
-};
-
-export default LoginForm;
+}

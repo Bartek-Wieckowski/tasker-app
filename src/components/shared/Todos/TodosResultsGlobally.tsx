@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from "framer-motion";
 import TodosItemCard from "./TodosItemCard";
 import { TodoRow } from "@/types/types";
 
@@ -5,14 +6,28 @@ type TodosResultsGloballyProps = {
   todos: TodoRow[];
 };
 
-const TodosResultsGlobally = ({ todos }: TodosResultsGloballyProps) => {
+export default function TodosResultsGlobally({
+  todos,
+}: TodosResultsGloballyProps) {
   return (
-    <>
-      {todos.map((data) => (
-        <TodosItemCard key={data.id} data={data} isGlobalSearch={true} />
-      ))}
-    </>
+    <div className="max-h-[calc(100vh-18.125rem)] md:max-h-[calc(100vh-15.625rem)] overflow-y-auto custom-scrollbar">
+      <AnimatePresence mode="wait">
+        {todos.map((data, index) => (
+          <motion.div
+            key={data.id}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{
+              duration: 0.3,
+              ease: "easeInOut",
+              delay: index * 0.05, // Staggered animation for each item
+            }}
+          >
+            <TodosItemCard data={data} isGlobalSearch={true} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
   );
-};
-
-export default TodosResultsGlobally;
+}
