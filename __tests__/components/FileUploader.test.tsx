@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, MockedFunction } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import FileUploader from "@/components/shared/FileUploader";
 import { useDropzone } from "react-dropzone";
