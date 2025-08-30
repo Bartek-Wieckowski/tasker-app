@@ -146,6 +146,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Grant permissions for the function
+GRANT EXECUTE ON FUNCTION current_user_email() TO authenticated;
+GRANT EXECUTE ON FUNCTION current_user_email() TO anon;
+
 -- Policies for coop_todos_shared - only sees tables where it is a member
 CREATE POLICY "Users can view tables they are members of" ON coop_todos_shared
     FOR SELECT USING (
@@ -467,12 +471,12 @@ $$ LANGUAGE plpgsql;
 -- 8. Helper views
 
 -- Tables available for the user
-CREATE OR REPLACE VIEW my_shared_tables WITH (security_invoker = on) AS
+CREATE OR REPLACE VIEW my_shared_tables AS
 SELECT 
     cts.*,
     du.email as owner_email,
     CASE 
-        WHEN cts.owner_user_id = (select auth.uid()) THEN 'owner'
+        WHEN cts.owner_user_id = auth.uid() THEN 'owner'
         ELSE 'member'
     END as my_role,
     array_length(cts.member_emails, 1) as member_count
@@ -482,7 +486,7 @@ WHERE current_user_email() = ANY(cts.member_emails)
 AND cts.is_active = true;
 
 -- Todos from all accessible tables
-CREATE OR REPLACE VIEW my_accessible_todos WITH (security_invoker = on) AS
+CREATE OR REPLACE VIEW my_accessible_todos AS
 SELECT 
     ct.*,
     cts.table_name,
@@ -491,7 +495,7 @@ SELECT
     updated_du.email as updated_by_email,
     completed_du.email as completed_by_email,
     CASE 
-        WHEN ct.creator_user_id = (select auth.uid()) THEN 'own'
+        WHEN ct.creator_user_id = auth.uid() THEN 'own'
         ELSE 'shared'
     END as todo_type
 FROM public.coop_todos ct
@@ -504,7 +508,7 @@ WHERE current_user_email() = ANY(cts.member_emails)
 AND cts.is_active = true;
 
 -- Pending invitations
-CREATE OR REPLACE VIEW my_pending_invitations WITH (security_invoker = on) AS
+CREATE OR REPLACE VIEW my_pending_invitations AS
 SELECT 
     ci.*,
     cts.table_name,
@@ -513,12 +517,12 @@ SELECT
 FROM public.coop_invitations ci
 JOIN public.coop_todos_shared cts ON cts.id = ci.shared_table_id
 JOIN public.db_users inviter_du ON inviter_du.id = ci.inviter_user_id
-WHERE (ci.invitee_user_id = (select auth.uid()) OR ci.invitee_email = current_user_email())
+WHERE (ci.invitee_user_id = auth.uid() OR ci.invitee_email = current_user_email())
 AND ci.status = 'pending'
 AND ci.expires_at > NOW();
 
 -- My sent invitations (all statuses)
-CREATE OR REPLACE VIEW my_sent_invitations WITH (security_invoker = on) AS
+CREATE OR REPLACE VIEW my_sent_invitations AS
 SELECT 
     ci.id,
     ci.created_at,
@@ -534,10 +538,10 @@ SELECT
 FROM public.coop_invitations ci
 JOIN public.coop_todos_shared cts ON cts.id = ci.shared_table_id
 LEFT JOIN public.db_users invitee_du ON invitee_du.id = ci.invitee_user_id
-WHERE ci.inviter_user_id = (select auth.uid());
+WHERE ci.inviter_user_id = auth.uid();
 
 -- My received invitations (all statuses)
-CREATE OR REPLACE VIEW my_received_invitations WITH (security_invoker = on) AS
+CREATE OR REPLACE VIEW my_received_invitations AS
 SELECT 
     ci.id,
     ci.created_at,
@@ -553,4 +557,4 @@ SELECT
 FROM public.coop_invitations ci
 JOIN public.coop_todos_shared cts ON cts.id = ci.shared_table_id
 JOIN public.db_users inviter_du ON inviter_du.id = ci.inviter_user_id
-WHERE (ci.invitee_user_id = (select auth.uid()) OR ci.invitee_email = current_user_email());
+WHERE (ci.invitee_user_id = auth.uid() OR ci.invitee_email = current_user_email());
