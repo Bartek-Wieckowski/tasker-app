@@ -37,7 +37,7 @@ export default function UserPanel() {
         asChild
         className="cursor-pointer xs:w-10 xs:h-10 w-8 h-8"
       >
-        <Avatar>
+        <Avatar data-testid="user-avatar-wrapper">
           <AvatarImage
             src={currentUser.imageUrl}
             alt={currentUser.username}
@@ -48,7 +48,7 @@ export default function UserPanel() {
           </AvatarFallback>
         </Avatar>
       </PopoverTrigger>
-      <PopoverContent className="w-40">
+      <PopoverContent className="w-40" data-testid="user-panel-popover-content">
         <div className="flex flex-col gap-2">
           <p className="text-center text-sm">
             {t("app.userPanel.welcomeText")}{" "}

@@ -73,7 +73,7 @@
   "userSettingsForm": {
     "editProfile": "Edit profile",
     "addAvatar": "Add avatar",
-    "saveNewProfile": "Save new profile",
+    "saveNewProfile": "Save new settings",
     "newPassword": "New password",
     "saveNewPassword": "Save new password",
     "saving": "Saving..."
@@ -88,9 +88,7 @@
     "description3": "Notifications only when you have active tasks",
     "description4": "You can disable them at any time",
     "enabled": "Enabled",
-    "disabled": "Disabled",
-    "testTitle": "Test notification",
-    "testBody": "This is a test notification from Tasker App!"
+    "disabled": "Disabled"
   },
   "toastMsg": {
     "welcomeMessage": "Welcome to Tasker!",
