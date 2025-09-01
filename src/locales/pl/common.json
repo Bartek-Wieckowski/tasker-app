@@ -249,5 +249,19 @@
     "pendingTab": "Oczekujące",
     "sent": "Wysłane",
     "received": "Otrzymane"
+  },
+  "stats": {
+    "day": "Dzień",
+    "week": "Tydzień",
+    "month": "Miesiąc",
+    "status": "Status zadań",
+    "dayStats": "Statystyki na dzień",
+    "weekStats": "Statystyki tygodnia",
+    "monthStats": "Statystyki miesiąca",
+    "completed": "Ukończone",
+    "notStarted": "Nieukończone",
+    "totalTasks": "Wszystkich zadań",
+    "noTasks": "Brak zadań w tym okresie",
+    "errorText": "Błąd podczas ładowania statystyk"
   }
 }

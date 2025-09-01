@@ -12,9 +12,11 @@ import { useMobileTabGlobal } from "../../hooks/useMobileTabSync";
 import { TodosAdd } from "./Todos/TodosAdd";
 import { NotificationProvider } from "../../contexts/NotificationContext";
 import NotificationBell from "./NotificationBell";
+import StatsDialog from "./Stats/StatsDialog";
 
 export default function AppLayout() {
   const { mobileActiveTab, setMobileActiveTab } = useMobileTabGlobal();
+
   return (
     <NotificationProvider>
       <div className="min-h-screen bg-stone-50">
@@ -87,6 +89,15 @@ export default function AppLayout() {
         <BottomNavigation
           activeTab={mobileActiveTab}
           onTabChange={setMobileActiveTab}
+        />
+
+        <StatsDialog
+          open={mobileActiveTab === "stats"}
+          onOpenChange={(open) => {
+            if (!open) {
+              setMobileActiveTab("all");
+            }
+          }}
         />
       </div>
     </NotificationProvider>

@@ -249,5 +249,19 @@
     "pendingTab": "Pending",
     "sent": "Sent",
     "received": "Received"
+  },
+  "stats": {
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "status": "Task Status",
+    "dayStats": "Day statistics",
+    "weekStats": "Week Statistics",
+    "monthStats": "Month Statistics",
+    "completed": "Completed",
+    "notStarted": "Not Started",
+    "totalTasks": "Total tasks",
+    "noTasks": "No tasks found for this period",
+    "errorText": "Error loading statistics"
   }
 }

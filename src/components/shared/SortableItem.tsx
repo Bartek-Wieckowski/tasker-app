@@ -47,6 +47,7 @@ export default function SortableItem<T>({
         {...attributes}
         {...listeners}
         className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-100 transition-opacity duration-200 p-2 hover:bg-gray-50 rounded-md border border-transparent hover:border-gray-200"
+        style={{ touchAction: "none" }}
         title="Przeciągnij aby zmienić kolejność"
       >
         <ArrowUpDown className="w-5 h-5 text-gray-400" />

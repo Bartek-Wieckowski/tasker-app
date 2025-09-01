@@ -27,7 +27,7 @@ BEGIN
   RAISE NOTICE '🔄 Starting cyclic todos processing for local (Europe/Warsaw) date: %', today_date;
   
   -- Count total cyclic todos
-  SELECT COUNT(*) INTO total_cyclic FROM cyclic_todos;
+  SELECT COUNT(*) INTO total_cyclic FROM public.cyclic_todos;
   
   IF total_cyclic = 0 THEN
     RAISE NOTICE 'ℹ️  No cyclic todos found';
@@ -46,7 +46,7 @@ BEGIN
   -- Process each cyclic todo
   FOR cyclic_todo_record IN 
     SELECT id, user_id, todo, created_at, updated_at 
-    FROM cyclic_todos 
+    FROM public.cyclic_todos 
     ORDER BY created_at
   LOOP
     RAISE NOTICE '🔍 Checking cyclic todo: "%" for user %', 
@@ -54,7 +54,7 @@ BEGIN
     
     -- Check if todo already exists for this user and today (local date)
     SELECT COUNT(*) INTO existing_todo_count
-    FROM todos 
+    FROM public.todos 
     WHERE user_id = cyclic_todo_record.user_id 
       AND todo_date = today_date::date 
       AND (
@@ -66,7 +66,7 @@ BEGIN
       -- Create new todo
       RAISE NOTICE '➕ Will create: "%"', cyclic_todo_record.todo;
       
-      INSERT INTO todos (
+      INSERT INTO public.todos (
         user_id,
         todo,
         todo_more_content,

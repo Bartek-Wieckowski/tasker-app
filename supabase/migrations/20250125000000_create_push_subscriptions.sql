@@ -79,7 +79,7 @@ DECLARE
   deleted_count integer;
 BEGIN
   -- Delete subscriptions not used for 30 days
-  DELETE FROM push_subscriptions 
+  DELETE FROM public.push_subscriptions 
   WHERE is_active = false 
     AND updated_at < NOW() - INTERVAL '30 days';
   
