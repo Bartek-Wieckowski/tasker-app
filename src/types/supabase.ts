@@ -21,7 +21,7 @@ export type Database = {
           id: string
           invitee_email: string
           invitee_user_id: string | null
-          inviter_user_id: string
+          inviter_user_id: string | null
           shared_table_id: string
           status: string
         }
@@ -31,7 +31,7 @@ export type Database = {
           id?: string
           invitee_email: string
           invitee_user_id?: string | null
-          inviter_user_id: string
+          inviter_user_id?: string | null
           shared_table_id: string
           status?: string
         }
@@ -41,7 +41,7 @@ export type Database = {
           id?: string
           invitee_email?: string
           invitee_user_id?: string | null
-          inviter_user_id?: string
+          inviter_user_id?: string | null
           shared_table_id?: string
           status?: string
         }
@@ -806,6 +806,10 @@ export type Database = {
       process_cyclic_todos_internal: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      remove_user_from_shared_todos: {
+        Args: { user_email_to_remove: string }
+        Returns: undefined
       }
       search_todos: {
         Args: { search_term: string; user_id_param: string }

@@ -63,7 +63,7 @@ DECLARE
   deleted_count integer;
 BEGIN
   -- Delete logs older than 90 days
-  DELETE FROM notification_logs 
+  DELETE FROM public.notification_logs 
   WHERE sent_at < NOW() - INTERVAL '90 days';
   
   GET DIAGNOSTICS deleted_count = ROW_COUNT;

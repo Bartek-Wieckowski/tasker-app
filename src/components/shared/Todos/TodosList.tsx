@@ -3,6 +3,7 @@ import DatePicker from "../DatePicker";
 import TodosTabs from "./TodosTabs";
 import GlobalSearchProvider from "@/contexts/GlobalSearchContext";
 import { useNotifications } from "@/hooks/useNotifications";
+import DesktopStatsView from "../Stats/DesktopStatsView";
 
 export default function TodosList() {
   const { isAuth } = useAuth();
@@ -17,8 +18,11 @@ export default function TodosList() {
             <div className="flex-1 order-2 md:order-1">
               <TodosTabs />
             </div>
-            <div className="order-1 md:order-2 flex justify-center gap-2">
+            <div className="order-1 md:order-2 flex flex-col gap-2">
               <DatePicker />
+              <div className="hidden md:block">
+                <DesktopStatsView />
+              </div>
             </div>
           </div>
         </GlobalSearchProvider>

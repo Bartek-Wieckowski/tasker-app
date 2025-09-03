@@ -93,15 +93,15 @@ export default function CoopTodoForm({
             <FormItem>
               <FormLabel>
                 {type === "add"
-                  ? t("common.newTaskName")
-                  : t("common.editTaskName")}
+                  ? t("common.todoMoreContent")
+                  : t("common.editTodoMoreContent")}
               </FormLabel>
               <FormControl>
                 <Textarea
                   placeholder={
                     type === "add"
-                      ? t("common.writeYourTaskNamePlaceholder")
-                      : t("common.editYourTaskPlaceholder")
+                      ? t("common.todoMoreContentPlaceholder")
+                      : t("common.editTodoMoreContentPlaceholder")
                   }
                   data-testid={
                     type === "add"

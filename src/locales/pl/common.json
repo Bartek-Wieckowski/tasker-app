@@ -41,6 +41,8 @@
     "todoContentPlaceholder": "np. Zrobić trening",
     "todoMoreContent": "Dodatkowe informacje (jeśli potrzebujesz)",
     "todoMoreContentPlaceholder": "Jeśli potrzebujesz więcej treści, wpisz je tutaj!",
+    "editTodoMoreContent": "Edytuj dodatkowe informacje",
+    "editTodoMoreContentPlaceholder": "Jeśli potrzebujesz więcej treści, wpisz je tutaj!",
     "todoMinLength": "Zadanie musi mieć co najmniej 2 znaki",
     "todoMaxLength": "Zadanie nie może przekroczyć 70 znaków. Jeśli chcesz dodać więcej treści, użyj pola opisu",
     "todoMoreContentMaxLength": "Dodatkowe informacje nie mogą przekroczyć 500 znaków",
@@ -249,5 +251,28 @@
     "pendingTab": "Oczekujące",
     "sent": "Wysłane",
     "received": "Otrzymane"
+  },
+  "stats": {
+    "day": "Dzień",
+    "week": "Tydzień",
+    "month": "Miesiąc",
+    "status": "Status zadań",
+    "dayStats": "Statystyki na dzień",
+    "weekStats": "Statystyki tygodnia",
+    "monthStats": "Statystyki miesiąca",
+    "completed": "Ukończone",
+    "notStarted": "Nieukończone",
+    "totalTasks": "Wszystkich zadań",
+    "noTasks": "Brak zadań w tym okresie",
+    "errorText": "Błąd podczas ładowania statystyk"
+  },
+  "dateFormat": {
+    "justNow": "Przed chwilą",
+    "minuteAgo": "1 minutę temu",
+    "minutesAgo": "{{count}} minut temu",
+    "hourAgo": "1 godzinę temu",
+    "hoursAgo": "{{count}} godzin temu",
+    "dayAgo": "1 dzień temu",
+    "daysAgo": "{{count}} dni temu"
   }
 }

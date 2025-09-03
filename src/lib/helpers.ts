@@ -1,4 +1,5 @@
 import { enUS, pl } from "date-fns/locale";
+import i18n from "./i18n";
 
 export function dateCustomFormatting(date: Date): string {
   const padStart = (value: number): string => value.toString().padStart(2, "0");
@@ -43,19 +44,27 @@ export const multiFormatDateString = (
   const diffInHours: number = diffInMinutes / 60;
   const diffInDays: number = diffInHours / 24;
 
+  const days = Math.floor(diffInDays);
+  const hours = Math.floor(diffInHours);
+  const minutes = Math.floor(diffInMinutes);
+
   switch (true) {
-    case Math.floor(diffInDays) >= 30:
+    case days >= 30:
       return formatDateString(date);
-    case Math.floor(diffInDays) === 1:
-      return `${Math.floor(diffInDays)} day ago`;
-    case Math.floor(diffInDays) > 1 && diffInDays < 30:
-      return `${Math.floor(diffInDays)} days ago`;
-    case Math.floor(diffInHours) >= 1:
-      return `${Math.floor(diffInHours)} hours ago`;
-    case Math.floor(diffInMinutes) >= 1:
-      return `${Math.floor(diffInMinutes)} minutes ago`;
+    case days === 1:
+      return i18n.t("dateFormat.dayAgo");
+    case days > 1 && days < 30:
+      return i18n.t("dateFormat.daysAgo", { count: days });
+    case hours === 1:
+      return i18n.t("dateFormat.hourAgo");
+    case hours >= 2:
+      return i18n.t("dateFormat.hoursAgo", { count: hours });
+    case minutes === 1:
+      return i18n.t("dateFormat.minuteAgo");
+    case minutes >= 2:
+      return i18n.t("dateFormat.minutesAgo", { count: minutes });
     default:
-      return "Just now";
+      return i18n.t("dateFormat.justNow");
   }
 };
 

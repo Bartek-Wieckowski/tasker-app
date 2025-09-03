@@ -41,6 +41,8 @@
     "todoContentPlaceholder": "e.g. Do training",
     "todoMoreContent": "Additional information (if you need)",
     "todoMoreContentPlaceholder": "If you need more content, write it here!",
+    "editTodoMoreContent": "Edit additional information",
+    "editTodoMoreContentPlaceholder": "If you need more content, write it here!",
     "todoMinLength": "Todo item must be at least 2 characters",
     "todoMaxLength": "Todo item cannot exceed 70 characters. If you want to add more content, use the description field",
     "todoMoreContentMaxLength": "Additional information cannot exceed 500 characters",
@@ -249,5 +251,28 @@
     "pendingTab": "Pending",
     "sent": "Sent",
     "received": "Received"
+  },
+  "stats": {
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "status": "Task Status",
+    "dayStats": "Day statistics",
+    "weekStats": "Week Statistics",
+    "monthStats": "Month Statistics",
+    "completed": "Completed",
+    "notStarted": "Not Started",
+    "totalTasks": "Total tasks",
+    "noTasks": "No tasks found for this period",
+    "errorText": "Error loading statistics"
+  },
+  "dateFormat": {
+    "justNow": "Just now",
+    "minuteAgo": "1 minute ago",
+    "minutesAgo": "{{count}} minutes ago",
+    "hourAgo": "1 hour ago",
+    "hoursAgo": "{{count}} hours ago",
+    "dayAgo": "1 day ago",
+    "daysAgo": "{{count}} days ago"
   }
 }

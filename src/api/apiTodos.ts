@@ -946,3 +946,134 @@ export async function updateTodosOrder(
     });
   }
 }
+
+// Statistics functions
+export async function getTodosStatsByDate(
+  selectedDate: string,
+  currentUser: User
+) {
+  const { data: todos, error } = await supabase
+    .from("todos")
+    .select("is_completed")
+    .eq("user_id", currentUser.accountId)
+    .eq("todo_date", selectedDate);
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "GET_TODOS_STATS_ERROR" };
+  }
+
+  const completed = todos.filter((todo) => todo.is_completed).length;
+  const notStarted = todos.filter((todo) => !todo.is_completed).length;
+  const total = todos.length;
+
+  return {
+    completed,
+    notStarted,
+    total,
+    completedPercentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    notStartedPercentage:
+      total > 0 ? Math.round((notStarted / total) * 100) : 0,
+  };
+}
+
+export async function getTodosStatsByWeek(
+  selectedDate: string,
+  currentUser: User
+) {
+  // Calculate week start (Monday) and end (Sunday)
+  const date = new Date(selectedDate);
+  const dayOfWeek = date.getDay();
+  const weekStart = new Date(date);
+  weekStart.setDate(date.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  const startDate = weekStart.toISOString().split("T")[0];
+  const endDate = weekEnd.toISOString().split("T")[0];
+
+  const { data: todos, error } = await supabase
+    .from("todos")
+    .select("is_completed")
+    .eq("user_id", currentUser.accountId)
+    .gte("todo_date", startDate)
+    .lte("todo_date", endDate);
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "GET_TODOS_STATS_ERROR" };
+  }
+
+  const completed = todos.filter((todo) => todo.is_completed).length;
+  const notStarted = todos.filter((todo) => !todo.is_completed).length;
+  const total = todos.length;
+
+  return {
+    completed,
+    notStarted,
+    total,
+    completedPercentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    notStartedPercentage:
+      total > 0 ? Math.round((notStarted / total) * 100) : 0,
+    startDate,
+    endDate,
+  };
+}
+
+export async function getTodosStatsByMonth(
+  selectedDate: string,
+  currentUser: User
+) {
+  const date = new Date(selectedDate);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  const monthEnd = new Date(year, month + 1, 0);
+
+  const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+  const endDate = `${monthEnd.getFullYear()}-${String(
+    monthEnd.getMonth() + 1
+  ).padStart(2, "0")}-${String(monthEnd.getDate()).padStart(2, "0")}`;
+
+  const { data: todos, error } = await supabase
+    .from("todos")
+    .select("is_completed")
+    .eq("user_id", currentUser.accountId)
+    .gte("todo_date", startDate)
+    .lte("todo_date", endDate);
+
+  if (error) {
+    if (import.meta.env.DEV) {
+      console.error({
+        code: error.code,
+        message: error.message,
+      });
+    }
+    throw { code: "GET_TODOS_STATS_ERROR" };
+  }
+
+  const completed = todos.filter((todo) => todo.is_completed).length;
+  const notStarted = todos.filter((todo) => !todo.is_completed).length;
+  const total = todos.length;
+
+  return {
+    completed,
+    notStarted,
+    total,
+    completedPercentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    notStartedPercentage:
+      total > 0 ? Math.round((notStarted / total) * 100) : 0,
+    startDate,
+    endDate,
+  };
+}
