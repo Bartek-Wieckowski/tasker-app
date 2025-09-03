@@ -55,18 +55,21 @@ export default function LoginForm() {
     });
 
     setTimeout(() => {
-      loginUserWithGoogle().catch(() => {
-        setIsGoogleLoading(false);
-        if (!import.meta.env.DEV) {
-          fetch(import.meta.env.VITE_TASKER_MAIL_SENDER, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email: "ktoś-z-googla" }),
-          });
-        }
-      });
+      loginUserWithGoogle()
+        .then(() => {
+          if (!import.meta.env.DEV) {
+            fetch(import.meta.env.VITE_TASKER_MAIL_SENDER, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email: "ktoś-z-googla" }),
+            });
+          }
+        })
+        .catch(() => {
+          setIsGoogleLoading(false);
+        });
     }, 150);
   };
 

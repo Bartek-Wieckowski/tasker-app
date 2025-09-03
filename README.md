@@ -45,7 +45,6 @@ For testing purposes, you can use these credentials:
 
 ### 🎨 Advanced UX/UI
 
-- **Dark/Light mode** - automatic adaptation to system preferences
 - **Drag & Drop** - intuitive task reordering
 - **Animations** - smooth transitions with Framer Motion
 - **UI Components** - professional components with Shadcn UI

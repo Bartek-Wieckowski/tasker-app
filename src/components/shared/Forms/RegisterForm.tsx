@@ -34,22 +34,16 @@ export default function RegisterForm() {
   });
 
   async function onSubmit(values: RegisterFormValues) {
-    await registerUser(values, {
-      onSettled: () => {
-        form.reset();
-      },
-      onSuccess: () => {
-        if (!import.meta.env.DEV) {
-          fetch(import.meta.env.VITE_TASKER_MAIL_SENDER, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email: values.email }),
-          });
-        }
-      },
-    });
+    await registerUser(values);
+    form.reset();
+
+    if (!import.meta.env.DEV) {
+      await fetch(import.meta.env.VITE_TASKER_MAIL_SENDER, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email }),
+      });
+    }
   }
 
   return (
