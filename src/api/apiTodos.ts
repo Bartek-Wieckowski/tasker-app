@@ -1038,11 +1038,12 @@ export async function getTodosStatsByMonth(
   const year = date.getFullYear();
   const month = date.getMonth();
 
-  const monthStart = new Date(year, month, 1);
   const monthEnd = new Date(year, month + 1, 0);
 
-  const startDate = monthStart.toISOString().split("T")[0];
-  const endDate = monthEnd.toISOString().split("T")[0];
+  const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+  const endDate = `${monthEnd.getFullYear()}-${String(
+    monthEnd.getMonth() + 1
+  ).padStart(2, "0")}-${String(monthEnd.getDate()).padStart(2, "0")}`;
 
   const { data: todos, error } = await supabase
     .from("todos")

@@ -17,7 +17,10 @@ export default function StatsDialog({ open, onOpenChange }: StatsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="max-w-lg max-h-[90vh] overflow-y-auto"
+        data-testid="stats-dialog-content"
+      >
         <DialogHeader>
           <DialogTitle>{t("stats.status")}</DialogTitle>
         </DialogHeader>

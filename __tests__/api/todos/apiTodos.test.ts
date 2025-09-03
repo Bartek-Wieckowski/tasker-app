@@ -9,6 +9,9 @@ import {
   isLastImageReference,
   getFilePathFromUrl,
   updateTodoCompletionStatus,
+  getTodosStatsByDate,
+  getTodosStatsByWeek,
+  getTodosStatsByMonth,
 } from "@/api/apiTodos";
 import { mockSupabase } from "../../setup";
 import { TodoSearchResult } from "@/types/types";
@@ -665,6 +668,300 @@ describe("apiTodos", () => {
         updateTodoCompletionStatus("todo-1", "2024-01-15", mockUser, true)
       ).rejects.toEqual({
         code: "UPDATE_TODO_COMPLETION_STATUS_ERROR",
+      });
+    });
+  });
+
+  describe("getTodosStatsByDate()", () => {
+    const mockUser = {
+      accountId: "user-123",
+      username: "testuser",
+      email: "test@example.com",
+      imageUrl: "https://example.com/avatar.jpg",
+    };
+
+    it("should successfully get todos stats for a specific date", async () => {
+      const selectedDate = "2024-01-15";
+      const mockTodos = [
+        { is_completed: true },
+        { is_completed: true },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+      ];
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            eq: () => Promise.resolve({ data: mockTodos, error: null }),
+          }),
+        }),
+      }));
+
+      const result = await getTodosStatsByDate(selectedDate, mockUser);
+
+      expect(mockSupabase.from).toHaveBeenCalledWith("todos");
+      expect(result).toEqual({
+        completed: 2,
+        notStarted: 3,
+        total: 5,
+        completedPercentage: 40,
+        notStartedPercentage: 60,
+      });
+    });
+
+    it("should handle empty todos list and return zero stats", async () => {
+      const selectedDate = "2024-01-15";
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            eq: () => Promise.resolve({ data: [], error: null }),
+          }),
+        }),
+      }));
+
+      const result = await getTodosStatsByDate(selectedDate, mockUser);
+
+      expect(result).toEqual({
+        completed: 0,
+        notStarted: 0,
+        total: 0,
+        completedPercentage: 0,
+        notStartedPercentage: 0,
+      });
+    });
+
+    it("should throw GET_TODOS_STATS_ERROR when database query fails", async () => {
+      const selectedDate = "2024-01-15";
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            eq: () =>
+              Promise.resolve({
+                data: null,
+                error: {
+                  code: "PGRST116",
+                  message: "Database error",
+                },
+              }),
+          }),
+        }),
+      }));
+
+      await expect(getTodosStatsByDate(selectedDate, mockUser)).rejects.toEqual(
+        {
+          code: "GET_TODOS_STATS_ERROR",
+        }
+      );
+    });
+  });
+
+  describe("getTodosStatsByWeek()", () => {
+    const mockUser = {
+      accountId: "user-123",
+      username: "testuser",
+      email: "test@example.com",
+      imageUrl: "https://example.com/avatar.jpg",
+    };
+
+    it("should successfully get todos stats for a week", async () => {
+      const selectedDate = "2024-01-17"; // Wednesday
+      const mockTodos = [
+        { is_completed: true },
+        { is_completed: true },
+        { is_completed: true },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+      ];
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            gte: () => ({
+              lte: () => Promise.resolve({ data: mockTodos, error: null }),
+            }),
+          }),
+        }),
+      }));
+
+      const result = await getTodosStatsByWeek(selectedDate, mockUser);
+
+      expect(mockSupabase.from).toHaveBeenCalledWith("todos");
+      expect(result).toEqual({
+        completed: 3,
+        notStarted: 5,
+        total: 8,
+        completedPercentage: 38,
+        notStartedPercentage: 63,
+        startDate: "2024-01-15", // Monday of that week
+        endDate: "2024-01-21", // Sunday of that week
+      });
+    });
+
+    it("should handle Sunday as selected date and calculate week correctly", async () => {
+      const selectedDate = "2024-01-21"; // Sunday
+      const mockTodos = [{ is_completed: true }, { is_completed: false }];
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            gte: () => ({
+              lte: () => Promise.resolve({ data: mockTodos, error: null }),
+            }),
+          }),
+        }),
+      }));
+
+      const result = await getTodosStatsByWeek(selectedDate, mockUser);
+
+      expect(result).toEqual({
+        completed: 1,
+        notStarted: 1,
+        total: 2,
+        completedPercentage: 50,
+        notStartedPercentage: 50,
+        startDate: "2024-01-15", // Monday of that week
+        endDate: "2024-01-21", // Sunday of that week
+      });
+    });
+
+    it("should throw GET_TODOS_STATS_ERROR when database query fails", async () => {
+      const selectedDate = "2024-01-17";
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            gte: () => ({
+              lte: () =>
+                Promise.resolve({
+                  data: null,
+                  error: {
+                    code: "PGRST116",
+                    message: "Database error",
+                  },
+                }),
+            }),
+          }),
+        }),
+      }));
+
+      await expect(getTodosStatsByWeek(selectedDate, mockUser)).rejects.toEqual(
+        {
+          code: "GET_TODOS_STATS_ERROR",
+        }
+      );
+    });
+  });
+
+  describe("getTodosStatsByMonth()", () => {
+    const mockUser = {
+      accountId: "user-123",
+      username: "testuser",
+      email: "test@example.com",
+      imageUrl: "https://example.com/avatar.jpg",
+    };
+
+    it("should successfully get todos stats for a month", async () => {
+      const selectedDate = "2024-01-15";
+      const mockTodos = [
+        { is_completed: true },
+        { is_completed: true },
+        { is_completed: true },
+        { is_completed: true },
+        { is_completed: true },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+        { is_completed: false },
+      ];
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            gte: () => ({
+              lte: () => Promise.resolve({ data: mockTodos, error: null }),
+            }),
+          }),
+        }),
+      }));
+
+      const result = await getTodosStatsByMonth(selectedDate, mockUser);
+
+      expect(mockSupabase.from).toHaveBeenCalledWith("todos");
+      expect(result).toEqual({
+        completed: 5,
+        notStarted: 7,
+        total: 12,
+        completedPercentage: 42,
+        notStartedPercentage: 58,
+        startDate: "2024-01-01",
+        endDate: "2024-01-31",
+      });
+    });
+
+    it("should handle February leap year correctly", async () => {
+      const selectedDate = "2024-02-15"; // 2024 is a leap year
+      const mockTodos = [
+        { is_completed: true },
+        { is_completed: false },
+        { is_completed: false },
+      ];
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            gte: () => ({
+              lte: () => Promise.resolve({ data: mockTodos, error: null }),
+            }),
+          }),
+        }),
+      }));
+
+      const result = await getTodosStatsByMonth(selectedDate, mockUser);
+
+      expect(result).toEqual({
+        completed: 1,
+        notStarted: 2,
+        total: 3,
+        completedPercentage: 33,
+        notStartedPercentage: 67,
+        startDate: "2024-02-01",
+        endDate: "2024-02-29", // Leap year February has 29 days
+      });
+    });
+
+    it("should throw GET_TODOS_STATS_ERROR when database query fails", async () => {
+      const selectedDate = "2024-01-15";
+
+      mockSupabase.from.mockImplementation(() => ({
+        select: () => ({
+          eq: () => ({
+            gte: () => ({
+              lte: () =>
+                Promise.resolve({
+                  data: null,
+                  error: {
+                    code: "PGRST116",
+                    message: "Database error",
+                  },
+                }),
+            }),
+          }),
+        }),
+      }));
+
+      await expect(
+        getTodosStatsByMonth(selectedDate, mockUser)
+      ).rejects.toEqual({
+        code: "GET_TODOS_STATS_ERROR",
       });
     });
   });
