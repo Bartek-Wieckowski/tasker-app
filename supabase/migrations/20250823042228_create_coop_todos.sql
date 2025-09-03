@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS "public"."coop_invitations" (
     "shared_table_id" "uuid" REFERENCES coop_todos_shared(id) ON DELETE CASCADE NOT NULL,
     
     -- Who invites (reference to db_users)
-    "inviter_user_id" "uuid" REFERENCES "public"."db_users"("id") ON DELETE CASCADE NOT NULL,
+    "inviter_user_id" "uuid" REFERENCES "public"."db_users"("id") ON DELETE SET NULL,
     
     -- Who is invited (by email)
     "invitee_email" "text" NOT NULL,
@@ -513,10 +513,10 @@ SELECT
     ci.*,
     cts.table_name,
     cts.description,
-    inviter_du.email as inviter_email
+    COALESCE(inviter_du.email, 'Deleted User') as inviter_email
 FROM public.coop_invitations ci
 JOIN public.coop_todos_shared cts ON cts.id = ci.shared_table_id
-JOIN public.db_users inviter_du ON inviter_du.id = ci.inviter_user_id
+LEFT JOIN public.db_users inviter_du ON inviter_du.id = ci.inviter_user_id
 WHERE (ci.invitee_user_id = auth.uid() OR ci.invitee_email = current_user_email())
 AND ci.status = 'pending'
 AND ci.expires_at > NOW();
@@ -553,8 +553,8 @@ SELECT
     ci.status,
     cts.table_name,
     cts.description,
-    inviter_du.email as inviter_email
+    COALESCE(inviter_du.email, 'Deleted User') as inviter_email
 FROM public.coop_invitations ci
 JOIN public.coop_todos_shared cts ON cts.id = ci.shared_table_id
-JOIN public.db_users inviter_du ON inviter_du.id = ci.inviter_user_id
+LEFT JOIN public.db_users inviter_du ON inviter_du.id = ci.inviter_user_id
 WHERE (ci.invitee_user_id = auth.uid() OR ci.invitee_email = current_user_email());

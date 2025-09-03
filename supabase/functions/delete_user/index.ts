@@ -41,6 +41,19 @@ Deno.serve(async (req) => {
     );
 
     try {
+      // Get user email before deletion for cleanup
+      const { data: userData, error: userError } = await supabase
+        .from("db_users")
+        .select("email")
+        .eq("id", user_id)
+        .single();
+
+      if (userError || !userData?.email) {
+        console.warn("Failed to get user email for cleanup:", userError);
+      }
+
+      const userEmail = userData?.email;
+
       // Clean up user avatars
       const { data: avatarFiles, error: avatarListError } =
         await supabase.storage.from("user-avatars").list(user_id);
@@ -118,6 +131,23 @@ Deno.serve(async (req) => {
           "Failed to delete user cyclic todos:",
           deleteCyclicTodosError
         );
+      }
+
+      // Remove user email from shared todos member_emails arrays
+      if (userEmail) {
+        const { error: removeFromSharedError } = await supabase.rpc(
+          "remove_user_from_shared_todos",
+          {
+            user_email_to_remove: userEmail,
+          }
+        );
+
+        if (removeFromSharedError) {
+          console.warn(
+            "Failed to remove user from shared todos:",
+            removeFromSharedError
+          );
+        }
       }
 
       // Deactivate user in database

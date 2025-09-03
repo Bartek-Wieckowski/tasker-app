@@ -9,6 +9,30 @@ import {
   formatExpirationMessage,
 } from "@/lib/helpers";
 
+// Mock i18n
+vi.mock("@/lib/i18n", () => ({
+  default: {
+    t: (key: string, options?: { count?: number }) => {
+      const translations: Record<string, string | ((count: number) => string)> =
+        {
+          "dateFormat.justNow": "Just now",
+          "dateFormat.minuteAgo": "1 minute ago",
+          "dateFormat.minutesAgo": (count: number) => `${count} minutes ago`,
+          "dateFormat.hourAgo": "1 hour ago",
+          "dateFormat.hoursAgo": (count: number) => `${count} hours ago`,
+          "dateFormat.dayAgo": "1 day ago",
+          "dateFormat.daysAgo": (count: number) => `${count} days ago`,
+        };
+
+      const translation = translations[key];
+      if (typeof translation === "function" && options?.count !== undefined) {
+        return translation(options.count);
+      }
+      return translation || key;
+    },
+  },
+}));
+
 describe("dateCustomFormatting", () => {
   it("should format date to YYYY-MM-DD format", () => {
     const date = new Date(2024, 0, 15);

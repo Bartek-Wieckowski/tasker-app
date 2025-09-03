@@ -29,12 +29,16 @@ const mockSupabase = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { changeLanguage: vi.fn() },
-  }),
-}));
+vi.mock("react-i18next", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-i18next")>();
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string) => key,
+      i18n: { changeLanguage: vi.fn() },
+    }),
+  };
+});
 
 vi.mock("@/lib/supabaseClient", () => ({
   supabase: mockSupabase,
