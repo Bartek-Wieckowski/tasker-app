@@ -60,7 +60,10 @@ export default function LoginForm() {
         if (!import.meta.env.DEV) {
           fetch(import.meta.env.VITE_TASKER_MAIL_SENDER, {
             method: "POST",
-            body: JSON.stringify("ktoś-z-googla"),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: "ktoś-z-googla" }),
           });
         }
       });
