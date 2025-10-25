@@ -55,28 +55,31 @@ export default function UserPanel() {
             <span className="text-teal-600 italic">{currentUser.username}</span>{" "}
             !
           </p>
-          {currentUser.providerId !== "google.com" && (
-            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <span className="flex items-center gap-2">
-                    <PocketKnife className="w-3 h-3" />
-                    {t("app.userPanel.settings")}
-                  </span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="overflow-y-auto max-h-screen custom-scrollbar">
-                <DialogHeader>
-                  <DialogTitle>{t("userSettingsForm.editProfile")}</DialogTitle>
-                </DialogHeader>
-                <div className="flex flex-col gap-3 p-4">
-                  <UserSettingsNotifications />
-                  <UserSettingsFormInfo />
-                  <UserSettingsFormPassword />
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
+          {currentUser.providerId !== "google.com" &&
+            currentUser.email !== "test@developedbybart.pl" && (
+              <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <span className="flex items-center gap-2">
+                      <PocketKnife className="w-3 h-3" />
+                      {t("app.userPanel.settings")}
+                    </span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="overflow-y-auto max-h-screen custom-scrollbar">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {t("userSettingsForm.editProfile")}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="flex flex-col gap-3 p-4">
+                    <UserSettingsNotifications />
+                    <UserSettingsFormInfo />
+                    <UserSettingsFormPassword />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
           <Button onClick={() => logoutUser()}>
             {isLogouting ? (
               <div className="flex items-center gap-2">
@@ -89,15 +92,17 @@ export default function UserPanel() {
               </div>
             )}
           </Button>
-          <Button variant="destructive" onClick={() => deleteUser()}>
-            {isDeleting ? (
-              <div className="flex gap-2">
-                <Loader />
-              </div>
-            ) : (
-              <>{t("app.userPanel.deleteAccount")}</>
-            )}
-          </Button>
+          {currentUser.email !== "test@developedbybart.pl" && (
+            <Button variant="destructive" onClick={() => deleteUser()}>
+              {isDeleting ? (
+                <div className="flex gap-2">
+                  <Loader />
+                </div>
+              ) : (
+                <>{t("app.userPanel.deleteAccount")}</>
+              )}
+            </Button>
+          )}
         </div>
       </PopoverContent>
     </Popover>

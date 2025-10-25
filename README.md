@@ -1,4 +1,4 @@
-# 📝 Tasker - Advanced Todo Application
+# 📝 Tasker - Advanced Todo / Task Management Application
 
 A modern task management application with advanced collaboration features, push notifications, and full PWA support.
 
@@ -33,6 +33,7 @@ For testing purposes, you can use these credentials:
 ### 🔔 Notification System
 
 - **Push notifications** - daily reminders for incomplete tasks
+- **Daily cron reminders** - automated daily notifications for uncompleted tasks
 - **Multi-language notifications** - support for Polish and English
 - **Smart notifications** - only for users with active tasks
 
